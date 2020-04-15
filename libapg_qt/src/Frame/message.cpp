@@ -25,19 +25,19 @@ public:
 
 public:
 
-    QString                 initText;
     char                    delimiter;
     char                    equalChar;
 
     QHash<QString, QString> content;
-
-    QVector<QString>        fields;
 };
 
-Message::Message(const QString& initText)
+Message::Message(const QString& message)
     : d(new Private())
 {
-    d->initText = initText;
+    if (! message.isEmpty())
+    {
+        parseText(message);
+    }
 }
 
 Message::~Message()
@@ -52,9 +52,9 @@ void Message::parseText(const QString& text)
     // TODO: print verbose
     QStringList msg = text.split(d->delimiter, QString::SkipEmptyParts);
 
-    for (QStringList::const_iterator iter = msg.constBegin();
-         iter != msg.constEnd();
-         ++iter)
+    for (QStringList::const_iterator iter  = msg.constBegin();
+                                     iter != msg.constEnd();
+                                     ++iter)
     {
         QStringList pairs = (*iter).split(d->equalChar, QString::SkipEmptyParts);
 
@@ -71,13 +71,11 @@ void Message::parseText(const QString& text)
         }
     }
 
-    //qDebug() << d->content;
+    qDebug() << d->content;
 }
 
 void Message::parseTextWithKnownFields(const QString& text)
 {
-    d->content.clear();
-
     //TODO: print verbose "apg.msg.parse_text_with_known_fields(text={})".format(txt),6
     QStringList msg = text.split(d->delimiter, QString::SkipEmptyParts);
 
@@ -124,9 +122,11 @@ void Message::parseTextWithKnownFields(const QString& text)
 bool Message::isKnownField(const QString& text) const
 {
     //TODO: print verbose "apg.msg.is_field(text={})".format(text),5)
-    for (QVector<QString>::const_iterator iter = d->fields.constBegin();
-         iter != d->fields.constEnd();
-         ++iter)
+    QList<QString> fields = d->content.keys();
+
+    for (QList<QString>::const_iterator iter  = fields.constBegin();
+                                        iter != fields.constEnd();
+                                        ++iter)
     {
         int index = text.indexOf(*iter, 0, Qt::CaseInsensitive);
 

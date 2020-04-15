@@ -11,7 +11,7 @@ class Message
 {
 public:
 
-    Message(const QString& initText = QString());
+    Message(const QString& message = QString());
     ~Message();
 
 public:
