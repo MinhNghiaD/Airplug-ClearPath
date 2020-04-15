@@ -9,7 +9,7 @@
 namespace AirPlug
 {
 
-class Message::Private
+class Q_DECL_HIDDEN Message::Private
 {
 public:
 

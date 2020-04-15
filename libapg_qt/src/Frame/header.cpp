@@ -10,7 +10,7 @@ const QString Header::localHost  = QLatin1String("LCH");  //hst_lch
 const QString Header::airHost    = QLatin1String("AIR");  //hst_air
 const QString Header::allHost    = QLatin1String("ALL");  //hst_all
 
-class Header::Private
+class Q_DECL_HIDDEN Header::Private
 {
 public:
 

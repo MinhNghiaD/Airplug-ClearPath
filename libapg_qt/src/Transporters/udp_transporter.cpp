@@ -11,7 +11,7 @@
 namespace AirPlug
 {
 
-class UdpTransporter::Private
+class Q_DECL_HIDDEN UdpTransporter::Private
 {
 public:
 

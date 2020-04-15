@@ -14,7 +14,7 @@
 namespace AirPlug
 {
 
-class CommunicationManager::Private
+class Q_DECL_HIDDEN CommunicationManager::Private
 {
 public:
 

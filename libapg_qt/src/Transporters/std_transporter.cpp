@@ -10,7 +10,7 @@
 namespace AirPlug
 {
 
-class StdTransporter::Private
+class Q_DECL_HIDDEN StdTransporter::Private
 {
 public:
 
