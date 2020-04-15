@@ -221,8 +221,7 @@ void CommunicationManager::slotReceiveMessage(const QString& data)
 
         Header header(d->headerMode, d->safeMode, what, who, where);
 
-        Message message;
-        message.parseText(payload);
+        Message message(payload);
 
         // TODO: print verbose vrb("transmitting (if safe) to application {} txt '{}', from {}, to {} from zone {}".format(self.app(), text, header["what"], header["who"], header["where"]), 6)
 

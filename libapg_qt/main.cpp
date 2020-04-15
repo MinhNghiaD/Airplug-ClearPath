@@ -5,7 +5,8 @@
 #include <QDebug>
 
 // Local includes
-#include "src/Frame/package.h"
+#include "src/Frame/message.h"
+#include "src/Frame/header.h"
 
 using namespace AirPlug;
 
@@ -18,9 +19,9 @@ int main(int argc, char *argv[])
 
     msg.parseText(QLatin1String("^value~10^key~x"));
 
-    qDebug() << msg.getMessage();
+    qDebug() << "msg 1 " << msg.getMessage();
 
-    Message msg2("init");
+    Message msg2(msg.getMessage());
 
     msg2.parseText(msg.getMessage());
 
