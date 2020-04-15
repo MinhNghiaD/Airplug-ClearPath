@@ -11,11 +11,11 @@ class Header
 {
 public:
 
-    static const QString allApp;  //app_all
+    static const QString allApp;     //app_all
 
     static const QString localHost;  //hst_lch
-    static const QString airHost;  //hst_air
-    static const QString allHost;  //hst_all
+    static const QString airHost;    //hst_air
+    static const QString allHost;    //hst_all
 
     enum HeaderMode
     {

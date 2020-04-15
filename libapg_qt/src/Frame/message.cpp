@@ -14,9 +14,9 @@ class Message::Private
 public:
 
     Private()
+        : delimiter('^'),
+          equalChar('~')
     {
-        delimiter = '^';
-        equalChar = '~';
     }
 
     ~Private()
@@ -47,6 +47,8 @@ Message::~Message()
 
 void Message::parseText(const QString& text)
 {
+    d->content.clear();
+
     // TODO: print verbose
     QStringList msg = text.split(d->delimiter, QString::SkipEmptyParts);
 
@@ -74,6 +76,8 @@ void Message::parseText(const QString& text)
 
 void Message::parseTextWithKnownFields(const QString& text)
 {
+    d->content.clear();
+
     //TODO: print verbose "apg.msg.parse_text_with_known_fields(text={})".format(txt),6
     QStringList msg = text.split(d->delimiter, QString::SkipEmptyParts);
 
@@ -137,6 +141,21 @@ bool Message::isKnownField(const QString& text) const
     return false;
 }
 
+void Message::addContent(const QString& key, const QString& value)
+{
+     d->content.insert(key, value);
+}
+
+bool Message::isEmpty() const
+{
+    return d->content.isEmpty();
+}
+
+void Message::clear()
+{
+    d->content.clear();
+}
+
 QString Message::getMessage() const
 {
     QString msg;
@@ -151,21 +170,6 @@ QString Message::getMessage() const
     }
 
     return msg;
-}
-
-void Message::addContent(const QString& key, const QString& value)
-{
-     d->content.insert(key, value);
-}
-
-bool Message::isEmpty() const
-{
-    return d->content.isEmpty();
-}
-
-void Message::clear()
-{
-    d->content.clear();
 }
 
 }

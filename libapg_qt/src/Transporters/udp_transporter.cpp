@@ -36,9 +36,9 @@ public:
 };
 
 UdpTransporter::UdpTransporter(const QString& host,
-                               int port,
-                               UdpType type,
-                               QObject* parent)
+                               int            port,
+                               UdpType        type,
+                               QObject*       parent)
     : MessageTransporter(parent),
       d(new Private())
 {

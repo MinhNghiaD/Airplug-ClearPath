@@ -12,10 +12,10 @@ class UdpTransporter : public MessageTransporter
     Q_OBJECT
 public:
 
-    UdpTransporter(const QString& host = QLatin1String("0.0.0.0"),
-                   int port = 7777,
-                   UdpType type = UniCast,
-                   QObject* parent = nullptr);
+    UdpTransporter(const QString& host   = QLatin1String("0.0.0.0"),
+                   int            port   = 7777,
+                   UdpType        type   = UniCast,
+                   QObject*       parent = nullptr);
 
     ~UdpTransporter();
 

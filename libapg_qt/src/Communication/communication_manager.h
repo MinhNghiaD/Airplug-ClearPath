@@ -25,7 +25,7 @@ public:
 public:
 
     CommunicationManager(Header::HeaderMode mode = Header::HeaderMode::What,
-                         QObject* parent = nullptr);
+                         QObject* parent         = nullptr);
 
     ~CommunicationManager();
 
