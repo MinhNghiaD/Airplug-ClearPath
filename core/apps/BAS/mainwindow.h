@@ -1,11 +1,26 @@
+/* ============================================================
+ *
+ * This file is a part of Airplug project
+ *
+ * Date        : 2020-4-14
+ * Description : main window of BAS application
+ *
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ *
+ * ============================================================ */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QString>
 
-namespace Ui {
-class MainWindow;
+//local include
+#include "communication_manager.h"
+
+namespace Ui
+{
+    class MainWindow;
 }
 
 class MainWindow : public QMainWindow
@@ -46,6 +61,8 @@ signals:
 
 private:
     Ui::MainWindow *ui;
+
+    AirPlug::CommunicationManager* communication;
 };
 
 #endif // MAINWINDOW_H

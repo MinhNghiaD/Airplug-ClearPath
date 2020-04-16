@@ -1,3 +1,14 @@
+/* ============================================================
+ *
+ * This file is a part of Airplug project
+ *
+ * Date        : 2020-4-14
+ * Description : header of a package
+ *
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ *
+ * ============================================================ */
+
 #ifndef HEADER_H
 #define HEADER_H
 

@@ -1,3 +1,14 @@
+/* ============================================================
+ *
+ * This file is a part of Airplug project
+ *
+ * Date        : 2020-4-14
+ * Description : stdio transport layer
+ *
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ *
+ * ============================================================ */
+
 #ifndef STD_TRANSPORTER_H
 #define STD_TRANSPORTER_H
 

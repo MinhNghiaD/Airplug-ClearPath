@@ -1,3 +1,6 @@
+# Compilcation rules for BAS application
+# 2020 - Nghia Duong, <minhnghiaduong997 at gmail dot com>
+
 set(bas_SRCS
     mainwindow.ui
     mainwindow.cpp
@@ -9,10 +12,6 @@ add_executable(bas ${bas_SRCS})
 set_target_properties(bas PROPERTIES OUTPUT_NAME "bas")
 
 target_link_libraries(bas
-                      "${PROJECT_BINARY_DIR}/libapg.so"
+                      apg
                       ${QT_LIBRARIES}
                      )
-
-target_include_directories(bas PUBLIC
-                           "${PROJECT_BINARY_DIR}"
-                          )

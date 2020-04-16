@@ -1,3 +1,14 @@
+/* ============================================================
+ *
+ * This file is a part of Airplug project
+ *
+ * Date        : 2020-4-14
+ * Description : UDP transport layer
+ *
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ *
+ * ============================================================ */
+
 #ifndef UDP_TRANSPORTER_H
 #define UDP_TRANSPORTER_H
 
