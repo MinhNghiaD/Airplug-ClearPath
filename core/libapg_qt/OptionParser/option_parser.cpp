@@ -4,6 +4,7 @@
 #include <QCommandLineParser>
 #include <QString>
 #include <QStringList>
+#include <QDebug>
 
 namespace AirPlug
 {
@@ -145,5 +146,43 @@ OptionParser::OptionParser(const QCoreApplication& app)
     }
 }
 
+void OptionParser::showOption() const
+{
+    qDebug() << "auto                :" << start;
+    qDebug() << "debug               :" << debug;
+    qDebug() << "noGui               :" << nogui;
+    qDebug() << "saving              :" << save;
+    qDebug() << "safemode            :" << safemode;
+    qDebug() << "autosend            :" << autoSend;
+
+    qDebug() << "verbose             :" << verbose;
+    qDebug() << "delay               :" << delay;
+
+    qDebug() << "mode                :" << mode;
+    qDebug() << "ident               :" << ident;
+
+    qDebug() << "source              :" << source;
+    qDebug() << "destination         :" << destination;
+
+    if (remote)
+    {
+        qDebug() << "remote host         :" << remoteHost;
+        qDebug() << "remote port         :" << remotePort;
+    }
+
+    switch (headerMode)
+    {
+        case Header::HeaderMode::WhatWho :
+            qDebug() << "message format      :" << "whatwho";
+            break;
+
+        case Header::HeaderMode::WhatWhoWhere :
+            qDebug() << "message format      :" << "whatwhowhere";
+            break;
+
+        default:
+            qDebug() << "message format      :" << "what";
+    }
+}
 }
 

@@ -27,6 +27,8 @@ class OptionParser
 public:
     OptionParser(const QCoreApplication& app);
 
+    void showOption() const;
+
 public:
 
     bool start;

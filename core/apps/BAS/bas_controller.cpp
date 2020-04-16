@@ -63,6 +63,8 @@ BasController::~BasController()
 void BasController::parseOptions(const QCoreApplication& app)
 {
     d->optionparser = new OptionParser(app);
+
+    d->optionparser->showOption();
 }
 
 void BasController::slotSendingMessageChanged(const QString& msg)

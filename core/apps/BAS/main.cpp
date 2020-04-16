@@ -19,7 +19,6 @@
 
 #include "bas_controller.h"
 
-
 using namespace BasApplication;
 
 int main(int argc, char *argv[])
@@ -27,10 +26,9 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("BAS");
 
-    // -------------------------------------------- Parse arguments -----------------------------------------------------------------------
+    BasController controller;
 
-
-    // -------------------------------------------- Parse arguments -----------------------------------------------------------------------
+    controller.parseOptions(app);
 
 
 
