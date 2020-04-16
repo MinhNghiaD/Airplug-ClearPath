@@ -32,21 +32,21 @@
        <item>
         <widget class="QPushButton" name="autoBtn">
          <property name="text">
-          <string>Mode Auto</string>
+          <string>Auto</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="sendBtn">
          <property name="text">
-          <string>Envoyer</string>
+          <string>Send</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="quitBtn">
          <property name="text">
-          <string>Quitter</string>
+          <string>Quit</string>
          </property>
         </widget>
        </item>
@@ -59,7 +59,7 @@
          <item>
           <widget class="QLabel" name="messageLabel">
            <property name="text">
-            <string>Message reçu</string>
+            <string>Received Message</string>
            </property>
           </widget>
          </item>
@@ -94,7 +94,7 @@
          <item>
           <widget class="QLabel" name="messageLabel_2">
            <property name="text">
-            <string>Message a envoyer</string>
+            <string>Message to send</string>
            </property>
           </widget>
          </item>
@@ -110,6 +110,20 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="sequenceLabel">
+           <property name="text">
+            <string>Sequence: </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -138,14 +152,14 @@
          <item>
           <widget class="QLabel" name="emissionLabel">
            <property name="text">
-            <string>Emission periodique</string>
+            <string>Periodic Emission </string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLabel" name="emissionStatus">
            <property name="text">
-            <string>[etat: desactive]</string>
+            <string>[state: deactived]</string>
            </property>
           </widget>
          </item>
@@ -169,7 +183,7 @@
          <item>
           <widget class="QLabel" name="frequencyLabel">
            <property name="text">
-            <string>frequence (ms) : </string>
+            <string>delay (ms) : </string>
            </property>
           </widget>
          </item>

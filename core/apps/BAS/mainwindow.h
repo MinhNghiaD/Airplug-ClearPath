@@ -61,8 +61,6 @@ signals:
 
 private:
     Ui::MainWindow *ui;
-
-    AirPlug::CommunicationManager* communication;
 };
 
 #endif // MAINWINDOW_H

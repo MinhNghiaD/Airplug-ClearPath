@@ -2,6 +2,7 @@
 # 2020 - Nghia Duong, <minhnghiaduong997 at gmail dot com>
 
 set(bas_SRCS
+    bas_controller.cpp
     mainwindow.ui
     mainwindow.cpp
     main.cpp

@@ -5,8 +5,7 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    communication(new AirPlug::CommunicationManager(AirPlug::Header::HeaderMode::WhatWho, this))
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     ui->messageReceived->setText(QLatin1String(""));
@@ -16,8 +15,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->frequencySpinBox->setMaximum(10000);
     ui->frequencySpinBox->setMinimum(500);
     ui->frequencySpinBox->setValue(500);
-
-    communication->addStdTransporter();
 }
 
 MainWindow::~MainWindow()
