@@ -3,6 +3,9 @@
 
 #include <QSpinBox>
 
+namespace BasApplication
+{
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -53,4 +56,6 @@ void MainWindow::on_messageSend_textChanged(const QString& msg)
 void MainWindow::on_frequencySpinBox_valueChanged(int period)
 {
     emit signalPeriodChanged(period);
+}
+
 }

@@ -12,7 +12,11 @@
 #ifndef BAS_CONTROLLER_H
 #define BAS_CONTROLLER_H
 
+// Qt include
 #include <QObject>
+
+// Local include
+#include "option_parser.h"
 
 namespace BasApplication
 {
@@ -27,6 +31,8 @@ public:
 
     void setTimer(int period);
     int  getPeriod() const;
+
+    void parseOptions(const QCoreApplication& app);
 
 public:
 

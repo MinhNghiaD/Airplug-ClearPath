@@ -18,6 +18,7 @@ public:
 
     Private()
         : communication(nullptr),
+          optionparser(nullptr),
           timer(nullptr),
           isAuto(false)
     {
@@ -26,12 +27,15 @@ public:
     ~Private()
     {
         delete communication;
+        delete optionparser;
         delete timer;
     }
 
 public:
 
     CommunicationManager* communication;
+
+    OptionParser*         optionparser;
 
     QTimer*               timer;
     bool                  isAuto;
@@ -54,6 +58,11 @@ BasController::BasController(QObject* parent)
 BasController::~BasController()
 {
     delete d;
+}
+
+void BasController::parseOptions(const QCoreApplication& app)
+{
+    d->optionparser = new OptionParser(app);
 }
 
 void BasController::slotSendingMessageChanged(const QString& msg)

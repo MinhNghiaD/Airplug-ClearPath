@@ -23,6 +23,9 @@ namespace Ui
     class MainWindow;
 }
 
+namespace BasApplication
+{
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -63,4 +66,5 @@ private:
     Ui::MainWindow *ui;
 };
 
+}
 #endif // MAINWINDOW_H

@@ -11,18 +11,34 @@
 
 //Qt includes
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QDebug>
 
 //local includes
 #include "mainwindow.h"
 
+#include "bas_controller.h"
+
+
+using namespace BasApplication;
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     app.setApplicationName("BAS");
 
-    MainWindow mainWindow;
-    mainWindow.setWindowTitle(QString("Light %1").arg(QCoreApplication::applicationPid()));
+    // -------------------------------------------- Parse arguments -----------------------------------------------------------------------
+
+
+    // -------------------------------------------- Parse arguments -----------------------------------------------------------------------
+
+
+
+
+    //MainWindow mainWindow;
+    //mainWindow.setWindowTitle(QString("Light %1").arg(QCoreApplication::applicationPid()));
+
+    //BasController controller;
 /*
     //connect signals slot between main window and sender
     QObject::connect(&mainWindow, SIGNAL(signalStartAuto(int)),
@@ -41,7 +57,7 @@ int main(int argc, char *argv[])
     QObject::connect(&receiver,   SIGNAL(signalMessageReceived(const QString&)),
                      &mainWindow, SLOT(slotShowReceivedMessage(const QString&)));
 */
-    mainWindow.show();
+    //mainWindow.show();
 
     return app.exec();
 }
