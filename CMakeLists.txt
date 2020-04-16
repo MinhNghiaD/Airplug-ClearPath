@@ -13,11 +13,11 @@ endif()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt5 COMPONENTS Core    REQUIRED)
 find_package(Qt5 COMPONENTS Network REQUIRED)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Qt5 COMPONENTS Gui REQUIRED)
-find_package(Qt5 COMPONENTS Test REQUIRED)
+find_package(Qt5 COMPONENTS Gui     REQUIRED)
+find_package(Qt5 COMPONENTS Test    REQUIRED)
 
 
 get_target_property(Qt5Core_INCLUDE_DIRS    Qt5::Core    LOCATION)
