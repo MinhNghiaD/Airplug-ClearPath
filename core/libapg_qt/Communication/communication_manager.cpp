@@ -8,8 +8,8 @@
 #include <QStringList>
 
 // Local includes
-#include "src/Transporters/std_transporter.h"
-#include "src/Transporters/udp_transporter.h"
+#include "std_transporter.h"
+#include "udp_transporter.h"
 
 namespace AirPlug
 {

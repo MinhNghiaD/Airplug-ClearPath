@@ -3,9 +3,9 @@
 
 #include <QObject>
 
-#include "src/Transporters/message_transporter.h"
-#include "src/Frame/header.h"
-#include "src/Frame/message.h"
+#include "message_transporter.h"
+#include "header.h"
+#include "message.h"
 
 namespace AirPlug
 {

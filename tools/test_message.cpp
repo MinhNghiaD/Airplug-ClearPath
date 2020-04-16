@@ -5,8 +5,8 @@
 #include <QDebug>
 
 // Local includes
-#include "src/Frame/message.h"
-#include "src/Frame/header.h"
+#include "message.h"
+#include "header.h"
 
 using namespace AirPlug;
 
