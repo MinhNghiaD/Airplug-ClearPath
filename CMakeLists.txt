@@ -35,6 +35,7 @@ set(libapg_includes_directories ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Frame
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Transporters/
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Communication/
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/OptionParser/
+                                ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Controller/
    )
 
 include_directories(${libapg_includes_directories})

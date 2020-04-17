@@ -1,16 +1,13 @@
-#include "bas_controller.h"
+#include "application_controller.h"
 
 //Qt includes
 #include <QTimer>
 #include <QDebug>
 
-
-using namespace AirPlug;
-
-namespace BasApplication
+namespace AirPlug
 {
 
-class BasController::Private
+class ApplicationController::Private
 {
 public:
 
@@ -45,19 +42,19 @@ public:
 
 
 
-BasController::BasController(QObject* parent)
+ApplicationController::ApplicationController(QObject* parent)
     : QObject(parent),
        d(new Private)
 {
     setObjectName(QLatin1String("BAS"));
 }
 
-BasController::~BasController()
+ApplicationController::~ApplicationController()
 {
     delete d;
 }
 
-void BasController::parseOptions(const QCoreApplication& app)
+void ApplicationController::parseOptions(const QCoreApplication& app)
 {
     d->optionParser = new OptionParser(app);
 
@@ -75,7 +72,7 @@ void BasController::parseOptions(const QCoreApplication& app)
     d->communication->subscribeAir(d->optionParser->source);
 
     connect(d->communication, &CommunicationManager::signalMessageReceived,
-            this,             &BasController::signalMessageReceived);
+            this,             &ApplicationController::signalMessageReceived);
 
 
     if (d->optionParser->remote)
@@ -96,22 +93,22 @@ void BasController::parseOptions(const QCoreApplication& app)
     }
 }
 
-int BasController::getPeriod()  const
+int ApplicationController::getPeriod()  const
 {
     return d->optionParser->delay;
 }
 
-bool BasController::hasGUI() const
+bool ApplicationController::hasGUI() const
 {
     return (!d->optionParser->nogui);
 }
 
-bool BasController::isStarted() const
+bool ApplicationController::isStarted() const
 {
     return (d->optionParser->start);
 }
 
-void BasController::pause(bool b)
+void ApplicationController::pause(bool b)
 {
     d->optionParser->start = !b;
 
@@ -121,29 +118,29 @@ void BasController::pause(bool b)
     }
 }
 
-bool BasController::isAuto() const
+bool ApplicationController::isAuto() const
 {
     return (d->optionParser->autoSend);
 }
 
-void BasController::setMessage(const QString& msg)
+void ApplicationController::setMessage(const QString& msg)
 {
     d->messageToSend = msg;
 }
 
-Header::HeaderMode BasController::headerMode() const
+Header::HeaderMode ApplicationController::headerMode() const
 {
     return d->optionParser->headerMode;
 }
 
-void BasController::slotActivateTimer(int period)
+void ApplicationController::slotActivateTimer(int period)
 {
     if (! d->timer)
     {
         d->timer = new QTimer(this);
 
         connect(d->timer, &QTimer::timeout,
-                    this, &BasController::slotSendMessage);
+                    this, &ApplicationController::slotSendMessage);
     }
 
     d->optionParser->delay    = period;
@@ -152,7 +149,7 @@ void BasController::slotActivateTimer(int period)
     d->timer->start(period);
 }
 
-void BasController::slotDeactivateTimer()
+void ApplicationController::slotDeactivateTimer()
 {
     d->optionParser->autoSend = false;
     d->optionParser->delay    = 0;
@@ -163,7 +160,7 @@ void BasController::slotDeactivateTimer()
     }
 }
 
-void BasController::slotPeriodChanged(int period)
+void ApplicationController::slotPeriodChanged(int period)
 {
     d->optionParser->delay = period;
 
@@ -173,7 +170,7 @@ void BasController::slotPeriodChanged(int period)
     }
 }
 
-void BasController::slotSendMessage()
+void ApplicationController::slotSendMessage()
 {
     Message message;
 
@@ -200,3 +197,4 @@ void BasController::slotSendMessage()
 }
 
 }
+
