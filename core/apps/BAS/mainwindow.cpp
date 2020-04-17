@@ -16,11 +16,6 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->messageReceived->setText(QLatin1String(""));
-    ui->messageSend->setText(QLatin1String("-"));
-    ui->emissionStatus->setText(QLatin1String("[etat : desactive]"));
-    ui->nbSequence->setText("0");
-
     if (!controller)
     {
         qFatal("BAS Controller is null");
@@ -48,8 +43,10 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
     {
         ui->emissionStatus->setText(QLatin1String("[state : active]"));
     }
-
-    pause(!controller->isStarted());
+    else
+    {
+        ui->emissionStatus->setText(QLatin1String("[etat : desactive]"));
+    }
 
     if (controller->isStarted())
     {
@@ -59,6 +56,12 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
     {
         ui->startButton->setText(QLatin1String("Start"));
     }
+
+    ui->messageReceived->setText(QLatin1String(""));
+    ui->messageSend->setText(QLatin1String("-"));
+    ui->nbSequence->setText("0");
+
+    pause(!controller->isStarted());
 }
 
 MainWindow::~MainWindow()

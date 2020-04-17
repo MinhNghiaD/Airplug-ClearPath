@@ -52,7 +52,7 @@ BasController::BasController(QObject* parent)
     setObjectName(QLatin1String("BAS"));
 
     d->communication = new CommunicationManager(Header::HeaderMode::WhatWho, this);
-    d->communication->addStdTransporter();
+    //d->communication->addStdTransporter();
 
     // TODO: get default messageToSend from QSettings
 }
@@ -68,6 +68,20 @@ void BasController::parseOptions(const QCoreApplication& app)
 
     // Debug
     d->optionParser->showOption();
+
+    if (d->optionParser->remote)
+    {
+        d->communication->addUdpTransporter(d->optionParser->remoteHost,
+                                            d->optionParser->remotePort,
+                                            MessageTransporter::MultiCast);
+    }
+    else
+    {
+        d->communication->addStdTransporter();
+    }
+
+    d->communication->setHeaderMode(d->optionParser->headerMode);
+    d->communication->setSafeMode(d->optionParser->safemode);
 
     if (d->optionParser->autoSend && d->optionParser->delay > 0)
     {
@@ -149,7 +163,20 @@ void BasController::slotPeriodChanged(int period)
 
 void BasController::slotSendMessage()
 {
-    qDebug() << d->messageToSend;
+    Message message;
+
+    message.addContent(QLatin1String("payload"), d->messageToSend);
+    message.addContent(QLatin1String("nseq"), QString::number(d->nbSequence));
+
+
+    if(d->optionParser->remote)
+    {
+        d->communication->send(message, QString(), QString(), QString(), CommunicationManager::ProtocolType::UDP, d->optionParser->save);
+    }
+    else
+    {
+        d->communication->send(message, QString(), QString(), QString(), CommunicationManager::ProtocolType::StandardIO, d->optionParser->save);
+    }
 
     ++d->nbSequence;
 

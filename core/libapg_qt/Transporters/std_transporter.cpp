@@ -6,6 +6,7 @@
 
 //Qt include
 #include <QSocketNotifier>
+#include <QDebug>
 
 namespace AirPlug
 {
@@ -49,7 +50,7 @@ StdTransporter::~StdTransporter()
 
 void StdTransporter::send(const QString& message)
 {
-    std::cout << message.toStdString();
+    std::cout << message.toStdString() << std::endl;
 }
 
 void StdTransporter::slotMessageArrive()
