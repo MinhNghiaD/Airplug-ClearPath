@@ -534,7 +534,7 @@ bool CommunicationManager::validHeader(const Header& header) const
     else if (d->headerMode == Header::HeaderMode::WhatWhoWhere &&
              ! (d->validAppName(header.what()) && d->validAppName(header.who()) && d->validZone(header.where())) )
     {
-        qWarning() << "Invalid app or zone name what=" << header.what() << ", who=" << header.who() << ",where=" << header.where();
+        qWarning() << "Invalid app or zone name what=" << header.what() << ", who=" << header.who() << ", where=" << header.where();
 
         return false;
     }

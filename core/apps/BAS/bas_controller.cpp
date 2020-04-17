@@ -50,8 +50,6 @@ BasController::BasController(QObject* parent)
        d(new Private)
 {
     setObjectName(QLatin1String("BAS"));
-
-    // TODO: get default messageToSend from QSettings
 }
 
 BasController::~BasController()
@@ -184,11 +182,15 @@ void BasController::slotSendMessage()
 
     if(d->optionParser->remote)
     {
-        d->communication->send(message, QString(), QString(), QString(), CommunicationManager::ProtocolType::UDP, d->optionParser->save);
+        d->communication->send(message, QString(), QString(), QString(),
+                               CommunicationManager::ProtocolType::UDP,
+                               d->optionParser->save);
     }
     else
     {
-        d->communication->send(message, QString(), QString(), QString(), CommunicationManager::ProtocolType::StandardIO, d->optionParser->save);
+        d->communication->send(message, QString(), QString(), QString(),
+                               CommunicationManager::ProtocolType::StandardIO,
+                               d->optionParser->save);
     }
 
     ++d->nbSequence;
