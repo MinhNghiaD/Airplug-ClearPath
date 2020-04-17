@@ -37,19 +37,18 @@ public:
     bool save;
     bool safemode;
     bool autoSend;
+    bool remote;
 
     int  verbose;
     int  delay;
 
     QString mode;
     QString ident;
-
     QString source;
     QString destination;
 
     QString remoteHost;
-    int  remotePort;
-    bool remote;
+    int     remotePort;
 
     Header::HeaderMode headerMode;
 };

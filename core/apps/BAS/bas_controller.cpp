@@ -4,8 +4,6 @@
 #include <QTimer>
 #include <QDebug>
 
-// Local includes
-#include "communication_manager.h"
 
 using namespace AirPlug;
 
@@ -18,16 +16,18 @@ public:
 
     Private()
         : communication(nullptr),
-          optionparser(nullptr),
+          optionParser(nullptr),
           timer(nullptr),
-          isAuto(false)
+          nbSequence(0)
     {
+        // TODO: get default message ffrom QSettings
+        messageToSend = QLatin1String("~");
     }
 
     ~Private()
     {
         delete communication;
-        delete optionparser;
+        delete optionParser;
         delete timer;
     }
 
@@ -35,13 +35,15 @@ public:
 
     CommunicationManager* communication;
 
-    OptionParser*         optionparser;
+    OptionParser*         optionParser;
 
     QTimer*               timer;
-    bool                  isAuto;
 
     QString               messageToSend;
+    int                   nbSequence;
 };
+
+
 
 BasController::BasController(QObject* parent)
     : QObject(parent),
@@ -62,20 +64,54 @@ BasController::~BasController()
 
 void BasController::parseOptions(const QCoreApplication& app)
 {
-    d->optionparser = new OptionParser(app);
+    d->optionParser = new OptionParser(app);
 
-    d->optionparser->showOption();
+    // Debug
+    d->optionParser->showOption();
+
+    if (d->optionParser->autoSend && d->optionParser->delay > 0)
+    {
+        slotActivateTimer(d->optionParser->delay);
+    }
 }
 
-void BasController::slotSendingMessageChanged(const QString& msg)
+int BasController::getPeriod()  const
+{
+    return d->optionParser->delay;
+}
+
+bool BasController::hasGUI() const
+{
+    return (!d->optionParser->nogui);
+}
+
+bool BasController::isStarted() const
+{
+    return (d->optionParser->start);
+}
+
+void BasController::pause(bool b)
+{
+    d->optionParser->start = !b;
+
+    if (b)
+    {
+        slotDeactivateTimer();
+    }
+}
+
+bool BasController::isAuto() const
+{
+    return (d->optionParser->autoSend);
+}
+
+void BasController::setMessage(const QString& msg)
 {
     d->messageToSend = msg;
 }
 
 void BasController::slotActivateTimer(int period)
 {
-    d->isAuto = true;
-
     if (! d->timer)
     {
         d->timer = new QTimer(this);
@@ -84,12 +120,16 @@ void BasController::slotActivateTimer(int period)
                     this, SLOT(slotSendMessage()));
     }
 
+    d->optionParser->delay    = period;
+    d->optionParser->autoSend = true;
+
     d->timer->start(period);
 }
 
 void BasController::slotDeactivateTimer()
 {
-    d->isAuto = false;
+    d->optionParser->autoSend = false;
+    d->optionParser->delay    = 0;
 
     if (d->timer)
     {
@@ -99,16 +139,20 @@ void BasController::slotDeactivateTimer()
 
 void BasController::slotPeriodChanged(int period)
 {
+    d->optionParser->delay = period;
+
     if (d->timer)
     {
         d->timer->setInterval(period);
     }
 }
 
-void BasController::slotSendMessage() const
+void BasController::slotSendMessage()
 {
-    // TODO adapt to Header Message scheme
     qDebug() << d->messageToSend;
-}
 
+    ++d->nbSequence;
+
+    emit signalSequenceChange(d->nbSequence);
+}
 }

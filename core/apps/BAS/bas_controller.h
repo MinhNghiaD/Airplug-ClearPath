@@ -17,6 +17,7 @@
 
 // Local include
 #include "option_parser.h"
+#include "communication_manager.h"
 
 namespace BasApplication
 {
@@ -29,18 +30,29 @@ public:
     BasController(QObject* parent = nullptr);
     ~BasController();
 
-    void setTimer(int period);
+    void parseOptions(const QCoreApplication& app);
+
     int  getPeriod() const;
 
-    void parseOptions(const QCoreApplication& app);
+    bool hasGUI()    const;
+
+    bool isStarted() const;
+    void pause(bool b);
+
+    bool isAuto()    const;
+
+    void setMessage(const QString& msg);
 
 public:
 
-    Q_SLOT void slotSendingMessageChanged(const QString& msg);
     Q_SLOT void slotActivateTimer(int period);
     Q_SLOT void slotDeactivateTimer();
     Q_SLOT void slotPeriodChanged(int period);
-    Q_SLOT void slotSendMessage() const;
+    Q_SLOT void slotSendMessage();
+
+signals:
+
+    Q_SIGNAL void signalSequenceChange(int);
 
 private:
 

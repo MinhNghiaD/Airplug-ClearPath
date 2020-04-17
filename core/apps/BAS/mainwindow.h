@@ -16,7 +16,7 @@
 #include <QString>
 
 //local include
-#include "communication_manager.h"
+#include "bas_controller.h"
 
 namespace Ui
 {
@@ -31,16 +31,23 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(BasController* controller, QWidget *parent = 0);
     ~MainWindow();
 
 public:
     const QString getSendMessage() const;
 
+private:
+
+    void pause(bool);
 
 public slots:
 
     void slotShowReceivedMessage(const QString& message);
+
+    void on_startButton_clicked();
+
+    void slotUpdateSequence(int nbSequence);
 
 private slots:
 
@@ -52,18 +59,10 @@ private slots:
 
     void on_frequencySpinBox_valueChanged(int arg1);
 
-signals:
-
-    void signalStartAuto(int period);
-
-    void signalSendMessage();
-
-    void signalSendingMessageChanged(const QString& message);
-
-    void signalPeriodChanged(int period);
-
 private:
     Ui::MainWindow *ui;
+
+    BasController* controller;
 };
 
 }

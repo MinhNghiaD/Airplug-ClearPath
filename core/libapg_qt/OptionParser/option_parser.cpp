@@ -99,16 +99,20 @@ OptionParser::OptionParser(const QCoreApplication& app)
     nogui       = parser.isSet(noguiOption);
     save        = parser.isSet(saveOption);
     safemode    = parser.isSet(safemodeOption);
-    autoSend    = parser.isSet(autosendOption);
+
+    if (start)
+    {
+        autoSend= parser.isSet(autosendOption);
+    }
+    else
+    {
+        autoSend= false;
+    }
 
     verbose     = parser.value(verboseOption).toInt();
-
     delay       = parser.value(delayOption).toInt();
-
     mode        = parser.value(modeOption);
-
     ident       = parser.value(identOption);
-
     source      = parser.value(sourceOption);
     destination = parser.value(destOption);
 
@@ -154,13 +158,10 @@ void OptionParser::showOption() const
     qDebug() << "saving              :" << save;
     qDebug() << "safemode            :" << safemode;
     qDebug() << "autosend            :" << autoSend;
-
     qDebug() << "verbose             :" << verbose;
     qDebug() << "delay               :" << delay;
-
     qDebug() << "mode                :" << mode;
     qDebug() << "ident               :" << ident;
-
     qDebug() << "source              :" << source;
     qDebug() << "destination         :" << destination;
 
