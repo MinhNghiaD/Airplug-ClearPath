@@ -272,6 +272,10 @@ void CommunicationManager::slotReceiveMessage(const QString& data)
 
         emit signalMessageReceived(header, message);
     }
+    else
+    {
+        qWarning() << "Message is not belong to this host ----> drop message: " << data;
+    }
 }
 
 
@@ -383,17 +387,17 @@ bool CommunicationManager::isSubscribed(const QString& who, QString where) const
 
 Header CommunicationManager::fillSendingHeader(QString what, QString who, QString where) const
 {
-    if (!what.isEmpty())
+    if (what.isEmpty())
     {
        what = d->what;
     }
 
-    if (!who.isEmpty())
+    if (who.isEmpty())
     {
         who = d->who;
     }
 
-    if (!where.isEmpty())
+    if (where.isEmpty())
     {
         where = d->where;
     }
