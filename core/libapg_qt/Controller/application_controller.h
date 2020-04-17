@@ -27,41 +27,30 @@ class ApplicationController: public QObject
     Q_OBJECT
 public:
 
-    ApplicationController(QObject* parent = nullptr);
+    ApplicationController(const QString& appName, QObject* parent = nullptr);
     ~ApplicationController();
 
-    void parseOptions(const QCoreApplication& app);
+    virtual void init(const QCoreApplication& app);
 
     int  getPeriod() const;
 
     bool hasGUI()    const;
 
     bool isStarted() const;
-    void pause(bool b);
 
     bool isAuto()    const;
-
-    void setMessage(const QString& msg);
 
     Header::HeaderMode headerMode() const;
 
 public:
 
-    Q_SLOT void slotActivateTimer(int period);
-    Q_SLOT void slotDeactivateTimer();
-    Q_SLOT void slotPeriodChanged(int period);
-    Q_SLOT void slotSendMessage();
-
-signals:
-
-    Q_SIGNAL void signalSequenceChange(int);
-
-    Q_SIGNAL void signalMessageReceived(Header, Message);
+    Q_SLOT virtual void slotReceiveMessage(Header, Message) = 0;
 
 private:
 
-    class Private;
-    Private* d;
+    CommunicationManager* m_communication;
+
+    OptionParser*         m_optionParser;
 };
 
 }

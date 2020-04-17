@@ -7,193 +7,100 @@
 namespace AirPlug
 {
 
-class ApplicationController::Private
-{
-public:
-
-    Private()
-        : communication(nullptr),
-          optionParser(nullptr),
-          timer(nullptr),
-          nbSequence(0)
-    {
-        // TODO: get default message ffrom QSettings
-        messageToSend = QLatin1String("~");
-    }
-
-    ~Private()
-    {
-        delete communication;
-        delete optionParser;
-        delete timer;
-    }
-
-public:
-
-    CommunicationManager* communication;
-
-    OptionParser*         optionParser;
-
-    QTimer*               timer;
-
-    QString               messageToSend;
-    int                   nbSequence;
-};
-
-
-
-ApplicationController::ApplicationController(QObject* parent)
+ApplicationController::ApplicationController(const QString& appName, QObject* parent)
     : QObject(parent),
-       d(new Private)
+      m_communication(nullptr),
+      m_optionParser(nullptr)
 {
-    setObjectName(QLatin1String("BAS"));
+    setObjectName(appName);
 }
 
 ApplicationController::~ApplicationController()
 {
-    delete d;
+    delete m_communication;
+    delete m_optionParser;
 }
 
-void ApplicationController::parseOptions(const QCoreApplication& app)
+void ApplicationController::init(const QCoreApplication& app)
 {
-    d->optionParser = new OptionParser(app);
+    m_optionParser = new OptionParser(app);
 
     // Debug
-    d->optionParser->showOption();
+    m_optionParser->showOption();
 
-    d->communication = new CommunicationManager(d->optionParser->ident,
-                                                d->optionParser->destination,
-                                                Header::airHost,
-                                                d->optionParser->headerMode,
-                                                this);
+    m_communication = new CommunicationManager(m_optionParser->ident,
+                                               m_optionParser->destination,
+                                               Header::airHost,
+                                               m_optionParser->headerMode,
+                                               this);
 
-    d->communication->setSafeMode(d->optionParser->safemode);
+    m_communication->setSafeMode(m_optionParser->safemode);
 
-    d->communication->subscribeAir(d->optionParser->source);
+    m_communication->subscribeAir(m_optionParser->source);
 
-    connect(d->communication, &CommunicationManager::signalMessageReceived,
-            this,             &ApplicationController::signalMessageReceived);
+    connect(m_communication, SIGNAL(signalMessageReceived(Header,Message)),
+            this,            SLOT(slotReceiveMessage(Header,Message)));
 
-
-    if (d->optionParser->remote)
+    if (m_optionParser->remote)
     {
-        d->communication->addUdpTransporter(d->optionParser->remoteHost,
-                                            d->optionParser->remotePort,
-                                            MessageTransporter::MultiCast);
+        m_communication->addUdpTransporter(m_optionParser->remoteHost,
+                                           m_optionParser->remotePort,
+                                           MessageTransporter::MultiCast);
     }
     else
     {
-        d->communication->addStdTransporter();
-    }
-
-
-    if (d->optionParser->autoSend && d->optionParser->delay > 0)
-    {
-        slotActivateTimer(d->optionParser->delay);
+        m_communication->addStdTransporter();
     }
 }
 
 int ApplicationController::getPeriod()  const
 {
-    return d->optionParser->delay;
+    if (m_optionParser)
+    {
+        return m_optionParser->delay;
+    }
+
+    return 0;
 }
 
 bool ApplicationController::hasGUI() const
 {
-    return (!d->optionParser->nogui);
+    if (m_optionParser)
+    {
+        return (! m_optionParser->nogui);
+    }
+
+    return false;
 }
 
 bool ApplicationController::isStarted() const
 {
-    return (d->optionParser->start);
-}
-
-void ApplicationController::pause(bool b)
-{
-    d->optionParser->start = !b;
-
-    if (b)
+    if (m_optionParser)
     {
-        slotDeactivateTimer();
+        return m_optionParser->start;
     }
+
+    return false;
 }
 
 bool ApplicationController::isAuto() const
 {
-    return (d->optionParser->autoSend);
-}
+    if (m_optionParser)
+    {
+        return m_optionParser->autoSend;
+    }
 
-void ApplicationController::setMessage(const QString& msg)
-{
-    d->messageToSend = msg;
+    return false;
 }
 
 Header::HeaderMode ApplicationController::headerMode() const
 {
-    return d->optionParser->headerMode;
-}
-
-void ApplicationController::slotActivateTimer(int period)
-{
-    if (! d->timer)
+    if (m_optionParser)
     {
-        d->timer = new QTimer(this);
-
-        connect(d->timer, &QTimer::timeout,
-                    this, &ApplicationController::slotSendMessage);
+        return m_optionParser->headerMode;
     }
 
-    d->optionParser->delay    = period;
-    d->optionParser->autoSend = true;
-
-    d->timer->start(period);
-}
-
-void ApplicationController::slotDeactivateTimer()
-{
-    d->optionParser->autoSend = false;
-    d->optionParser->delay    = 0;
-
-    if (d->timer)
-    {
-        d->timer->stop();
-    }
-}
-
-void ApplicationController::slotPeriodChanged(int period)
-{
-    d->optionParser->delay = period;
-
-    if (d->timer)
-    {
-        d->timer->setInterval(period);
-    }
-}
-
-void ApplicationController::slotSendMessage()
-{
-    Message message;
-
-    message.addContent(QLatin1String("payload"), d->messageToSend);
-    message.addContent(QLatin1String("nseq"), QString::number(d->nbSequence));
-
-    // TODO: get what, where, who from user interface
-    if(d->optionParser->remote)
-    {
-        d->communication->send(message, QString(), QString(), QString(),
-                               CommunicationManager::ProtocolType::UDP,
-                               d->optionParser->save);
-    }
-    else
-    {
-        d->communication->send(message, QString(), QString(), QString(),
-                               CommunicationManager::ProtocolType::StandardIO,
-                               d->optionParser->save);
-    }
-
-    ++d->nbSequence;
-
-    emit signalSequenceChange(d->nbSequence);
+    return Header::HeaderMode::What;
 }
 
 }
