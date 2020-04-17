@@ -12,17 +12,17 @@ namespace BasApplication
 MainWindow::MainWindow(BasController* controller, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    controller(controller)
+    m_controller(controller)
 {
     ui->setupUi(this);
 
-    if (!controller)
+    if (!m_controller)
     {
         qFatal("BAS Controller is null");
     }
 
-    connect(controller, SIGNAL(signalSequenceChange(int)),
-            this,       SLOT(slotUpdateSequence(int)));
+    connect(m_controller, SIGNAL(signalSequenceChange(int)),
+            this,         SLOT(slotUpdateSequence(int)));
 
     int period = controller->getPeriod();
 
@@ -39,7 +39,7 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
         ui->frequencySpinBox->setValue(500);
     }
 
-    if (controller->isAuto())
+    if (m_controller->isAuto())
     {
         ui->emissionStatus->setText(QLatin1String("[state : active]"));
     }
@@ -48,7 +48,7 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
         ui->emissionStatus->setText(QLatin1String("[etat : desactive]"));
     }
 
-    if (controller->isStarted())
+    if (m_controller->isStarted())
     {
         ui->startButton->setText(QLatin1String("Stop"));
     }
@@ -61,7 +61,10 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
     ui->messageSend->setText(QLatin1String("-"));
     ui->nbSequence->setText("0");
 
-    pause(!controller->isStarted());
+    connect(m_controller, &BasController::signalMessageReceived,
+            this,         &MainWindow::slotShowReceivedMessage);
+
+    pause(!m_controller->isStarted());
 }
 
 MainWindow::~MainWindow()
@@ -76,7 +79,7 @@ void MainWindow::pause(bool b)
     ui->messageSend->setReadOnly(b);
     ui->frequencySpinBox->setReadOnly(b);
 
-    controller->pause(b);
+    m_controller->pause(b);
 }
 
 const QString MainWindow::getSendMessage() const
@@ -85,11 +88,15 @@ const QString MainWindow::getSendMessage() const
 }
 
 // TODO receive message
-void MainWindow::slotShowReceivedMessage(const QString& message)
+void MainWindow::slotShowReceivedMessage(Header header, Message message)
 {
-    if (controller->isStarted())
+    if (m_controller->isStarted())
     {
-        ui->messageReceived->setText(message);
+        QString content = header.generateHeader(m_controller->headerMode()) + " > " + message.getMessage();
+
+        qDebug() << "MainWindow::slotShowReceivedMessage" << content;
+
+        ui->messageReceived->setText(content);
     }
 }
 
@@ -102,27 +109,27 @@ void MainWindow::on_autoBtn_clicked()
 {
     ui->emissionStatus->setText(QLatin1String("[state : active]"));
 
-    controller->slotActivateTimer(ui->frequencySpinBox->value());
+    m_controller->slotActivateTimer(ui->frequencySpinBox->value());
 }
 
 void MainWindow::on_sendBtn_clicked()
 {
-    controller->slotSendMessage();
+    m_controller->slotSendMessage();
 }
 
 void MainWindow::on_messageSend_textChanged(const QString& msg)
 {
-    controller->setMessage(msg);
+    m_controller->setMessage(msg);
 }
 
 void MainWindow::on_frequencySpinBox_valueChanged(int period)
 {
-   controller->slotPeriodChanged(period);
+   m_controller->slotPeriodChanged(period);
 }
 
 void MainWindow::on_startButton_clicked()
 {
-    if (controller->isStarted())
+    if (m_controller->isStarted())
     {
         ui->startButton->setText(QLatin1String("Start"));
         pause(true);

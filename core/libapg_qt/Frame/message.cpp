@@ -1,7 +1,7 @@
 #include "message.h"
 
 //Qt includes
-#include <QHash>
+
 #include <QVector>
 #include <QStringList>
 #include <QDebug>
@@ -40,9 +40,38 @@ Message::Message(const QString& message)
     }
 }
 
+Message::Message(const QHash<QString, QString>& contents)
+    : d(new Private())
+{
+    if (! contents.isEmpty())
+    {
+        d->content = contents;
+        d->content.detach();
+    }
+}
+
+Message::Message(const Message& otherMessage)
+    : d(new Private())
+{
+    d->content = QHash<QString, QString>(otherMessage.getContents());
+    d->content.detach();
+
+    d->delimiter = otherMessage.d->delimiter;
+    d->equalChar = otherMessage.d->equalChar;
+}
+
 Message::~Message()
 {
     delete d;
+}
+
+void Message::operator = (const Message& otherMessage)
+{
+    d->content = QHash<QString, QString>(otherMessage.getContents());
+    d->content.detach();
+
+    d->delimiter = otherMessage.d->delimiter;
+    d->equalChar = otherMessage.d->equalChar;
 }
 
 void Message::parseText(const QString& text)
@@ -51,6 +80,8 @@ void Message::parseText(const QString& text)
 
     // TODO: print verbose
     QStringList msg = text.split(d->delimiter, QString::SkipEmptyParts);
+
+    qDebug() << "splited message " << msg;
 
     for (QStringList::const_iterator iter  = msg.constBegin();
                                      iter != msg.constEnd();
@@ -71,7 +102,7 @@ void Message::parseText(const QString& text)
         }
     }
 
-    qDebug() << d->content;
+    qDebug() << "Content of parsed message: " << d->content;
 }
 
 void Message::parseTextWithKnownFields(const QString& text)
@@ -117,6 +148,8 @@ void Message::parseTextWithKnownFields(const QString& text)
             d->content.insert(pairs[0], value.join(d->equalChar));
         }
     }
+
+    qDebug() << "Content of parsed message with known field: " << d->content;
 }
 
 bool Message::isKnownField(const QString& text) const
@@ -144,6 +177,11 @@ bool Message::isKnownField(const QString& text) const
 void Message::addContent(const QString& key, const QString& value)
 {
      d->content.insert(key, value);
+}
+
+QHash<QString, QString> Message::getContents() const
+{
+    return d->content;
 }
 
 bool Message::isEmpty() const

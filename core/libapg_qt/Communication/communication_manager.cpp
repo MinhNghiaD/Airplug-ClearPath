@@ -19,7 +19,10 @@ class Q_DECL_HIDDEN CommunicationManager::Private
 public:
 
     Private()
-        : safeMode(false)
+        : safeMode(false),
+          what(QCoreApplication::applicationName().toUpper()),
+          who(what),
+          where(Header::airHost)
     {
     }
 
@@ -46,6 +49,10 @@ public:
     QMap<int, MessageTransporter*> protocols;
     // Map who and wheres
     QMap<QString, QStringList> subscriptions;
+
+    QString what;
+    QString who;
+    QString where;
 };
 
 
@@ -97,13 +104,35 @@ bool CommunicationManager::Private::isAlphaNumeric(const QString& string) const
 
 /* ----------------------------------------------------------------------------------------------------------------*/
 
-CommunicationManager::CommunicationManager(Header::HeaderMode mode, QObject* parent)
+CommunicationManager::CommunicationManager(const QString& what,
+                                           const QString& who,
+                                           const QString& where,
+                                           Header::HeaderMode mode,
+                                           QObject* parent)
     : QObject(parent),
       d(new Private())
 {
     setObjectName(QLatin1String("Communication manager"));
 
     d->headerMode = mode;
+
+    // default source
+    if (!what.isEmpty())
+    {
+        d->what = what;
+    }
+
+    // default desitination
+    if (!who.isEmpty())
+    {
+        d->who = who;
+    }
+
+    // default area
+    if (!where.isEmpty())
+    {
+        d->where = where;
+    }
 }
 
 CommunicationManager::~CommunicationManager()
@@ -117,8 +146,8 @@ void CommunicationManager::addStdTransporter()
 
     d->protocols[ProtocolType::StandardIO] = transporter;
 
-    connect(transporter, SIGNAL(signalMessageReceived(QString)),
-            this,        SLOT(slotReceiveMessage(QString)));
+    connect(transporter, &MessageTransporter::signalMessageReceived,
+            this,        &CommunicationManager::slotReceiveMessage);
 
 }
 
@@ -130,8 +159,8 @@ void CommunicationManager::addUdpTransporter(const QString& host,
 
     d->protocols[ProtocolType::UDP] = transporter;
 
-    connect(transporter, SIGNAL(signalMessageReceived(QString)),
-            this,        SLOT(slotReceiveMessage(QString)));
+    connect(transporter, &MessageTransporter::signalMessageReceived,
+            this,        &CommunicationManager::slotReceiveMessage);
 }
 
 void CommunicationManager::setHeaderMode(Header::HeaderMode mode)
@@ -166,7 +195,8 @@ void CommunicationManager::send(const Message& message,
     else
     {
         // TODO: print verbose self.app().debug("sending {} in mode {}".format(text, self.header_mode), 5)
-        Header header(what, who, where);
+
+        Header header = fillSendingHeader(what, who, where);
 
         QString package = header.generateHeader(d->headerMode) + message.getMessage();
 
@@ -189,9 +219,10 @@ void CommunicationManager::slotReceiveMessage(const QString& data)
     QString what, who, where, payload;
     QStringList segments;
 
-    if (d->headerMode == Header::HeaderMode::WhatWho ||
+    if (d->headerMode == Header::HeaderMode::WhatWho      ||
         d->headerMode == Header::HeaderMode::WhatWhoWhere)
     {
+        // Decode package
         if (! data[0].isLetter())
         {
             //separate header fields and payload
@@ -218,62 +249,31 @@ void CommunicationManager::slotReceiveMessage(const QString& data)
         }
 
         payload = segments.back();
+    }
+    else
+    {
+        payload = data;
+    }
 
-        Header header(d->headerMode, d->safeMode, what, who, where);
+    if (filterMessage(what, who, where))
+    {
+        Header header = recoverReceivedHeader(what, who, where);
+
+        if (! validHeader(header))
+        {
+            return;
+        }
 
         Message message(payload);
 
+        qDebug() << "CommunicationManager" << "header" << header.generateHeader(Header::HeaderMode::WhatWho) << "payload" << message.getMessage();
+
         // TODO: print verbose vrb("transmitting (if safe) to application {} txt '{}', from {}, to {} from zone {}".format(self.app(), text, header["what"], header["who"], header["where"]), 6)
 
-        // Filter message
-        bool safeMessage = false;
-
-        if (d->headerMode == Header::HeaderMode::What)
-        {
-            safeMessage = true;
-            // TODO: print verbose vrb("Every message is accepted in what mode",6)
-        }
-        else if (who == QCoreApplication::applicationName().toUpper())
-        {
-            if (isSubscribed(what, where))
-            {
-                safeMessage = true;
-                // TODO print verbose self.app().vrb("Message designed for this app from a subscribed app",6)
-            }
-
-            if (where == Header::localHost || d->headerMode == Header::HeaderMode::WhatWho)
-            {
-                safeMessage = true;
-                // TODO print verbose self.app().vrb("Message designed for this app from a local app",6)
-            }
-        }
-        else if (who == Header::allHost && isSubscribed(what, where))
-        {
-            safeMessage = true;
-            // TODO print verbose ("Message designed for all apps from a subscribed app",6)
-        }
-
-        if (d->headerMode == Header::HeaderMode::WhatWho &&
-            ! (d->validAppName(header.what()) && d->validAppName(header.who())) )
-        {
-            qWarning() << "Invalid app or zone name what=" << header.what() << ", who=" << header.who();
-
-            return;
-        }
-        else if (d->headerMode == Header::HeaderMode::WhatWhoWhere &&
-                 ! (d->validAppName(header.what()) && d->validAppName(header.who()) && d->validZone(header.where())) )
-        {
-            qWarning() << "Invalid app or zone name what=" << header.what() << ", who=" << header.who() << ",where=" << header.where();
-
-            return;
-        }
-
-        if (safeMessage)
-        {
-            emit signalMessageReceived(header, message);
-        }
+        emit signalMessageReceived(header, message);
     }
 }
+
 
 bool CommunicationManager::subscribe(const QString& who, QString where)
 {
@@ -378,6 +378,164 @@ bool CommunicationManager::isSubscribed(const QString& who, QString where) const
     }
 
     return false;
+}
+
+
+Header CommunicationManager::fillSendingHeader(QString what, QString who, QString where) const
+{
+    if (!what.isEmpty())
+    {
+       what = d->what;
+    }
+
+    if (!who.isEmpty())
+    {
+        who = d->who;
+    }
+
+    if (!where.isEmpty())
+    {
+        where = d->where;
+    }
+
+    return Header(what, who, where);
+}
+
+Header CommunicationManager::recoverReceivedHeader(QString what, QString who, QString where) const
+{
+    switch (d->headerMode)
+    {
+        case Header::HeaderMode::WhatWhoWhere:
+            if (what.isEmpty())
+            {
+                if (d->safeMode)
+                {
+                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
+                }
+            }
+            else
+            {
+                what = d->what;
+            }
+
+            if(who.isEmpty())
+            {
+                if (d->safeMode)
+                {
+                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
+                }
+            }
+            else
+            {
+                who = d->who;
+            }
+
+            if(where.isEmpty())
+            {
+                if (d->safeMode)
+                {
+                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
+                }
+            }
+            else
+            {
+                d->where = where;
+            }
+
+            break;
+
+        case Header::HeaderMode::WhatWho:
+            if (what.isEmpty())
+            {
+                if (d->safeMode)
+                {
+                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
+                }
+            }
+            else
+            {
+                what = d->what;
+            }
+
+            if(who.isEmpty())
+            {
+                if (d->safeMode)
+                {
+                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
+                }
+            }
+            else
+            {
+                who = d->who;
+            }
+
+            where.clear();
+
+            break;
+
+        default:
+            if (what.isEmpty())
+            {
+                what = d->what;
+            }
+
+            who.clear();
+            where.clear();
+    }
+
+    return Header(what, who, where);
+}
+
+bool CommunicationManager::filterMessage(const QString& what, const QString& who, const QString& where) const
+{
+    bool safeMessage = false;
+
+    if (d->headerMode == Header::HeaderMode::What)
+    {
+        safeMessage = true;
+        // TODO: print verbose vrb("Every message is accepted in what mode",6)
+    }
+    else if (who == QCoreApplication::applicationName().toUpper())
+    {
+        if (isSubscribed(what, where))
+        {
+            safeMessage = true;
+            // TODO print verbose self.app().vrb("Message designed for this app from a subscribed app",6)
+        }
+
+        if (where == Header::localHost || d->headerMode == Header::HeaderMode::WhatWho)
+        {
+            safeMessage = true;
+            // TODO print verbose self.app().vrb("Message designed for this app from a local app",6)
+        }
+    }
+    else if (who == Header::allHost && isSubscribed(what, where))
+    {
+        safeMessage = true;
+        // TODO print verbose ("Message designed for all apps from a subscribed app",6)
+    }
+
+    return safeMessage;
+}
+
+bool CommunicationManager::validHeader(const Header& header) const
+{
+    if (d->headerMode == Header::HeaderMode::WhatWho &&
+        ! (d->validAppName(header.what()) && d->validAppName(header.who())) )
+    {
+        qWarning() << "Invalid app or zone name what=" << header.what() << ", who=" << header.who();
+
+        return false;
+    }
+    else if (d->headerMode == Header::HeaderMode::WhatWhoWhere &&
+             ! (d->validAppName(header.what()) && d->validAppName(header.who()) && d->validZone(header.where())) )
+    {
+        qWarning() << "Invalid app or zone name what=" << header.what() << ", who=" << header.who() << ",where=" << header.where();
+
+        return false;
+    }
+
+    return true;
 }
 
 }

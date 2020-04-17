@@ -15,10 +15,7 @@ class Q_DECL_HIDDEN Header::Private
 public:
 
     Private()
-        : what(QCoreApplication::applicationName().toUpper()),
-          who(what),
-          where(Header::airHost),
-          delimiter('\x07')
+        : delimiter('\x07')
     {
     }
 
@@ -31,6 +28,7 @@ public:
     QString what;
     QString who;
     QString where;
+
     char    delimiter;
 };
 
@@ -39,115 +37,33 @@ Header::Header(const QString& what,
                const QString& where)
     : d(new Private())
 {
-    if (!what.isEmpty())
-    {
-        d->what = what;
-    }
-
-    if (!who.isEmpty())
-    {
-        d->who = who;
-    }
-
-    if (!where.isEmpty())
-    {
-        d->where = where;
-    }
+    d->what  = what;
+    d->who   = who;
+    d->where = where;
 }
 
-Header::Header(HeaderMode mode,
-               bool safeMode,
-               const QString& what,
-               const QString& who,
-               const QString& where)
+Header::Header(const Header& otherheader)
     : d(new Private())
 {
-    switch (mode)
-    {
-        case WhatWhoWhere:
-            if (what.isEmpty())
-            {
-                if (safeMode)
-                {
-                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
-                }
-            }
-            else
-            {
-                d->what = what;
-            }
+    d->what      = otherheader.what();
+    d->who       = otherheader.where();
+    d->where     = otherheader.who();
 
-            if(who.isEmpty())
-            {
-                if (safeMode)
-                {
-                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
-                }
-            }
-            else
-            {
-                d->who = who;
-            }
-
-            if(where.isEmpty())
-            {
-                if (safeMode)
-                {
-                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
-                }
-            }
-            else
-            {
-                d->where = where;
-            }
-
-            break;
-
-        case WhatWho:
-            if (what.isEmpty())
-            {
-                if (safeMode)
-                {
-                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
-                }
-            }
-            else
-            {
-                d->what = what;
-            }
-
-            if(who.isEmpty())
-            {
-                if (safeMode)
-                {
-                    qFatal("non-conform header syntax, safemode option enabled, stopping app");
-                }
-            }
-            else
-            {
-                d->who = who;
-            }
-
-            d->where.clear();
-
-            break;
-
-        default:
-            if (! what.isEmpty())
-            {
-                d->what = what;
-            }
-
-            d->who.clear();
-            d->where.clear();
-
-            break;
-    }
+    d->delimiter = otherheader.d->delimiter;
 }
 
 Header::~Header()
 {
     delete d;
+}
+
+void Header::operator = (const Header& otherheader)
+{
+    d->what      = otherheader.what();
+    d->who       = otherheader.where();
+    d->where     = otherheader.who();
+
+    d->delimiter = otherheader.d->delimiter;
 }
 
 void Header::clear()

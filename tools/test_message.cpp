@@ -25,10 +25,6 @@ int main(int argc, char *argv[])
 
     msg2.parseText(msg.getMessage());
 
-    Header defaultHeader;
-
-    qDebug() << "header:" << defaultHeader.generateHeader(Header::HeaderMode::WhatWhoWhere);
-
 
     return a.exec();
 }

@@ -14,6 +14,7 @@
 
 // Qt includes
 #include <QString>
+#include <QMetaType>
 
 namespace AirPlug
 {
@@ -37,19 +38,17 @@ public:
 
 public:
 
-    // Use for construct header to send message
-    Header(const QString& what  = QString(),
-           const QString& who   = QString(),
-           const QString& where = QString());
-
-    // use for reconstruct header from received message
-    Header(HeaderMode     mode,
-           bool           safeMode,
-           const QString& what,
+    // Default constructor
+    Header(const QString& what,
            const QString& who,
            const QString& where);
 
+    // Copy constructor
+    Header(const Header& otherheader);
+
     ~Header();
+
+    void operator = (const Header& otherheader);
 
     void clear();
 
@@ -68,4 +67,6 @@ private:
 };
 
 }
+
+//Q_DECLARE_METATYPE(AirPlug::Header)
 #endif // HEADER_H

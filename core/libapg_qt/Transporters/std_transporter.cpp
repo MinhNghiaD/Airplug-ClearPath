@@ -38,8 +38,8 @@ StdTransporter::StdTransporter(QObject* parent)
 
     d->notifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
 
-    connect(d->notifier, SIGNAL(activated(int)),
-            this,        SLOT(slotMessageArrive()));
+    connect(d->notifier, &QSocketNotifier::activated,
+            this,        &StdTransporter::slotMessageArrive);
 }
 
 StdTransporter::~StdTransporter()

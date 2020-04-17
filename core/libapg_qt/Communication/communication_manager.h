@@ -35,7 +35,10 @@ public:
 
 public:
 
-    CommunicationManager(Header::HeaderMode mode = Header::HeaderMode::What,
+    CommunicationManager(const QString& what     = QString(),
+                         const QString& who      = QString(),
+                         const QString& where    = QString(),
+                         Header::HeaderMode mode = Header::HeaderMode::What,
                          QObject* parent         = nullptr);
 
     ~CommunicationManager();
@@ -47,6 +50,8 @@ public:
 
     void setHeaderMode(Header::HeaderMode mode);
 
+    void setSafeMode(bool b);
+
     void send(const Message& message,
               const QString& what     = QString(),
               const QString& who      = QString(),
@@ -54,7 +59,7 @@ public:
               ProtocolType   protocol = ProtocolType::StandardIO,
               bool           save     = true);
 
-    void setSafeMode(bool b);
+
 
     bool subscribe(const QString& who, QString where = QString());
     bool subscribeLocalHost(const QString& who);
@@ -68,14 +73,27 @@ public:
 
     bool isSubscribed(const QString& who, QString where) const;
 
+private:
+
+    Header fillSendingHeader(QString what  = QString(),
+                             QString who   = QString(),
+                             QString where = QString()) const;
+
+    Header recoverReceivedHeader(QString what  = QString(),
+                                 QString who   = QString(),
+                                 QString where = QString()) const;
+
+    bool filterMessage(const QString& what, const QString& who, const QString& where) const;
+
+    bool validHeader(const Header& header) const;
+
 public:
 
-    Q_SIGNAL void signalMessageReceived(const Header& header, const Message& message);
+    Q_SIGNAL void signalMessageReceived(Header header, Message message);
 
 private:
 
     Q_SLOT void slotReceiveMessage(const QString& data);
-
 
 private:
 

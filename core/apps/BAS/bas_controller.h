@@ -19,6 +19,8 @@
 #include "option_parser.h"
 #include "communication_manager.h"
 
+using namespace AirPlug;
+
 namespace BasApplication
 {
 
@@ -43,6 +45,8 @@ public:
 
     void setMessage(const QString& msg);
 
+    Header::HeaderMode headerMode() const;
+
 public:
 
     Q_SLOT void slotActivateTimer(int period);
@@ -53,6 +57,8 @@ public:
 signals:
 
     Q_SIGNAL void signalSequenceChange(int);
+
+    Q_SIGNAL void signalMessageReceived(Header, Message);
 
 private:
 

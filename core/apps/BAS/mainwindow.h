@@ -43,7 +43,7 @@ private:
 
 public slots:
 
-    void slotShowReceivedMessage(const QString& message);
+    void slotShowReceivedMessage(Header header, Message message);
 
     void on_startButton_clicked();
 
@@ -62,7 +62,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    BasController* controller;
+    BasController* m_controller;
 };
 
 }

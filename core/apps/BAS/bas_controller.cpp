@@ -51,9 +51,6 @@ BasController::BasController(QObject* parent)
 {
     setObjectName(QLatin1String("BAS"));
 
-    d->communication = new CommunicationManager(Header::HeaderMode::WhatWho, this);
-    //d->communication->addStdTransporter();
-
     // TODO: get default messageToSend from QSettings
 }
 
@@ -69,6 +66,20 @@ void BasController::parseOptions(const QCoreApplication& app)
     // Debug
     d->optionParser->showOption();
 
+    d->communication = new CommunicationManager(d->optionParser->ident,
+                                                d->optionParser->destination,
+                                                Header::airHost,
+                                                d->optionParser->headerMode,
+                                                this);
+
+    d->communication->setSafeMode(d->optionParser->safemode);
+
+    d->communication->subscribeAir(d->optionParser->source);
+
+    connect(d->communication, &CommunicationManager::signalMessageReceived,
+            this,             &BasController::signalMessageReceived);
+
+
     if (d->optionParser->remote)
     {
         d->communication->addUdpTransporter(d->optionParser->remoteHost,
@@ -80,8 +91,6 @@ void BasController::parseOptions(const QCoreApplication& app)
         d->communication->addStdTransporter();
     }
 
-    d->communication->setHeaderMode(d->optionParser->headerMode);
-    d->communication->setSafeMode(d->optionParser->safemode);
 
     if (d->optionParser->autoSend && d->optionParser->delay > 0)
     {
@@ -124,14 +133,19 @@ void BasController::setMessage(const QString& msg)
     d->messageToSend = msg;
 }
 
+Header::HeaderMode BasController::headerMode() const
+{
+    return d->optionParser->headerMode;
+}
+
 void BasController::slotActivateTimer(int period)
 {
     if (! d->timer)
     {
         d->timer = new QTimer(this);
 
-        connect(d->timer, SIGNAL(timeout()),
-                    this, SLOT(slotSendMessage()));
+        connect(d->timer, &QTimer::timeout,
+                    this, &BasController::slotSendMessage);
     }
 
     d->optionParser->delay    = period;
@@ -168,7 +182,6 @@ void BasController::slotSendMessage()
     message.addContent(QLatin1String("payload"), d->messageToSend);
     message.addContent(QLatin1String("nseq"), QString::number(d->nbSequence));
 
-
     if(d->optionParser->remote)
     {
         d->communication->send(message, QString(), QString(), QString(), CommunicationManager::ProtocolType::UDP, d->optionParser->save);
@@ -182,4 +195,5 @@ void BasController::slotSendMessage()
 
     emit signalSequenceChange(d->nbSequence);
 }
+
 }

@@ -14,6 +14,9 @@
 
 // Qt includes
 #include <QString>
+#include <QHash>
+
+#include <QMetaType>
 
 namespace AirPlug
 {
@@ -23,9 +26,17 @@ class Message
 public:
 
     Message(const QString& message = QString());
+
+    Message(const QHash<QString, QString>& contents);
+
+    //Copied constructor
+    Message(const Message& otherMessage);
+
     ~Message();
 
 public:
+
+    void operator = (const Message& otherMessage);
 
     /**
      * @brief parseText parse a text message in to Message Object
@@ -44,6 +55,8 @@ public:
 
     void addContent(const QString& key, const QString& value);
 
+    QHash<QString, QString> getContents() const;
+
     bool isEmpty() const;
 
     void clear();
@@ -56,4 +69,6 @@ private:
 };
 
 }
+
+//Q_DECLARE_METATYPE(AirPlug::Message)
 #endif // MESSAGE_H
