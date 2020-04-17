@@ -15,9 +15,7 @@ class BasController::Private
 public:
 
     Private()
-        : communication(nullptr),
-          optionParser(nullptr),
-          timer(nullptr),
+        : timer(nullptr),
           nbSequence(0)
     {
         // TODO: get default message ffrom QSettings
@@ -26,16 +24,10 @@ public:
 
     ~Private()
     {
-        delete communication;
-        delete optionParser;
         delete timer;
     }
 
 public:
-
-    CommunicationManager* communication;
-
-    OptionParser*         optionParser;
 
     QTimer*               timer;
 
@@ -46,10 +38,9 @@ public:
 
 
 BasController::BasController(QObject* parent)
-    : QObject(parent),
-       d(new Private)
+    : ApplicationController(QLatin1String("BAS"), parent),
+      d(new Private)
 {
-    setObjectName(QLatin1String("BAS"));
 }
 
 BasController::~BasController()
@@ -57,63 +48,23 @@ BasController::~BasController()
     delete d;
 }
 
-void BasController::parseOptions(const QCoreApplication& app)
+void BasController::init(const QCoreApplication& app)
 {
-    d->optionParser = new OptionParser(app);
-
-    // Debug
-    d->optionParser->showOption();
-
-    d->communication = new CommunicationManager(d->optionParser->ident,
-                                                d->optionParser->destination,
-                                                Header::airHost,
-                                                d->optionParser->headerMode,
-                                                this);
-
-    d->communication->setSafeMode(d->optionParser->safemode);
-
-    d->communication->subscribeAir(d->optionParser->source);
-
-    connect(d->communication, &CommunicationManager::signalMessageReceived,
-            this,             &BasController::signalMessageReceived);
+    ApplicationController::init(app);
 
 
-    if (d->optionParser->remote)
+    if (m_optionParser->autoSend && m_optionParser->delay > 0)
     {
-        d->communication->addUdpTransporter(d->optionParser->remoteHost,
-                                            d->optionParser->remotePort,
-                                            MessageTransporter::MultiCast);
+        slotActivateTimer(m_optionParser->delay);
     }
-    else
-    {
-        d->communication->addStdTransporter();
-    }
-
-
-    if (d->optionParser->autoSend && d->optionParser->delay > 0)
-    {
-        slotActivateTimer(d->optionParser->delay);
-    }
-}
-
-int BasController::getPeriod()  const
-{
-    return d->optionParser->delay;
-}
-
-bool BasController::hasGUI() const
-{
-    return (!d->optionParser->nogui);
-}
-
-bool BasController::isStarted() const
-{
-    return (d->optionParser->start);
 }
 
 void BasController::pause(bool b)
 {
-    d->optionParser->start = !b;
+    if (m_optionParser)
+    {
+        m_optionParser->start = !b;
+    }
 
     if (b)
     {
@@ -121,19 +72,9 @@ void BasController::pause(bool b)
     }
 }
 
-bool BasController::isAuto() const
-{
-    return (d->optionParser->autoSend);
-}
-
 void BasController::setMessage(const QString& msg)
 {
     d->messageToSend = msg;
-}
-
-Header::HeaderMode BasController::headerMode() const
-{
-    return d->optionParser->headerMode;
 }
 
 void BasController::slotActivateTimer(int period)
@@ -146,16 +87,22 @@ void BasController::slotActivateTimer(int period)
                     this, &BasController::slotSendMessage);
     }
 
-    d->optionParser->delay    = period;
-    d->optionParser->autoSend = true;
+    if (m_optionParser)
+    {
+        m_optionParser->delay    = period;
+        m_optionParser->autoSend = true;
+    }
 
     d->timer->start(period);
 }
 
 void BasController::slotDeactivateTimer()
 {
-    d->optionParser->autoSend = false;
-    d->optionParser->delay    = 0;
+    if (m_optionParser)
+    {
+        m_optionParser->autoSend = false;
+        m_optionParser->delay    = 0;
+    }
 
     if (d->timer)
     {
@@ -165,7 +112,10 @@ void BasController::slotDeactivateTimer()
 
 void BasController::slotPeriodChanged(int period)
 {
-    d->optionParser->delay = period;
+    if (m_optionParser)
+    {
+        m_optionParser->delay = period;
+    }
 
     if (d->timer)
     {
@@ -181,22 +131,16 @@ void BasController::slotSendMessage()
     message.addContent(QLatin1String("nseq"), QString::number(d->nbSequence));
 
     // TODO: get what, where, who from user interface
-    if(d->optionParser->remote)
-    {
-        d->communication->send(message, QString(), QString(), QString(),
-                               CommunicationManager::ProtocolType::UDP,
-                               d->optionParser->save);
-    }
-    else
-    {
-        d->communication->send(message, QString(), QString(), QString(),
-                               CommunicationManager::ProtocolType::StandardIO,
-                               d->optionParser->save);
-    }
+    sendMessage(message, QString(), QString(), QString());
 
     ++d->nbSequence;
 
     emit signalSequenceChange(d->nbSequence);
+}
+
+void BasController::slotReceiveMessage(Header header, Message message)
+{
+    emit signalMessageReceived(header, message);
 }
 
 }

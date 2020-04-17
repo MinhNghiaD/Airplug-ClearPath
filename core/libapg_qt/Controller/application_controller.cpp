@@ -53,6 +53,26 @@ void ApplicationController::init(const QCoreApplication& app)
     }
 }
 
+void ApplicationController::sendMessage(const Message& message, const QString& what, const QString& who, const QString& where)
+{
+    if (m_optionParser != nullptr && m_communication != nullptr)
+    {
+        if(m_optionParser->remote)
+        {
+            m_communication->send(message, what, who, where,
+                                  CommunicationManager::ProtocolType::UDP,
+                                  m_optionParser->save);
+        }
+        else
+        {
+            m_communication->send(message, what, who, where,
+                                  CommunicationManager::ProtocolType::StandardIO,
+                                  m_optionParser->save);
+        }
+    }
+
+}
+
 int ApplicationController::getPeriod()  const
 {
     if (m_optionParser)

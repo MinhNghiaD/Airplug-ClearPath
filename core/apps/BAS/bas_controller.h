@@ -16,15 +16,14 @@
 #include <QObject>
 
 // Local include
-#include "option_parser.h"
-#include "communication_manager.h"
+#include "application_controller.h"
 
 using namespace AirPlug;
 
 namespace BasApplication
 {
 
-class BasController: public QObject
+class BasController: public ApplicationController
 {
     Q_OBJECT
 public:
@@ -32,20 +31,12 @@ public:
     BasController(QObject* parent = nullptr);
     ~BasController();
 
-    void parseOptions(const QCoreApplication& app);
+    // Initialization of program
+    void init(const QCoreApplication& app) override;
 
-    int  getPeriod() const;
-
-    bool hasGUI()    const;
-
-    bool isStarted() const;
     void pause(bool b);
 
-    bool isAuto()    const;
-
     void setMessage(const QString& msg);
-
-    Header::HeaderMode headerMode() const;
 
 public:
 
@@ -59,6 +50,11 @@ signals:
     Q_SIGNAL void signalSequenceChange(int);
 
     Q_SIGNAL void signalMessageReceived(Header, Message);
+
+private:
+
+    // main notification handler
+    Q_SLOT void slotReceiveMessage(Header, Message) override;
 
 private:
 

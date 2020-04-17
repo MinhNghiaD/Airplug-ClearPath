@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
     BasController controller;
 
-    controller.parseOptions(app);
+    controller.init(app);
 
     MainWindow* mainWindow = nullptr;
 
