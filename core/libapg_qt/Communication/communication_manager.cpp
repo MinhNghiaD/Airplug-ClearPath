@@ -266,8 +266,6 @@ void CommunicationManager::slotReceiveMessage(const QString& data)
 
         Message message(payload);
 
-        qDebug() << "CommunicationManager" << "header" << header.generateHeader(Header::HeaderMode::WhatWho) << "payload" << message.getMessage();
-
         // TODO: print verbose vrb("transmitting (if safe) to application {} txt '{}', from {}, to {} from zone {}".format(self.app(), text, header["what"], header["who"], header["where"]), 6)
 
         emit signalMessageReceived(header, message);
@@ -416,10 +414,10 @@ Header CommunicationManager::recoverReceivedHeader(QString what, QString who, QS
                 {
                     qFatal("non-conform header syntax, safemode option enabled, stopping app");
                 }
-            }
-            else
-            {
-                what = d->what;
+                else
+                {
+                    what = d->what;
+                }
             }
 
             if(who.isEmpty())
@@ -428,10 +426,10 @@ Header CommunicationManager::recoverReceivedHeader(QString what, QString who, QS
                 {
                     qFatal("non-conform header syntax, safemode option enabled, stopping app");
                 }
-            }
-            else
-            {
-                who = d->who;
+                else
+                {
+                    who = d->who;
+                }
             }
 
             if(where.isEmpty())
@@ -440,10 +438,10 @@ Header CommunicationManager::recoverReceivedHeader(QString what, QString who, QS
                 {
                     qFatal("non-conform header syntax, safemode option enabled, stopping app");
                 }
-            }
-            else
-            {
-                d->where = where;
+                else
+                {
+                    d->where = where;
+                }
             }
 
             break;
@@ -455,10 +453,10 @@ Header CommunicationManager::recoverReceivedHeader(QString what, QString who, QS
                 {
                     qFatal("non-conform header syntax, safemode option enabled, stopping app");
                 }
-            }
-            else
-            {
-                what = d->what;
+                else
+                {
+                    what = d->what;
+                }
             }
 
             if(who.isEmpty())
@@ -467,10 +465,10 @@ Header CommunicationManager::recoverReceivedHeader(QString what, QString who, QS
                 {
                     qFatal("non-conform header syntax, safemode option enabled, stopping app");
                 }
-            }
-            else
-            {
-                who = d->who;
+                else
+                {
+                    who = d->who;
+                }
             }
 
             where.clear();

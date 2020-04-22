@@ -48,12 +48,30 @@ NetController::~NetController()
 
 void NetController::slotReceiveMessage(Header header, Message message)
 {
-    // add key-value appnet
-    message.addContent(QLatin1String("appnet"), header.what());
+    QString app;
 
-    qDebug() << "NET receives: " << message.getMessage();
+    if (header.what() == QLatin1String("NET"))
+    {
+        // receive from other NET
+        // remove this pair and move to app
+        QHash<QString, QString> contents = message.getContents();
 
-    sendMessage(message, header.what(), header.who(), header.where());
+        app = contents[QLatin1String("appnet")];
+
+        contents.remove(QLatin1String("appnet"));
+
+        message = Message(contents);
+    }
+    else
+    {
+        // receive from other applications
+        // TODO adapt with different type of application
+        message.addContent(QLatin1String("appnet"), header.what());
+
+        app = QLatin1String("NET");
+    }
+
+    sendMessage(message, QLatin1String("NET"), app, header.where());
 }
 
 }
