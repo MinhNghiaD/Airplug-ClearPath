@@ -18,6 +18,7 @@
 // Local include
 #include "application_controller.h"
 
+
 using namespace AirPlug;
 
 namespace NetApplication
@@ -30,26 +31,6 @@ public:
 
     NetController(QObject* parent = nullptr);
     ~NetController();
-
-    // Initialization of program
-    //void init(const QCoreApplication& app) override;
-
-    //void pause(bool b);
-
-    //void setMessage(const QString& msg);
-
-public:
-
-    //Q_SLOT void slotActivateTimer(int period);
-    //Q_SLOT void slotDeactivateTimer();
-    //Q_SLOT void slotPeriodChanged(int period);
-    //Q_SLOT void slotSendMessage();
-
-signals:
-
-    //Q_SIGNAL void signalSequenceChange(int);
-
-    //Q_SIGNAL void signalMessageReceived(Header, Message);
 
 private:
 

@@ -36,13 +36,13 @@ public:
     void init();
 
     /**
-     * @brief colorMessage: append additional color field to the message from Base application
+     * @brief colorMessage: append additional color field to the message from Base application before sending
      * @param message
      */
     void colorMessage(Message& message);
 
     /**
-     * @brief preprocessMessage: snapshot guard verification
+     * @brief preprocessMessage: snapshot guard verification after message arrival
      * @param message
      * @return
      */

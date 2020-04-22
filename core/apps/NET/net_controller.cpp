@@ -4,6 +4,8 @@
 #include <QTimer>
 #include <QDebug>
 
+// Local include
+#include "laiyang_snapshot.h"
 
 using namespace AirPlug;
 
@@ -23,7 +25,7 @@ public:
     }
 
 public:
-
+    LaiYangSnapshot snapshotManager;
 };
 
 
@@ -46,6 +48,8 @@ void NetController::slotReceiveMessage(Header header, Message message)
     if (header.what() == QLatin1String("NET"))
     {
         // receive from other NET
+        message = d->snapshotManager.preprocessMessage(message);
+
         // remove this pair and move to app
         QHash<QString, QString> contents = message.getContents();
 
@@ -62,6 +66,9 @@ void NetController::slotReceiveMessage(Header header, Message message)
         message.addContent(QLatin1String("appnet"), header.what());
 
         app = QLatin1String("NET");
+
+        // color message before sending to other NET
+        d->snapshotManager.colorMessage(message);
     }
 
     sendMessage(message, QLatin1String("NET"), app, header.where());
