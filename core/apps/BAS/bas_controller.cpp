@@ -53,18 +53,15 @@ void BasController::init(const QCoreApplication& app)
     ApplicationController::init(app);
 
 
-    if (m_optionParser->autoSend && m_optionParser->delay > 0)
+    if (m_optionParser.autoSend && m_optionParser.delay > 0)
     {
-        slotActivateTimer(m_optionParser->delay);
+        slotActivateTimer(m_optionParser.delay);
     }
 }
 
 void BasController::pause(bool b)
 {
-    if (m_optionParser)
-    {
-        m_optionParser->start = !b;
-    }
+    m_optionParser.start = !b;
 
     if (b)
     {
@@ -87,22 +84,16 @@ void BasController::slotActivateTimer(int period)
                     this, &BasController::slotSendMessage);
     }
 
-    if (m_optionParser)
-    {
-        m_optionParser->delay    = period;
-        m_optionParser->autoSend = true;
-    }
+    m_optionParser.delay    = period;
+    m_optionParser.autoSend = true;
 
     d->timer->start(period);
 }
 
 void BasController::slotDeactivateTimer()
 {
-    if (m_optionParser)
-    {
-        m_optionParser->autoSend = false;
-        m_optionParser->delay    = 0;
-    }
+    m_optionParser.autoSend = false;
+    m_optionParser.delay    = 0;
 
     if (d->timer)
     {
@@ -112,10 +103,7 @@ void BasController::slotDeactivateTimer()
 
 void BasController::slotPeriodChanged(int period)
 {
-    if (m_optionParser)
-    {
-        m_optionParser->delay = period;
-    }
+    m_optionParser.delay = period;
 
     if (d->timer)
     {

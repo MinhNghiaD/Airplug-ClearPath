@@ -18,6 +18,7 @@
 // Local include
 #include "option_parser.h"
 #include "communication_manager.h"
+#include "laiyang_snapshot.h"
 
 namespace AirPlug
 {
@@ -54,7 +55,9 @@ protected:
 
     CommunicationManager* m_communication;
 
-    OptionParser*         m_optionParser;
+    OptionParser          m_optionParser;
+
+    LaiYangSnapshot       m_snapshot;
 };
 
 }

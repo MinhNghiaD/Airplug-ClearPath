@@ -9,7 +9,26 @@
 namespace AirPlug
 {
 
+OptionParser::OptionParser()
+    : start(false),
+      debug(false),
+      nogui(true),
+      save(false),
+      safemode(false),
+      autoSend(false),
+      remote(false),
+      verbose(0),
+      delay(0),
+      headerMode(Header::HeaderMode::What)
+{
+}
+
 OptionParser::OptionParser(const QCoreApplication& app)
+{
+    parseOptions(app);
+}
+
+void OptionParser::parseOptions(const QCoreApplication& app)
 {
     QCommandLineParser parser;
     parser.addHelpOption();

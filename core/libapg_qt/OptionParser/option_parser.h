@@ -25,8 +25,20 @@ namespace AirPlug
 class OptionParser
 {
 public:
+
+    // default constructor
+    OptionParser();
     OptionParser(const QCoreApplication& app);
 
+    /**
+     * @brief parseOptions: parse option from application
+     * @param app
+     */
+    void parseOptions(const QCoreApplication& app);
+
+    /**
+     * @brief showOption: display current options for debugging purpose
+     */
     void showOption() const;
 
 public:
