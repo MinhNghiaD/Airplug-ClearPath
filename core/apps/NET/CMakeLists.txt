@@ -1,4 +1,4 @@
-# Compilcation rules for BAS application
+# Compilcation rules for NET application
 # 2020 - Nghia Duong, <minhnghiaduong997 at gmail dot com>
 
 set(net_SRCS

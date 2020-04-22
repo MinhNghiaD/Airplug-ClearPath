@@ -2,8 +2,8 @@
  *
  * This file is a part of Airplug project
  *
- * Date        : 2020-4-14
- * Description : main application of BAS
+ * Date        : 2020-4-22
+ * Description : main application of NET
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *

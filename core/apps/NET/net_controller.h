@@ -2,8 +2,8 @@
  *
  * This file is a part of Airplug project
  *
- * Date        : 2020-4-14
- * Description : controller of BAS application
+ * Date        : 2020-4-22
+ * Description : controller of NET application
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
