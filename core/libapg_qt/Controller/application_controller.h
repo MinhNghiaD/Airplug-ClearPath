@@ -3,7 +3,7 @@
  * This file is a part of Airplug project
  *
  * Date        : 2020-4-17
- * Description : controller of BAS application
+ * Description : genetic application controller
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
