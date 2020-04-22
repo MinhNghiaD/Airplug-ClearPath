@@ -12,6 +12,9 @@
 #ifndef LAIYANG_SNAPSHOT_H
 #define LAIYANG_SNAPSHOT_H
 
+// Local include
+#include "message.h"
+
 namespace AirPlug
 {
 
@@ -21,6 +24,29 @@ public:
 
     LaiYangSnapshot();
     ~LaiYangSnapshot();
+
+    // Message type: common message
+    static const QString commonType;
+
+public:
+
+    /**
+     * @brief init snapshot action, this method is called only one time by initiator
+     */
+    void init();
+
+    /**
+     * @brief colorMessage: append additional color field to the message from Base application
+     * @param message
+     */
+    void colorMessage(Message& message);
+
+    /**
+     * @brief preprocessMessage: snapshot guard verification
+     * @param message
+     * @return
+     */
+    Message preprocessMessage(const Message& message);
 
 private:
 

@@ -16,21 +16,14 @@ public:
 
     Private()
     {
-        // TODO: get default message ffrom QSettings
-        //messageToSend = QLatin1String("~");
     }
 
     ~Private()
     {
-        //delete timer;
     }
 
 public:
 
-    //QTimer*               timer;
-
-    //QString               messageToSend;
-    //int                   nbSequence;
 };
 
 
