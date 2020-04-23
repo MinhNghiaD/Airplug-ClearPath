@@ -12,7 +12,7 @@ using namespace AirPlug;
 namespace NetApplication
 {
 
-class NetController::Private
+class Q_DECL_HIDDEN NetController::Private
 {
 public:
 

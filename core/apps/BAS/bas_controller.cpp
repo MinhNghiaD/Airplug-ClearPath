@@ -10,7 +10,7 @@ using namespace AirPlug;
 namespace BasApplication
 {
 
-class BasController::Private
+class Q_DECL_HIDDEN BasController::Private
 {
 public:
 

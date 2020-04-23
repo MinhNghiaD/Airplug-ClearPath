@@ -9,8 +9,8 @@
  *
  * ============================================================ */
 
-#ifndef LAIYANG_SNAPSHOT_H
-#define LAIYANG_SNAPSHOT_H
+#ifndef LAI_YANG_SNAPSHOT_H
+#define LAI_YANG_SNAPSHOT_H
 
 // Local include
 #include "message.h"
@@ -55,4 +55,4 @@ private:
 };
 
 }
-#endif // LAIYANG_SNAPSHOT_H
+#endif // LAI_YANG_SNAPSHOT_H

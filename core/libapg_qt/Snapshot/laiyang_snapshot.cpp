@@ -5,7 +5,7 @@ namespace AirPlug
 
 const QString LaiYangSnapshot::commonType = QLatin1String("common");
 
-class LaiYangSnapshot::Private
+class Q_DECL_HIDDEN LaiYangSnapshot::Private
 {
 public:
 

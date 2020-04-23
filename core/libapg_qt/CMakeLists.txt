@@ -14,6 +14,8 @@ set(libapg_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/Frame/header.cpp
 
                 ${CMAKE_CURRENT_SOURCE_DIR}/Controller/application_controller.cpp
 
+                ${CMAKE_CURRENT_SOURCE_DIR}/Clock/vector_clock.cpp
+
                 ${CMAKE_CURRENT_SOURCE_DIR}/Snapshot/laiyang_snapshot.cpp
     )
 
