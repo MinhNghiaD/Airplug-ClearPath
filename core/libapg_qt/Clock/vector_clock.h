@@ -31,6 +31,8 @@ public:
 
 public:
 
+    VectorClock operator= (const VectorClock& other);
+
     /**
      * @brief operator ++: prefix ++ operator
      * @return
@@ -43,9 +45,14 @@ public:
      */
     VectorClock operator++ (int);
 
-    VectorClock operator= (const VectorClock& other);
-
     void updateClock(const VectorClock& other);
+
+    /**
+     * @brief operator < : order relation between 2 clocks
+     * @param other
+     * @return
+     */
+    bool operator < (const VectorClock& other);
 
 private:
 

@@ -64,12 +64,12 @@ VectorClock VectorClock::operator++ ()
 {
     ++(d->localClock[d->siteID]);
 
-    return VectorClock(d->siteID, d->localClock);
+    return VectorClock(*this);
 }
 
 VectorClock VectorClock::operator++ (int)
 {
-    VectorClock clock = VectorClock(d->siteID, d->localClock);
+    VectorClock clock = VectorClock(*this);
 
     ++(d->localClock[d->siteID]);
 
@@ -82,22 +82,35 @@ void VectorClock::updateClock(const VectorClock& other)
     ++(d->localClock[d->siteID]);
 
     // update other clocks
-    for (QHash<QString, int>::const_iterator iter = other.d->localClock.cbegin();
-         iter != other.d->localClock.cend();
-         ++iter)
+    for (QHash<QString, int>::const_iterator iter  = other.d->localClock.cbegin();
+                                             iter != other.d->localClock.cend();
+                                             ++iter)
     {
         if (d->siteID != iter.key())
         {
-            if (! d->localClock.contains(iter.key()))
-            {
-                d->localClock.insert(iter.key(), iter.value());
-            }
-            else if (d->localClock[iter.key()] < iter.value())
+            if ( (! d->localClock.contains(iter.key()))      ||
+                 (d->localClock[iter.key()] < iter.value()) )
             {
                 d->localClock[iter.key()] = iter.value();
             }
         }
     }
+}
+
+bool VectorClock::operator < (const VectorClock& other)
+{
+    for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
+                                             iter != d->localClock.cend();
+                                             ++iter)
+    {
+        if ( (! other.d->localClock.contains(iter.key()))      ||
+             (iter.value() > other.d->localClock[iter.key()]) )
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 }
