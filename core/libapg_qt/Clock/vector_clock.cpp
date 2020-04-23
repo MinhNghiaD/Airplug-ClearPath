@@ -40,6 +40,7 @@ VectorClock::VectorClock(const QString& siteID, const QHash<QString, int>& vecto
 }
 
 VectorClock::VectorClock(const VectorClock& other)
+    : d(new Private())
 {
     d->siteID     = other.d->siteID;
 
@@ -111,6 +112,29 @@ bool VectorClock::operator < (const VectorClock& other)
     }
 
     return true;
+}
+
+QJsonObject VectorClock::convertToJson() const
+{
+    QJsonObject json;
+
+    json[QLatin1String("siteID")] = d->siteID;
+
+    QJsonArray clock;
+
+    for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
+                                             iter != d->localClock.cend();
+                                             ++iter)
+    {
+            QJsonObject localClock;
+            localClock[iter.key()] = iter.value();
+
+            clock.append(localClock);
+    }
+
+    json["clock"] = clock;
+
+    return json;
 }
 
 }

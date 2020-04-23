@@ -15,6 +15,9 @@
 // Qt include
 #include <QString>
 #include <QHash>
+#include <QByteArray>
+#include <QJsonObject>
+#include <QJsonArray>
 
 namespace AirPlug
 {
@@ -45,6 +48,10 @@ public:
      */
     VectorClock operator++ (int);
 
+    /**
+     * @brief updateClock: update local clock after receive another's clock
+     * @param other
+     */
     void updateClock(const VectorClock& other);
 
     /**
@@ -53,6 +60,12 @@ public:
      * @return
      */
     bool operator < (const VectorClock& other);
+
+    /**
+     * @brief convertToJson: turn Clock to Json format
+     * @return
+     */
+    QJsonObject convertToJson() const;
 
 private:
 
