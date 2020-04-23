@@ -12,6 +12,10 @@
 #ifndef VECTOR_CLOCK_H
 #define VECTOR_CLOCK_H
 
+// Qt include
+#include <QString>
+#include <QHash>
+
 namespace AirPlug
 {
 
@@ -19,8 +23,24 @@ class VectorClock
 {
 public:
 
-    VectorClock();
+    VectorClock(const QString& siteID);
+    VectorClock(const QString& siteID, const QHash<QString, int>& vector);
+
     ~VectorClock();
+
+public:
+
+    /**
+     * @brief operator ++: prefix ++ operator
+     * @return
+     */
+    VectorClock operator++ ();
+
+    /**
+     * @brief operator ++: postfix ++ operator
+     * @return
+     */
+    VectorClock operator++ (int);
 
 private:
 
