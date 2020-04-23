@@ -39,9 +39,25 @@ VectorClock::VectorClock(const QString& siteID, const QHash<QString, int>& vecto
     d->localClock.detach();
 }
 
+VectorClock::VectorClock(const VectorClock& other)
+{
+    d->siteID     = other.d->siteID;
+
+    d->localClock = other.d->localClock;
+    d->localClock.detach();
+}
+
 VectorClock::~VectorClock()
 {
     delete d;
+}
+
+VectorClock VectorClock::operator= (const VectorClock& other)
+{
+    d->siteID     = other.d->siteID;
+
+    d->localClock = other.d->localClock;
+    d->localClock.detach();
 }
 
 VectorClock VectorClock::operator++ ()
@@ -58,6 +74,30 @@ VectorClock VectorClock::operator++ (int)
     ++(d->localClock[d->siteID]);
 
     return clock;
+}
+
+void VectorClock::updateClock(const VectorClock& other)
+{
+    // increment local clock
+    ++(d->localClock[d->siteID]);
+
+    // update other clocks
+    for (QHash<QString, int>::const_iterator iter = other.d->localClock.cbegin();
+         iter != other.d->localClock.cend();
+         ++iter)
+    {
+        if (d->siteID != iter.key())
+        {
+            if (! d->localClock.contains(iter.key()))
+            {
+                d->localClock.insert(iter.key(), iter.value());
+            }
+            else if (d->localClock[iter.key()] < iter.value())
+            {
+                d->localClock[iter.key()] = iter.value();
+            }
+        }
+    }
 }
 
 }

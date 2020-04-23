@@ -25,6 +25,7 @@ public:
 
     VectorClock(const QString& siteID);
     VectorClock(const QString& siteID, const QHash<QString, int>& vector);
+    VectorClock(const VectorClock& other);
 
     ~VectorClock();
 
@@ -41,6 +42,10 @@ public:
      * @return
      */
     VectorClock operator++ (int);
+
+    VectorClock operator= (const VectorClock& other);
+
+    void updateClock(const VectorClock& other);
 
 private:
 
