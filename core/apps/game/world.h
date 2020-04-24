@@ -13,19 +13,24 @@
 #define WORLD_H
 
 // Qt include
-//#include <QObject>
+#include <QObject>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QBrush>
 #include <QTimer>
+#include <QLinearGradient>
+#include <QColor>
 
 //std includes
 #include <vector>
 #include <memory>
-#include <utility>
+#include <cmath>
+#include <random>
+#include <QList>
 
 // Local include
 #include "player.h"
+#include "constants.h"
 
 //using namespace AirPlug;
 
@@ -41,12 +46,15 @@ private:
     QGraphicsView view;
 
     Player main_player;
-    std::vector<std::unique_ptr<Player>> connected_players;
+    std::vector<std::shared_ptr<Player>> connected_player;
 
     QTimer frame_timer;
 
+    void moveAndUpdatePlayer(Player &player);
+    void fixCollisions(Player &player);
+
 public slots:
-    void frameTimeout();
+    void frameTimeout(void);
 
 public:
     World();

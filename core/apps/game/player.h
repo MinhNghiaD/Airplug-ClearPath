@@ -17,7 +17,11 @@
 #include <QGraphicsRectItem>
 #include <QKeyEvent>
 
+//std includes
+#include <cmath>
+
 // Local include
+#include "constants.h"
 
 //using namespace AirPlug;
 
@@ -30,22 +34,29 @@ typedef struct
     bool right;
     bool up;
     bool down;
-} Controls;
+
+    int x_speed;
+    int y_speed;
+
+    int x;
+    int y;
+} State;
 
 class Player : public QGraphicsRectItem
 {
     //Q_OBJECT
 private:
-    Controls controls = {false,false,false,false};
-
-    int x_speed = 0;
-    int y_speed = 0;
+    State state = {false,false,false,false,0,0,0,0};
 
 public:
     Player();
     ~Player();
 
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
+
+    State getState(void);
+    void setSpeed(int x_speed, int y_speed);
 };
 
 }

@@ -23,24 +23,62 @@ void Player::keyPressEvent(QKeyEvent *event)
     switch(event->key())
     {
         case Qt::Key_Left:
-        setPos(x()-5,y());
+        state.left = true;
         break;
 
         case Qt::Key_Right:
-        setPos(x()+5,y());
+        state.right = true;
         break;
 
         case Qt::Key_Up:
-        setPos(x(),y()-5);
+        state.up = true;
         break;
 
         case Qt::Key_Down:
-        setPos(x(),y()+5);
+        state.down = true;
         break;
 
         default:
         return;
     }
+}
+
+void Player::keyReleaseEvent(QKeyEvent *event)
+{
+    switch(event->key())
+    {
+        case Qt::Key_Left:
+        state.left = false;
+        break;
+
+        case Qt::Key_Right:
+        state.right = false;
+        break;
+
+        case Qt::Key_Up:
+        state.up = false;
+        break;
+
+        case Qt::Key_Down:
+        state.down = false;
+        break;
+
+        default:
+        return;
+    }
+}
+
+State Player::getState(void)
+{
+    state.x = x();
+    state.y = y();
+    return state;
+}
+
+void Player::setSpeed(int x_speed, int y_speed)
+{
+    state.x_speed = x_speed;
+    state.y_speed = y_speed;
 }
 
 }
