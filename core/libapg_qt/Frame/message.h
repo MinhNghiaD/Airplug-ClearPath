@@ -44,6 +44,10 @@ public:
      */
     void parseText(const QString& text);
 
+    /**
+     * @brief parseTextWithKnownFields: parse a string message while keeping old contents
+     * @param text
+     */
     void parseTextWithKnownFields(const QString& text);
 
     /**
@@ -55,12 +59,20 @@ public:
 
     void addContent(const QString& key, const QString& value);
 
+    /**
+     * @brief getContents: return QHash of message content
+     * @return
+     */
     QHash<QString, QString> getContents() const;
 
     bool isEmpty() const;
 
     void clear();
 
+    /**
+     * @brief getMessage: convert to String message with proper delimitor
+     * @return
+     */
     QString getMessage() const;
 
 private:

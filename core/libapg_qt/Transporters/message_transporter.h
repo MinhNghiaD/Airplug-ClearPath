@@ -31,6 +31,7 @@ public:
     };
 
 public:
+
     MessageTransporter(QObject* parent = nullptr);
     ~MessageTransporter();
 

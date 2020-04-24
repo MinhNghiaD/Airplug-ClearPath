@@ -50,10 +50,18 @@ public:
 
     void operator = (const Header& otherheader);
 
+    /**
+     * @brief clear: erase the fields of header
+     */
     void clear();
 
     bool isEmpty() const;
 
+    /**
+     * @brief generateHeader: convert header to String format
+     * @param mode
+     * @return
+     */
     QString generateHeader(HeaderMode mode = HeaderMode::What) const;
 
     const QString& what()  const;

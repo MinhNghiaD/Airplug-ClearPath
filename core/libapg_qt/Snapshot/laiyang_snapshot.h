@@ -12,14 +12,18 @@
 #ifndef LAI_YANG_SNAPSHOT_H
 #define LAI_YANG_SNAPSHOT_H
 
+// Qt include
+#include <QObject>
+
 // Local include
 #include "message.h"
 
 namespace AirPlug
 {
 
-class LaiYangSnapshot
+class LaiYangSnapshot : public QObject
 {
+    Q_OBJECT
 public:
 
     LaiYangSnapshot();

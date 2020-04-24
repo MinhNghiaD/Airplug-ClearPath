@@ -30,7 +30,10 @@ public:
     ApplicationController(const QString& appName, QObject* parent = nullptr);
     ~ApplicationController();
 
-    // Initialization
+    /**
+     * @brief init: Initialization of controller
+     * @param app
+     */
     virtual void init(const QCoreApplication& app);
 
     int  getPeriod() const;
@@ -43,11 +46,21 @@ public:
 
     Header::HeaderMode headerMode() const;
 
+    /**
+     * @brief sendMessage: send message to Transporter interface
+     * @param message
+     * @param what
+     * @param who
+     * @param where
+     */
     virtual void sendMessage(const Message& message, const QString& what, const QString& who, const QString& where);
 
 public:
 
-    // main notification handler
+    /**
+     * slotReceiveMessage: main notification handler
+     *
+     */
     Q_SLOT virtual void slotReceiveMessage(Header, Message) = 0;
 
 protected:

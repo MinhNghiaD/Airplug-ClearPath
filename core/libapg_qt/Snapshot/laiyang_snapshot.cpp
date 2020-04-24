@@ -1,5 +1,8 @@
 #include "laiyang_snapshot.h"
 
+#include <QVector>
+#include "vector_clock.h"
+
 namespace AirPlug
 {
 
@@ -27,10 +30,14 @@ public:
 
     // TODO collect state
     int msgCounter;
+
+    // System state will be encoded in Json object
+    QVector<QJsonObject> states;
 };
 
 LaiYangSnapshot::LaiYangSnapshot()
-    : d(new Private())
+    : QObject(nullptr),
+      d(new Private())
 {
 }
 

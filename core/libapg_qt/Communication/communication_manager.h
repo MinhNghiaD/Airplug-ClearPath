@@ -59,8 +59,6 @@ public:
               ProtocolType   protocol = ProtocolType::StandardIO,
               bool           save     = true);
 
-
-
     bool subscribe(const QString& who, QString where = QString());
     bool subscribeLocalHost(const QString& who);
     bool subscribeAir(const QString& who);
