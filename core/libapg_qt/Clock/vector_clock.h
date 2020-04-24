@@ -18,6 +18,7 @@
 #include <QByteArray>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QJsonDocument>
 
 namespace AirPlug
 {

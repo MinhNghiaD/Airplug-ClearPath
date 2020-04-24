@@ -6,7 +6,8 @@
 namespace AirPlug
 {
 
-const QString LaiYangSnapshot::commonType = QLatin1String("common");
+const QString LaiYangSnapshot::commonType  = QLatin1String("common");
+const QString LaiYangSnapshot::saveCommand = QLatin1String("save local");
 
 class Q_DECL_HIDDEN LaiYangSnapshot::Private
 {
@@ -52,6 +53,12 @@ void LaiYangSnapshot::init()
 
     //TODO: save local state
     d->recorded  = true;
+
+    // Send save command to Control application to record local state
+    Message command;
+    command.addContent(QLatin1String("command"), saveCommand);
+
+    emit signalSaveState(command);
 }
 
 void LaiYangSnapshot::colorMessage(Message& message)
@@ -89,10 +96,19 @@ Message LaiYangSnapshot::preprocessMessage(const Message& message)
         contents.remove(QLatin1String("color"));
 
         // TODO: sort message by "type";
-        contents.remove(QLatin1String("type"));
+        //contents.remove(QLatin1String("type"));
     }
 
     return Message(contents);
+}
+
+void LaiYangSnapshot::addState(const QString& state)
+{
+    // This object should contain siteID, vector clock, local state
+    QJsonObject localState = QJsonDocument::fromJson(state.toUtf8()).object();
+
+    // TODO: do some verification on Vector clock before saving
+    d->states.append(localState);
 }
 
 }

@@ -29,8 +29,9 @@ public:
     LaiYangSnapshot();
     ~LaiYangSnapshot();
 
-    // Message type: common message
+    // Message type:
     static const QString commonType;
+    static const QString saveCommand;
 
 public:
 
@@ -51,6 +52,16 @@ public:
      * @return
      */
     Message preprocessMessage(const Message& message);
+
+    /**
+     * @brief addState: receive a local state
+     * @param state
+     */
+    void addState(const QString& state);
+
+public:
+
+    Q_SIGNAL void signalSaveState(Message command);
 
 private:
 
