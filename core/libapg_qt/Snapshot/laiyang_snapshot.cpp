@@ -33,6 +33,7 @@ public:
 
     // System state will be encoded in Json object
     QHash<QUuid, QJsonObject> states;
+    QHash<QUuid, QJsonObject> prepostMessages;
 };
 
 LaiYangSnapshot::LaiYangSnapshot()
@@ -171,8 +172,47 @@ bool LaiYangSnapshot::processStateMessage(ACLMessage* message, bool isLocal)
 
 void LaiYangSnapshot::collectState(const QJsonObject& state)
 {
-    // TODO: do some verification on Vector clock before saving base on siteID
+    if (validateState(state))
+    {
+        QUuid uuid = QUuid(state[QLatin1String("siteID")].toString());
 
+        d->states[uuid] = state;
+    }
+    else
+    {
+        qWarning() << "Inconherent Snapshot detected ---> drop state.";
+    }
+}
+
+bool LaiYangSnapshot::validateState(const QJsonObject& state)
+{
+    //TODO
+    QUuid uuid = QUuid(state[QLatin1String("siteID")].toString());
+
+    QJsonObject timestamp = state;
+    timestamp.remove(QLatin1String("state"));
+
+    VectorClock clock(timestamp);
+
+    // verify conference of snapshot by causality of snapshot
+    for (QHash<QUuid, QJsonObject>::const_iterator iter  = d->states.cbegin();
+                                                   iter != d->states.cend();
+                                                   ++iter)
+    {
+        QJsonObject currentTimestamp = iter.value();
+        currentTimestamp.remove(QLatin1String("state"));
+
+        VectorClock currentClock(currentTimestamp);
+
+        if (!(clock < currentClock) && !(currentClock < clock))
+        {
+            return false;
+        }
+    }
+
+
+
+    return true;
 }
 
 }

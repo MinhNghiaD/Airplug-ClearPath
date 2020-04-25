@@ -106,6 +106,12 @@ private:
      */
     void collectState(const QJsonObject& state);
 
+    /**
+     * @brief validateState :  verify if a state is valide to record
+     * @param state
+     * @return
+     */
+    bool validateState(const QJsonObject& state);
 
 private:
 
