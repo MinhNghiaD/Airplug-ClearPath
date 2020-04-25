@@ -37,6 +37,14 @@ int main(int argc, char *argv[])
         qDebug() << "timestamp :" << QJsonDocument(timestamp->convertToJson()).toJson(QJsonDocument::Compact);
     }
 
+    content = aclMessage2->getContent();
+
+    content.remove(QLatin1String("color"));
+
+    aclMessage2->setContent(content);
+
+    qDebug() << "message 2" << aclMessage2->getMessage();
+
     qDebug() << "content :" <<  QJsonDocument(aclMessage2->getContent()).toJson(QJsonDocument::Compact);
 
     qDebug() << "performative :" <<  aclMessage2->getPerformative();

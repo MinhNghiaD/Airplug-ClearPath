@@ -16,11 +16,14 @@
 #include <QObject>
 
 // Local include
-#include "message.h"
+#include "aclmessage.h"
 
 namespace AirPlug
 {
 
+/**
+ * @brief The LaiYangSnapshot class : Intermediate layer to handle Lai-Yang snapshot
+ */
 class LaiYangSnapshot : public QObject
 {
     Q_OBJECT
@@ -28,11 +31,6 @@ public:
 
     LaiYangSnapshot();
     ~LaiYangSnapshot();
-
-    // Message type:
-    static const QString commonType;
-    static const QString saveCommand;
-    static const QString stateMessage;
 
 public:
 
@@ -64,6 +62,10 @@ public:
 
     Q_SIGNAL void signalSaveState(Message command);
     Q_SIGNAL void signalSendState(Message state);
+
+private:
+
+    void requestSnapshot();
 
 private:
 

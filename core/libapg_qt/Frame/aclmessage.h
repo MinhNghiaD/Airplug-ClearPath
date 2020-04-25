@@ -19,6 +19,16 @@
 namespace AirPlug
 {
 
+/**
+ * @brief The ACLMessage class : organize AirPlug::Message with the structure of FIPA ACL Message
+ * The general form of the message will be as example below:
+ * {
+ *  "performative" : QString,
+ *  "timestamp"    : VectorClock
+ *  "content"      : JsonObject;
+ * }
+ */
+
 class ACLMessage : public Message
 {
 public:

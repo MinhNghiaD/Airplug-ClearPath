@@ -8,10 +8,6 @@
 namespace AirPlug
 {
 
-const QString LaiYangSnapshot::commonType  = QLatin1String("common");
-const QString LaiYangSnapshot::saveCommand = QLatin1String("saveLocal");
-const QString LaiYangSnapshot::stateMessage = QLatin1String("state");
-
 class Q_DECL_HIDDEN LaiYangSnapshot::Private
 {
 public:
@@ -56,8 +52,11 @@ void LaiYangSnapshot::init()
     d->recorded  = true;
 
     // Send save command to Control application to record local state
-    Message command;
-    command.addContent(QLatin1String("command"), saveCommand);
+    ACLMessage command(ACLMessage::REQUEST);
+
+
+
+    //command.addContent(QLatin1String("command"), saveCommand);
 
     // TODO: get local state return from base application
     emit signalSaveState(command);
