@@ -75,10 +75,10 @@ public:
      */
     QString getMessage() const;
 
-protected:
+private:
 
     class Private;
-    Private *d;
+    Private* d;
 };
 
 }

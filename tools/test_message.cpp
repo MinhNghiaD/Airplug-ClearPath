@@ -5,26 +5,32 @@
 #include <QDebug>
 
 // Local includes
-#include "message.h"
+#include "aclmessage.h"
 #include "header.h"
+#include "vector_clock.h"
 
 using namespace AirPlug;
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
-    a.setApplicationName("TEST");
+    ACLMessage message(ACLMessage::INFORM);
 
-    Message msg("init");
+     VectorClock clock1(QLatin1String("Site1"));
+     ++clock1;
 
-    msg.parseText(QLatin1String("^value~10^key~x"));
+    message.setTimeStamp(clock1);
 
-    qDebug() << "msg 1 " << msg.getMessage();
+    QJsonObject content;
+    content[QLatin1String("color")] = QLatin1String("white");
+    content[QLatin1String("message")] = QLatin1String("haha");
 
-    Message msg2(msg.getMessage());
+    message.setContent(content);
 
-    msg2.parseText(msg.getMessage());
+    qDebug() << "message 1:" << message.getMessage();
 
+    Message* message2 = new Message(message.getMessage());
 
-    return a.exec();
+    ACLMessage* aclMessage2 = static_cast<ACLMessage*>(message2);
+
+    qDebug() << "message 2:" << aclMessage2->getMessage();
 }
