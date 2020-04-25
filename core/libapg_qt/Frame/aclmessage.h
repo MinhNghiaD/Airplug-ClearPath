@@ -47,8 +47,9 @@ public:
     void setContent(const QJsonObject& content);
     void setTimeStamp(const VectorClock& clock);
 
-    VectorClock* getTimeStamp() const;
-    QJsonObject getContent() const;
+    QString      getPerformative() const;
+    VectorClock* getTimeStamp()    const;
+    QJsonObject  getContent()      const;
 };
 
 }

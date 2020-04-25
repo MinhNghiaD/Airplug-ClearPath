@@ -33,6 +33,11 @@ void ACLMessage::setTimeStamp(const VectorClock& clock)
     addContent(QLatin1String("timestamp"), QJsonDocument(clock.convertToJson()).toJson(QJsonDocument::Compact));
 }
 
+QString ACLMessage::getPerformative() const
+{
+    return getContents()[QLatin1String("perfomative")];
+}
+
 VectorClock* ACLMessage::getTimeStamp() const
 {
     QHash<QString, QString> contents = getContents();

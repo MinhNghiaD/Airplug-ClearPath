@@ -28,9 +28,16 @@ int main(int argc, char *argv[])
 
     qDebug() << "message 1:" << message.getMessage();
 
-    Message* message2 = new Message(message.getMessage());
+    ACLMessage* aclMessage2 = static_cast<ACLMessage*>(new Message(message.getMessage()));
 
-    ACLMessage* aclMessage2 = static_cast<ACLMessage*>(message2);
+    VectorClock* timestamp = aclMessage2->getTimeStamp();
 
-    qDebug() << "message 2:" << aclMessage2->getMessage();
+    if (timestamp)
+    {
+        qDebug() << "timestamp :" << QJsonDocument(timestamp->convertToJson()).toJson(QJsonDocument::Compact);
+    }
+
+    qDebug() << "content :" <<  QJsonDocument(aclMessage2->getContent()).toJson(QJsonDocument::Compact);
+
+    qDebug() << "performative :" <<  aclMessage2->getPerformative();
 }
