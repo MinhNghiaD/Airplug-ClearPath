@@ -48,7 +48,7 @@ void NetController::slotReceiveMessage(Header header, Message message)
     if (header.what() == QLatin1String("NET"))
     {
         // receive from other NET
-        message = d->snapshotManager.preprocessMessage(message);
+        //message = d->snapshotManager.preprocessMessage(message);
 
         // remove this pair and move to app
         QHash<QString, QString> contents = message.getContents();
@@ -68,7 +68,7 @@ void NetController::slotReceiveMessage(Header header, Message message)
         app = QLatin1String("NET");
 
         // color message before sending to other NET
-        d->snapshotManager.colorMessage(message);
+        //d->snapshotManager.colorMessage(message);
     }
 
     sendMessage(message, QLatin1String("NET"), app, header.where());

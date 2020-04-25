@@ -52,68 +52,38 @@ void LaiYangSnapshot::init()
     d->recorded  = true;
 
     // Send save command to Control application to record local state
-    ACLMessage command(ACLMessage::REQUEST);
+    //ACLMessage command(ACLMessage::REQUEST);
 
 
 
     //command.addContent(QLatin1String("command"), saveCommand);
 
     // TODO: get local state return from base application
-    emit signalSaveState(command);
+    //emit signalSaveState(command);
 }
 
-void LaiYangSnapshot::colorMessage(Message& message)
+void LaiYangSnapshot::colorMessage(ACLMessage* message)
 {
-    message.addContent(QLatin1String("type"), commonType);
+    QJsonObject content = message->getContent();
 
-    QString color;
-
+    // append color field to the content of the message
     if (d->recorded)
     {
-        color = QLatin1String("red");
+        content[QLatin1String("color")] = QLatin1String("red");
     }
     else
     {
-        color = QLatin1String("white");
+        content[QLatin1String("color")] = QLatin1String("white");
     }
 
-    message.addContent(QLatin1String("color"), color);
+    message->setContent(content);
 }
 
-Message LaiYangSnapshot::preprocessMessage(const Message& message)
+
+void LaiYangSnapshot::collectState(const QJsonObject& state)
 {
-    QHash<QString, QString> contents = message.getContents();
-
-    if (contents.contains(QLatin1String("color")))
-    {
-        QString color = contents[QLatin1String("color")];
-
-        if (color == QLatin1String("red") && !d->recorded)
-        {
-            d->recorded  = true;
-            // TODO: save local state
-            Message command;
-            command.addContent(QLatin1String("command"), saveCommand);
-
-            emit signalSaveState(command);
-        }
-
-        contents.remove(QLatin1String("color"));
-
-        // TODO: sort message by "type";
-        //contents.remove(QLatin1String("type"));
-    }
-
-    return Message(contents);
-}
-
-void LaiYangSnapshot::addState(const QString& state)
-{
-    // This object should contain siteID, vector clock, local variables
-    QJsonObject localState = QJsonDocument::fromJson(state.toUtf8()).object();
-
     // TODO: do some verification on Vector clock before saving base on siteID
-    d->states.insert(QUuid(localState[QLatin1String("siteID")].toString()), localState);
+
 /*
     if (! d->initiator)
     {

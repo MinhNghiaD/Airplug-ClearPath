@@ -40,32 +40,47 @@ public:
     void init();
 
     /**
-     * @brief colorMessage: append additional color field to the message from Base application before sending
+     * @brief processMessage : process a new message before forwarding it
      * @param message
+     * @param isLocal
+     * @return :
+     *      - true : accept to forward message
+     *      - false: drop message
      */
-    void colorMessage(Message& message);
+    bool processMessage(ACLMessage* message, bool isLocal);
 
-    /**
-     * @brief preprocessMessage: snapshot guard verification after message arrival
-     * @param message
-     * @return
-     */
-    Message preprocessMessage(const Message& message);
-
-    /**
-     * @brief addState: receive a local state
-     * @param state
-     */
-    void addState(const QString& state);
 
 public:
 
-    Q_SIGNAL void signalSaveState(Message command);
-    Q_SIGNAL void signalSendState(Message state);
+    Q_SIGNAL void signalSaveState(ACLMessage* command);
+    Q_SIGNAL void signalSendState(ACLMessage* state);
 
 private:
 
-    void requestSnapshot();
+    //void requestSnapshot();
+
+    /**
+     * @brief colorMessage: append additional color field to the message from Base application before sending them
+     * @param message
+     */
+    void colorMessage(ACLMessage* message);
+
+
+
+    /**
+     * @brief collectState: collect a local state
+     * @param state
+     *
+     * A State object should have the form of :
+     * {
+     *     siteID : Uuid
+     *     clock  : vector clock
+     *     options: application option
+     *     local varable : jsonObject
+     * }
+     */
+    void collectState(const QJsonObject& state);
+
 
 private:
 
