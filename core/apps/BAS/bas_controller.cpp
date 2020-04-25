@@ -72,6 +72,8 @@ void BasController::pause(bool b)
 void BasController::setMessage(const QString& msg)
 {
     d->messageToSend = msg;
+
+    ++(*m_clock);
 }
 
 void BasController::slotActivateTimer(int period)
@@ -88,6 +90,8 @@ void BasController::slotActivateTimer(int period)
     m_optionParser.autoSend = true;
 
     d->timer->start(period);
+
+    ++(*m_clock);
 }
 
 void BasController::slotDeactivateTimer()
@@ -99,6 +103,8 @@ void BasController::slotDeactivateTimer()
     {
         d->timer->stop();
     }
+
+    ++(*m_clock);
 }
 
 void BasController::slotPeriodChanged(int period)
@@ -109,12 +115,18 @@ void BasController::slotPeriodChanged(int period)
     {
         d->timer->setInterval(period);
     }
+
+    ++(*m_clock);
 }
 
 void BasController::slotSendMessage()
 {
+    ++(*m_clock);
+
     Message message;
 
+    // attache clock to the message
+    message.addContent(QLatin1String("clock"), QJsonDocument(m_clock->convertToJson()).toJson(QJsonDocument::Compact));
     message.addContent(QLatin1String("payload"), d->messageToSend);
     message.addContent(QLatin1String("nseq"), QString::number(d->nbSequence));
 
@@ -128,11 +140,24 @@ void BasController::slotSendMessage()
 
 void BasController::slotReceiveMessage(Header header, Message message)
 {
+    QHash<QString, QString> contents = message.getContents();
+
+    if (contents.contains(QLatin1String("clock")))
+    {
+        QJsonObject jsonClock =  QJsonDocument::fromJson(contents[QLatin1String("clock")].toUtf8()).object();
+
+        VectorClock senderClock(jsonClock);
+
+        m_clock->updateClock(senderClock);
+    }
+
     emit signalMessageReceived(header, message);
 }
 
 QJsonObject BasController::captureLocalState() const
 {
+    ++(*m_clock);
+
     QJsonObject applicationState;
 
     applicationState[QLatin1String("current message")] = d->messageToSend;
