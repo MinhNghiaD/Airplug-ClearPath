@@ -142,6 +142,7 @@ void BasController::slotReceiveMessage(Header header, Message message)
 {
     QHash<QString, QString> contents = message.getContents();
 
+    // read sender's clock
     if (contents.contains(QLatin1String("clock")))
     {
         QJsonObject jsonClock =  QJsonDocument::fromJson(contents[QLatin1String("clock")].toUtf8()).object();
@@ -160,12 +161,12 @@ QJsonObject BasController::captureLocalState() const
 
     QJsonObject applicationState;
 
-    applicationState[QLatin1String("current message")] = d->messageToSend;
-    applicationState[QLatin1String("sequence number")] = d->nbSequence;
+    applicationState[QLatin1String("messageToSend")] = d->messageToSend;
+    applicationState[QLatin1String("nbSequence")] = d->nbSequence;
 
     QJsonObject localState = m_clock->convertToJson();
-    localState[QLatin1String("state")]   = applicationState;
     localState[QLatin1String("options")] = m_optionParser.convertToJson();
+    localState[QLatin1String("state")]   = applicationState;
 
     return localState;
 }

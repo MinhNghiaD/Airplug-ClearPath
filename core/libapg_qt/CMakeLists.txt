@@ -3,6 +3,7 @@
 
 set(libapg_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/Frame/header.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/Frame/message.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/Frame/aclmessage.cpp
 
                 ${CMAKE_CURRENT_SOURCE_DIR}/Transporters/message_transporter.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/Transporters/std_transporter.cpp

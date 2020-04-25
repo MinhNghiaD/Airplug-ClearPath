@@ -1,13 +1,16 @@
 #include "laiyang_snapshot.h"
 
-#include <QVector>
+//#include <QVector>
+#include <QUuid>
+
 #include "vector_clock.h"
 
 namespace AirPlug
 {
 
 const QString LaiYangSnapshot::commonType  = QLatin1String("common");
-const QString LaiYangSnapshot::saveCommand = QLatin1String("save local");
+const QString LaiYangSnapshot::saveCommand = QLatin1String("saveLocal");
+const QString LaiYangSnapshot::stateMessage = QLatin1String("state");
 
 class Q_DECL_HIDDEN LaiYangSnapshot::Private
 {
@@ -29,11 +32,10 @@ public:
     bool recorded;
     bool initiator;
 
-    // TODO collect state
     int msgCounter;
 
     // System state will be encoded in Json object
-    QVector<QJsonObject> states;
+    QHash<QUuid, QJsonObject> states;
 };
 
 LaiYangSnapshot::LaiYangSnapshot()
@@ -51,13 +53,13 @@ void LaiYangSnapshot::init()
 {
     d->initiator = true;
 
-    //TODO: save local state
     d->recorded  = true;
 
     // Send save command to Control application to record local state
     Message command;
     command.addContent(QLatin1String("command"), saveCommand);
 
+    // TODO: get local state return from base application
     emit signalSaveState(command);
 }
 
@@ -89,8 +91,12 @@ Message LaiYangSnapshot::preprocessMessage(const Message& message)
 
         if (color == QLatin1String("red") && !d->recorded)
         {
-            // TODO: save local state
             d->recorded  = true;
+            // TODO: save local state
+            Message command;
+            command.addContent(QLatin1String("command"), saveCommand);
+
+            emit signalSaveState(command);
         }
 
         contents.remove(QLatin1String("color"));
@@ -104,11 +110,19 @@ Message LaiYangSnapshot::preprocessMessage(const Message& message)
 
 void LaiYangSnapshot::addState(const QString& state)
 {
-    // This object should contain siteID, vector clock, local state
+    // This object should contain siteID, vector clock, local variables
     QJsonObject localState = QJsonDocument::fromJson(state.toUtf8()).object();
 
-    // TODO: do some verification on Vector clock before saving
-    d->states.append(localState);
+    // TODO: do some verification on Vector clock before saving base on siteID
+    d->states.insert(QUuid(localState[QLatin1String("siteID")].toString()), localState);
+/*
+    if (! d->initiator)
+    {
+        // TODO send to initiator
+        Message message;
+
+    }
+*/
 }
 
 }

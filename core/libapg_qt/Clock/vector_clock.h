@@ -30,7 +30,7 @@ public:
     VectorClock(const QString& siteID);
     VectorClock(const QString& siteID, const QHash<QString, int>& vector);
 
-    VectorClock(const QJsonObject& otherJson);
+    VectorClock(const QJsonObject& json);
 
     VectorClock(const VectorClock& other);
 

@@ -32,6 +32,7 @@ public:
     // Message type:
     static const QString commonType;
     static const QString saveCommand;
+    static const QString stateMessage;
 
 public:
 
@@ -62,6 +63,7 @@ public:
 public:
 
     Q_SIGNAL void signalSaveState(Message command);
+    Q_SIGNAL void signalSendState(Message state);
 
 private:
 

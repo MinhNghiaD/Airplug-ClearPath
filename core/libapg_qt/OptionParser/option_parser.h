@@ -42,6 +42,10 @@ public:
      */
     void showOption() const;
 
+    /**
+     * @brief convertToJson : convert application options into Json object
+     * @return
+     */
     QJsonObject convertToJson() const;
 
 public:
