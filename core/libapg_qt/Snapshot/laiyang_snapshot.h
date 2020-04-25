@@ -52,12 +52,13 @@ public:
 
 public:
 
-    Q_SIGNAL void signalSaveState(ACLMessage* command);
-    Q_SIGNAL void signalSendState(ACLMessage* state);
-
+    Q_SIGNAL void signalRequestSnapshot(Message* message);
 private:
 
-    //void requestSnapshot();
+    /**
+     * @brief requestSnapshot : send request taking snapshot to Base application
+     */
+    void requestSnapshot();
 
     /**
      * @brief colorMessage: append additional color field to the message from Base application before sending them
@@ -65,6 +66,27 @@ private:
      */
     void colorMessage(ACLMessage* message);
 
+    /**
+     * @brief getColor : get color of incomming message
+     * @param message
+     * @return
+     */
+    QString getColor(ACLMessage* message) const;
+
+    /**
+     * @brief processStateMessage : action taken when receive an ACL message with performative INFORM_STATE
+     * @param message
+     * @param isLocal
+     * @return
+     */
+    bool processStateMessage(ACLMessage* message, bool isLocal);
+
+    /**
+     * @brief processPrePostMessage : action taken when receive an ACL Message with performative PREPOST_MESSAGE
+     * @param message
+     * @return
+     */
+    bool processPrePostMessage(ACLMessage* message);
 
 
     /**

@@ -33,22 +33,25 @@ class ACLMessage : public Message
 {
 public:
 
-    // standard FIPA ACL Message Perfomative
-    static const QString REQUEST;
-    static const QString INFORM;
-    static const QString QUERY_IF;
-    static const QString REFUSE;
-    static const QString CONFIRM;
-    static const QString UNKNOWN;
+    enum Performative
+    {
+        // standard FIPA ACL Message Perfomative
+        REQUEST = 0,
+        INFORM,
+        QUERY_IF,
+        REFUSE,
+        CONFIRM,
+        UNKNOWN,
 
-    // custom Distributed perfomative
-    static const QString REQUEST_SNAPSHOT;
-    static const QString INFORM_STATE;
-    static const QString PREPOST_MESSAGE;
+        // custom Distributed perfomative
+        REQUEST_SNAPSHOT,
+        INFORM_STATE,
+        PREPOST_MESSAGE,
+    };
 
 public:
 
-    ACLMessage(const QString& perfomative);
+    ACLMessage(Performative perfomative);
 
     ~ACLMessage();
 
@@ -57,7 +60,7 @@ public:
     void setContent(const QJsonObject& content);
     void setTimeStamp(const VectorClock& clock);
 
-    QString      getPerformative() const;
+    Performative getPerformative() const;
     VectorClock* getTimeStamp()    const;
     QJsonObject  getContent()      const;
 };

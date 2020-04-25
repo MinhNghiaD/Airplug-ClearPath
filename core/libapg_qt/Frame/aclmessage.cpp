@@ -3,20 +3,10 @@
 namespace AirPlug
 {
 
-const QString ACLMessage::REQUEST          = QLatin1String("request");
-const QString ACLMessage::INFORM           = QLatin1String("inform");
-const QString ACLMessage::QUERY_IF         = QLatin1String("query_if");
-const QString ACLMessage::REFUSE           = QLatin1String("refuse");
-const QString ACLMessage::CONFIRM          = QLatin1String("confirm");
-const QString ACLMessage::UNKNOWN          = QLatin1String("unknow");
-const QString ACLMessage::REQUEST_SNAPSHOT = QLatin1String("request_snapshot");
-const QString ACLMessage::INFORM_STATE     = QLatin1String("inform_state");
-const QString ACLMessage::PREPOST_MESSAGE  = QLatin1String("prepost_message");
-
-ACLMessage::ACLMessage(const QString& perfomative)
+ACLMessage::ACLMessage(Performative perfomative)
     : Message()
 {
-    addContent(QLatin1String("perfomative"), perfomative);
+    addContent(QLatin1String("perfomative"), QString::number(perfomative));
 }
 
 ACLMessage::~ACLMessage()
@@ -33,9 +23,9 @@ void ACLMessage::setTimeStamp(const VectorClock& clock)
     addContent(QLatin1String("timestamp"), QJsonDocument(clock.convertToJson()).toJson(QJsonDocument::Compact));
 }
 
-QString ACLMessage::getPerformative() const
+ACLMessage::Performative ACLMessage::getPerformative() const
 {
-    return getContents()[QLatin1String("perfomative")];
+    return static_cast<Performative>(getContents()[QLatin1String("perfomative")].toInt());
 }
 
 VectorClock* ACLMessage::getTimeStamp() const

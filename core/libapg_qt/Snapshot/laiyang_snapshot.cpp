@@ -49,17 +49,59 @@ void LaiYangSnapshot::init()
 {
     d->initiator = true;
 
-    d->recorded  = true;
+    requestSnapshot();
+}
 
-    // Send save command to Control application to record local state
-    //ACLMessage command(ACLMessage::REQUEST);
+bool LaiYangSnapshot::processMessage(ACLMessage* message, bool isLocal)
+{
+    switch (message->getPerformative())
+    {
+        case ACLMessage::INFORM_STATE :
+
+            //return processStateMessage(message, isLocal);
+
+        case ACLMessage::PREPOST_MESSAGE:
+
+            break;
+
+        default:
+            // Normal message
+            if (isLocal)
+            {
+                // receive message from local application ==> add color and send
+                colorMessage(message);
+            }
+            else
+            {
+                // Receive from another NET ==> get color
+                QString color = getColor(message);
+
+                if (color == QLatin1String("red") && !d->recorded)
+                {
+                    requestSnapshot();
+                }
+                else if (color == QLatin1String("white") && !d->recorded)
+                {
+                    // prepost message
+
+                }
+            }
+
+            // forward the message
+            return true;
+    }
+}
 
 
+/* ----------------------------------------------- Helper functions -----------------------------------------------*/
 
-    //command.addContent(QLatin1String("command"), saveCommand);
+void LaiYangSnapshot::requestSnapshot()
+{
+    d->recorded = true;
 
-    // TODO: get local state return from base application
-    //emit signalSaveState(command);
+    ACLMessage* command = new ACLMessage(ACLMessage::REQUEST_SNAPSHOT);
+
+    emit signalRequestSnapshot(command);
 }
 
 void LaiYangSnapshot::colorMessage(ACLMessage* message)
@@ -77,6 +119,19 @@ void LaiYangSnapshot::colorMessage(ACLMessage* message)
     }
 
     message->setContent(content);
+}
+
+QString LaiYangSnapshot::getColor(ACLMessage* message) const
+{
+    QJsonObject content = message->getContent();
+
+    QString color = content[QLatin1String("color")].toString();
+
+    content.remove(QLatin1String("color"));
+
+    message->setContent(content);
+
+    return color;
 }
 
 
