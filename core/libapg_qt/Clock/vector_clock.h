@@ -62,11 +62,19 @@ public:
      */
     bool operator < (const VectorClock& other);
 
+public:
+
     /**
      * @brief convertToJson: turn Clock to Json format
      * @return
      */
     QJsonObject convertToJson() const;
+
+    /**
+     * @brief getSiteID: return siteID
+     * @return
+     */
+    QString getSiteID() const;
 
 private:
 

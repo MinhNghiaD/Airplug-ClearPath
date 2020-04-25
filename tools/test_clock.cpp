@@ -1,8 +1,7 @@
 // Qt includes
-#include <QCoreApplication>
-
 #include <QString>
 #include <QJsonDocument>
+#include <QUuid>
 #include <QDebug>
 
 // Local includes
@@ -10,10 +9,8 @@
 
 using namespace AirPlug;
 
-int main(int argc, char *argv[])
+int main()
 {
-    QCoreApplication a(argc, argv);
-
     VectorClock clock1(QLatin1String("Site1"));
     VectorClock clock2(QLatin1String("Site2"));
 
@@ -29,5 +26,5 @@ int main(int argc, char *argv[])
     clock2.updateClock(clock1);
     qDebug() << "clock 2 after receive from clock 1: " << QJsonDocument(clock2.convertToJson()).toJson();
 
-    return a.exec();
+    qDebug() << "uuid : " << QUuid::createUuid().toByteArray();
 }

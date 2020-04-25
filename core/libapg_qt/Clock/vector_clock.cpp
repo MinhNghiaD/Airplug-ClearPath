@@ -137,4 +137,11 @@ QJsonObject VectorClock::convertToJson() const
     return json;
 }
 
+QString VectorClock::getSiteID() const
+{
+    return d->siteID;
+}
+
+
+
 }
