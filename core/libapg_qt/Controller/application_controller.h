@@ -59,10 +59,17 @@ public:
 public:
 
     /**
-     * @brief generatedSiteID : generate random siteID by randomization, therefore the probability of having 2 identical IDs is really low
+     * @brief generatedSiteID : generate random siteID by random UUID generator, therefore the probability of having 2 identical IDs is really low
      * @return
      */
     static QString generatedSiteID();
+
+    /**
+     * @brief captureLocalState : save local state of the application to a Json object for snapshot.
+     * The general state will contains siteID, local clock and application local variable
+     * @return
+     */
+    virtual QJsonObject captureLocalState() const;
 
 public:
 

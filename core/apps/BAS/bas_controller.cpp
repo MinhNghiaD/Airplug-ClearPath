@@ -131,4 +131,18 @@ void BasController::slotReceiveMessage(Header header, Message message)
     emit signalMessageReceived(header, message);
 }
 
+QJsonObject BasController::captureLocalState() const
+{
+    QJsonObject applicationState;
+
+    applicationState[QLatin1String("current message")] = d->messageToSend;
+    applicationState[QLatin1String("sequence number")] = d->nbSequence;
+
+    QJsonObject localState = m_clock->convertToJson();
+    localState[QLatin1String("state")]   = applicationState;
+    localState[QLatin1String("options")] = m_optionParser.convertToJson();
+
+    return localState;
+}
+
 }

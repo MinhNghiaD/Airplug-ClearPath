@@ -204,5 +204,29 @@ void OptionParser::showOption() const
             qDebug() << "message format      :" << "what";
     }
 }
+
+QJsonObject OptionParser::convertToJson() const
+{
+    QJsonObject options;
+
+    options[QLatin1String("start")]       = start;
+    options[QLatin1String("debug")]       = debug;
+    options[QLatin1String("nogui")]       = nogui;
+    options[QLatin1String("save")]        = save;
+    options[QLatin1String("safemode")]    = safemode;
+    options[QLatin1String("autoSend")]    = autoSend;
+    options[QLatin1String("remote")]      = start;
+    options[QLatin1String("verbose")]     = verbose;
+    options[QLatin1String("delay")]       = delay;
+    options[QLatin1String("mode")]        = mode;
+    options[QLatin1String("ident")]       = ident;
+    options[QLatin1String("source")]      = source;
+    options[QLatin1String("destination")] = destination;
+    options[QLatin1String("remoteHost")]  = remoteHost;
+    options[QLatin1String("remotePort")]  = remotePort;
+
+    return options;
+}
+
 }
 

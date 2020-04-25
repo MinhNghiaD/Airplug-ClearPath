@@ -19,6 +19,7 @@ ApplicationController::ApplicationController(const QString& appName, QObject* pa
 ApplicationController::~ApplicationController()
 {
     delete m_communication;
+    delete m_clock;
 }
 
 void ApplicationController::init(const QCoreApplication& app)
@@ -103,6 +104,14 @@ QString ApplicationController::generatedSiteID()
     // TODO: use more effective method to generate UUID
     // Generate random UUID
     return QUuid::createUuid().toString();
+}
+
+QJsonObject ApplicationController::captureLocalState() const
+{
+    QJsonObject localState = m_clock->convertToJson();
+    localState[QLatin1String("options")] = m_optionParser.convertToJson();
+
+    return localState;
 }
 
 }

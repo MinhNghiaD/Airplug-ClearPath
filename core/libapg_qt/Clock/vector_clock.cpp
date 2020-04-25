@@ -104,7 +104,7 @@ bool VectorClock::operator < (const VectorClock& other)
                                              iter != d->localClock.cend();
                                              ++iter)
     {
-        if ( (! other.d->localClock.contains(iter.key()))      ||
+        if ( (! other.d->localClock.contains(iter.key()) && iter.value() != 0) ||
              (iter.value() > other.d->localClock[iter.key()]) )
         {
             return false;
