@@ -28,24 +28,27 @@ int main(int argc, char *argv[])
 
     qDebug() << "message 1:" << message.getMessage();
 
-    ACLMessage* aclMessage2 = static_cast<ACLMessage*>(new Message(message.getMessage()));
+    ACLMessage aclMessage2(message.getMessage());
 
-    VectorClock* timestamp = aclMessage2->getTimeStamp();
+    VectorClock* timestamp = aclMessage2.getTimeStamp();
 
     if (timestamp)
     {
         qDebug() << "timestamp :" << QJsonDocument(timestamp->convertToJson()).toJson(QJsonDocument::Compact);
     }
 
-    content = aclMessage2->getContent();
+    content = aclMessage2.getContent();
 
     content.remove(QLatin1String("color"));
 
-    aclMessage2->setContent(content);
+    aclMessage2.setContent(content);
 
-    qDebug() << "message 2" << aclMessage2->getMessage();
+    qDebug() << "message 2" << aclMessage2.getMessage();
 
-    qDebug() << "content :" <<  QJsonDocument(aclMessage2->getContent()).toJson(QJsonDocument::Compact);
+    qDebug() << "content :" <<  QJsonDocument(aclMessage2.getContent()).toJson(QJsonDocument::Compact);
 
-    qDebug() << "performative :" <<  aclMessage2->getPerformative();
+    qDebug() << "performative :" <<  aclMessage2.getPerformative();
+
+    ACLMessage message3(aclMessage2);
+    qDebug() << "message 3 : " << message3.getMessage();
 }

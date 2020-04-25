@@ -9,6 +9,11 @@ ACLMessage::ACLMessage(Performative perfomative)
     addContent(QLatin1String("perfomative"), QString::number(perfomative));
 }
 
+ACLMessage::ACLMessage(const QString& message)
+    : Message(message)
+{
+}
+
 ACLMessage::~ACLMessage()
 {
 }

@@ -52,6 +52,7 @@ public:
 public:
 
     ACLMessage(Performative perfomative);
+    ACLMessage(const QString& message);
 
     ~ACLMessage();
 
