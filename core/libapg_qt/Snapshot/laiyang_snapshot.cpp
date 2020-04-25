@@ -1,7 +1,8 @@
 #include "laiyang_snapshot.h"
 
-//#include <QVector>
+#include <QDebug>
 #include <QUuid>
+
 
 #include "vector_clock.h"
 
@@ -134,19 +135,44 @@ QString LaiYangSnapshot::getColor(ACLMessage* message) const
     return color;
 }
 
+bool LaiYangSnapshot::processStateMessage(ACLMessage* message, bool isLocal)
+{
+    VectorClock* timestamp = message->getTimeStamp();
+
+    if (!timestamp)
+    {
+        qWarning() << "INFORM_STATE message doesn't contain timestamp.";
+        return false;
+    }
+
+    QJsonObject state = timestamp->convertToJson();
+
+    QJsonObject content = message->getContent();
+
+    state[QLatin1String("state")] = content;
+
+    if (d->initiator)
+    {
+        // Collect state
+        collectState(state);
+
+        return false;
+    }
+    else if (isLocal)
+    {
+        // Record State from local application
+        collectState(state);
+    }
+
+    // Forward to initiator
+    return true;
+}
+
 
 void LaiYangSnapshot::collectState(const QJsonObject& state)
 {
     // TODO: do some verification on Vector clock before saving base on siteID
 
-/*
-    if (! d->initiator)
-    {
-        // TODO send to initiator
-        Message message;
-
-    }
-*/
 }
 
 }

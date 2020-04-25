@@ -49,10 +49,10 @@ public:
      */
     bool processMessage(ACLMessage* message, bool isLocal);
 
-
 public:
 
     Q_SIGNAL void signalRequestSnapshot(Message* message);
+
 private:
 
     /**
@@ -97,9 +97,12 @@ private:
      * {
      *     siteID : Uuid
      *     clock  : vector clock
-     *     options: application option
-     *     local varable : jsonObject
+     *     state  : {
+     *                  options: application option
+     *                  local varable : jsonObject
+     *              }
      * }
+     *
      */
     void collectState(const QJsonObject& state);
 
