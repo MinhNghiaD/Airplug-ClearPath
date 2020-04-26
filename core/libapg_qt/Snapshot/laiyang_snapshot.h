@@ -15,7 +15,7 @@
 // Qt include
 #include <QObject>
 
-// Local include
+// libapg include
 #include "aclmessage.h"
 
 namespace AirPlug
@@ -27,6 +27,15 @@ namespace AirPlug
 class LaiYangSnapshot : public QObject
 {
     Q_OBJECT
+public:
+
+    enum ForwardPort
+    {
+        BAS = 0,        // forward to Basic application
+        NET,            // forward to the network
+        DROP,           // drop the message
+    };
+
 public:
 
     LaiYangSnapshot();
@@ -42,17 +51,16 @@ public:
     /**
      * @brief processMessage : process a new message before forwarding it
      * @param message
-     * @param isLocal
-     * @return :
-     *      - true : accept to forward message
-     *      - false: drop message
+     * @param fromLocal
+     * @return
      */
-    bool processMessage(ACLMessage* message, bool isLocal);
+    ForwardPort processMessage(ACLMessage* message, bool fromLocal);
 
 public:
 
-    // NOTE: this signal has to be connect by Qt::DirectConnection to envoke the slot immediately
-    Q_SIGNAL void signalRequestSnapshot(Message* marker);
+    // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
+    Q_SIGNAL void signalRequestSnapshot(const Message* marker);
+    Q_SIGNAL void signalForwardPrePost(const Message* prepost);
 
 private:
 
@@ -81,14 +89,13 @@ private:
      * @param isLocal
      * @return
      */
-    bool processStateMessage(ACLMessage* message, bool isLocal);
+    ForwardPort processStateMessage(const ACLMessage* message, bool fromLocal);
 
     /**
      * @brief processPrePostMessage : action taken when receive an ACL Message with performative PREPOST_MESSAGE
      * @param message
-     * @return
      */
-    bool processPrePostMessage(ACLMessage* message);
+    void processPrePostMessage(const ACLMessage* message);
 
 
     /**
@@ -114,6 +121,12 @@ private:
      * @return
      */
     bool validateState(const QJsonObject& state);
+
+    /**
+     * @brief collectPrePostMessage : collect prepost message
+     * @param message
+     */
+    void collectPrePostMessage(const QJsonObject& prepostMessage);
 
 private:
 

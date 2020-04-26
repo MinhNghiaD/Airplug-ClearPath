@@ -29,7 +29,7 @@ public:
     bool recorded;
     bool initiator;
 
-    int msgCounter;
+    int  msgCounter;
 
     // System state will be encoded in Json object
     QHash<QUuid, QJsonObject> states;
@@ -54,24 +54,29 @@ void LaiYangSnapshot::init()
     requestSnapshot();
 }
 
-bool LaiYangSnapshot::processMessage(ACLMessage* message, bool isLocal)
+// TODO: consider wave to build broadcast system after forward to BAS
+LaiYangSnapshot::ForwardPort LaiYangSnapshot::processMessage(ACLMessage* message, bool fromLocal)
 {
     switch (message->getPerformative())
     {
         case ACLMessage::INFORM_STATE :
 
-            return processStateMessage(message, isLocal);
+            return processStateMessage(message, fromLocal);
 
         case ACLMessage::PREPOST_MESSAGE:
 
-            break;
+            processPrePostMessage(message);
+
+            return ForwardPort::DROP;
 
         default:
             // Normal message
-            if (isLocal)
+            if (fromLocal)
             {
                 // receive message from local application ==> add color and send
                 colorMessage(message);
+
+                return ForwardPort::NET;
             }
             else
             {
@@ -85,12 +90,11 @@ bool LaiYangSnapshot::processMessage(ACLMessage* message, bool isLocal)
                 else if (color == QLatin1String("white") && !d->recorded)
                 {
                     // prepost message
-
+                    processPrePostMessage(message);
                 }
-            }
 
-            // forward the message
-            return true;
+                return ForwardPort::BAS;
+            }
     }
 }
 
@@ -101,9 +105,10 @@ void LaiYangSnapshot::requestSnapshot()
 {
     d->recorded = true;
 
-    ACLMessage* command = new ACLMessage(ACLMessage::REQUEST_SNAPSHOT);
+    // Chandy-Lamport marker
+    ACLMessage* marker = new ACLMessage(ACLMessage::REQUEST_SNAPSHOT);
 
-    emit signalRequestSnapshot(command);
+    emit signalRequestSnapshot(marker);
 }
 
 void LaiYangSnapshot::colorMessage(ACLMessage* message)
@@ -136,7 +141,7 @@ QString LaiYangSnapshot::getColor(ACLMessage* message) const
     return color;
 }
 
-bool LaiYangSnapshot::processStateMessage(ACLMessage* message, bool isLocal)
+LaiYangSnapshot::ForwardPort LaiYangSnapshot::processStateMessage(const ACLMessage* message, bool fromLocal)
 {
     VectorClock* timestamp = message->getTimeStamp();
 
@@ -144,7 +149,7 @@ bool LaiYangSnapshot::processStateMessage(ACLMessage* message, bool isLocal)
     {
         qWarning() << "INFORM_STATE message doesn't contain timestamp.";
 
-        return false;
+        return ForwardPort::DROP;
     }
 
     QJsonObject state = timestamp->convertToJson();
@@ -158,18 +163,56 @@ bool LaiYangSnapshot::processStateMessage(ACLMessage* message, bool isLocal)
         // Collect state
         collectState(state);
 
-        return false;
+        return ForwardPort::DROP;
     }
-    else if (isLocal)
+    else if (fromLocal)
     {
         // Record State from local application
         collectState(state);
     }
 
     // Forward to initiator
-    return true;
+    return ForwardPort::NET;
 }
 
+void LaiYangSnapshot::processPrePostMessage(const ACLMessage* message)
+{
+    VectorClock* timestamp = message->getTimeStamp();
+
+    if (!timestamp)
+    {
+        qWarning() << "INFORM_STATE message doesn't contain timestamp.";
+
+        return;
+    }
+
+    if (d->initiator)
+    {
+        QJsonObject prepost = timestamp->convertToJson();
+
+        QJsonObject content = message->getContent();
+
+        prepost[QLatin1String("payload")] = content;
+
+        collectPrePostMessage(prepost);
+    }
+    else
+    {
+        if (message->getPerformative() == ACLMessage::PREPOST_MESSAGE)
+        {
+            emit signalForwardPrePost(message);
+        }
+        else
+        {
+            // mark as prepost and forward message to the network
+            ACLMessage* prepostMessage = new ACLMessage(*message);
+
+            prepostMessage->setPerformative(ACLMessage::PREPOST_MESSAGE);
+
+            emit signalForwardPrePost(prepostMessage);
+        }
+    }
+}
 
 void LaiYangSnapshot::collectState(const QJsonObject& state)
 {
@@ -187,7 +230,6 @@ void LaiYangSnapshot::collectState(const QJsonObject& state)
 
 bool LaiYangSnapshot::validateState(const QJsonObject& state)
 {
-    //TODO
     QJsonObject timestamp = state;
     timestamp.remove(QLatin1String("state"));
 
@@ -216,6 +258,17 @@ bool LaiYangSnapshot::validateState(const QJsonObject& state)
     }
 
     return true;
+}
+
+void LaiYangSnapshot::collectPrePostMessage(const QJsonObject& prepostMessage)
+{
+    // TODO : validate prepost
+    QUuid uuid = QUuid(prepostMessage[QLatin1String("siteID")].toString());
+
+    if (!d->prepostMessages.contains(uuid))
+    {
+        d->prepostMessages[uuid] = prepostMessage;
+    }
 }
 
 }
