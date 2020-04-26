@@ -262,7 +262,7 @@ bool LaiYangSnapshot::validateState(const QJsonObject& state)
 
 void LaiYangSnapshot::collectPrePostMessage(const QJsonObject& prepostMessage)
 {
-    // TODO : validate prepost
+    // TODO : validate prepost if necessary
     QUuid uuid = QUuid(prepostMessage[QLatin1String("siteID")].toString());
 
     if (!d->prepostMessages.contains(uuid))

@@ -59,8 +59,8 @@ public:
 public:
 
     // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
-    Q_SIGNAL void signalRequestSnapshot(const Message* marker);
-    Q_SIGNAL void signalForwardPrePost(const Message* prepost);
+    Q_SIGNAL void signalRequestSnapshot(const Message* marker);         // send to BAS
+    Q_SIGNAL void signalForwardPrePost(const Message* prepost);         // send to NET
 
 private:
 
@@ -128,6 +128,7 @@ private:
      */
     void collectPrePostMessage(const QJsonObject& prepostMessage);
 
+    //TODO: implement condition of termination after implementing wave
 private:
 
     class Private;
