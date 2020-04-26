@@ -51,12 +51,14 @@ public:
 
 public:
 
-    Q_SIGNAL void signalRequestSnapshot(Message* message);
+    // NOTE: this signal has to be connect by Qt::DirectConnection to envoke the slot immediately
+    Q_SIGNAL void signalRequestSnapshot(Message* marker);
 
 private:
 
     /**
-     * @brief requestSnapshot : send request taking snapshot to Base application
+     * @brief requestSnapshot: with the hypothesis that channel between Base application and Control application is FIFO,
+     * this function send a request to Base application to take a snapshot
      */
     void requestSnapshot();
 

@@ -157,4 +157,14 @@ QString VectorClock::getSiteID() const
     return d->siteID;
 }
 
+int VectorClock::getValue(const QString& siteID) const
+{
+    if (d->localClock.contains(siteID))
+    {
+        return d->localClock[siteID];
+    }
+
+    return 0;
+}
+
 }

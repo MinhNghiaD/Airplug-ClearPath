@@ -3,10 +3,10 @@
 namespace AirPlug
 {
 
-ACLMessage::ACLMessage(Performative perfomative)
+ACLMessage::ACLMessage(Performative performative)
     : Message()
 {
-    addContent(QLatin1String("perfomative"), QString::number(perfomative));
+    addContent(QLatin1String("perfomative"), QString::number(performative));
 }
 
 ACLMessage::ACLMessage(const QString& message)
@@ -16,6 +16,11 @@ ACLMessage::ACLMessage(const QString& message)
 
 ACLMessage::~ACLMessage()
 {
+}
+
+void ACLMessage::setPerformative(Performative performative)
+{
+    addContent(QLatin1String("perfomative"), QString::number(performative));
 }
 
 void ACLMessage::setContent(const QJsonObject& content)

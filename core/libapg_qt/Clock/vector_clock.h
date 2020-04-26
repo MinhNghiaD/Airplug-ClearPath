@@ -79,6 +79,13 @@ public:
      */
     QString getSiteID() const;
 
+    /**
+     * @brief getValue : return decimal clock value of a particular site
+     * @param siteID
+     * @return
+     */
+    int getValue(const QString& siteID) const;
+
 private:
 
     class Private;

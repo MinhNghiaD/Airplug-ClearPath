@@ -51,13 +51,14 @@ public:
 
 public:
 
-    ACLMessage(Performative perfomative);
+    ACLMessage(Performative performative);
     ACLMessage(const QString& message);
 
     ~ACLMessage();
 
 public:
 
+    void setPerformative(Performative performative);
     void setContent(const QJsonObject& content);
     void setTimeStamp(const VectorClock& clock);
 

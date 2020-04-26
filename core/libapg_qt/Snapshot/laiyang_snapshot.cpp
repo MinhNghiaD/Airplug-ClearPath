@@ -60,7 +60,7 @@ bool LaiYangSnapshot::processMessage(ACLMessage* message, bool isLocal)
     {
         case ACLMessage::INFORM_STATE :
 
-            //return processStateMessage(message, isLocal);
+            return processStateMessage(message, isLocal);
 
         case ACLMessage::PREPOST_MESSAGE:
 
@@ -143,6 +143,7 @@ bool LaiYangSnapshot::processStateMessage(ACLMessage* message, bool isLocal)
     if (!timestamp)
     {
         qWarning() << "INFORM_STATE message doesn't contain timestamp.";
+
         return false;
     }
 
@@ -187,14 +188,14 @@ void LaiYangSnapshot::collectState(const QJsonObject& state)
 bool LaiYangSnapshot::validateState(const QJsonObject& state)
 {
     //TODO
-    QUuid uuid = QUuid(state[QLatin1String("siteID")].toString());
-
     QJsonObject timestamp = state;
     timestamp.remove(QLatin1String("state"));
 
-    VectorClock clock(timestamp);
+    QString siteID = timestamp[QLatin1String("siteID")].toString();
 
-    // verify conference of snapshot by causality of snapshot
+    VectorClock newClock(timestamp);
+
+    // verify conference of snapshot by coherence property of a cut
     for (QHash<QUuid, QJsonObject>::const_iterator iter  = d->states.cbegin();
                                                    iter != d->states.cend();
                                                    ++iter)
@@ -202,15 +203,17 @@ bool LaiYangSnapshot::validateState(const QJsonObject& state)
         QJsonObject currentTimestamp = iter.value();
         currentTimestamp.remove(QLatin1String("state"));
 
+        QString currentSiteID = currentTimestamp[QLatin1String("siteID")].toString();
+
         VectorClock currentClock(currentTimestamp);
 
-        if (!(clock < currentClock) && !(currentClock < clock))
+        // every clock must be the most recent clock of its site
+        if ( (newClock.getValue(siteID)        < currentClock.getValue(siteID))         ||
+             (newClock.getValue(currentSiteID) > currentClock.getValue(currentSiteID)) )
         {
             return false;
         }
     }
-
-
 
     return true;
 }
