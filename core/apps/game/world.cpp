@@ -154,8 +154,10 @@ void World::fixCollisions(Player &player)
 {
     //lazy fixing, might need to be improved
     QList<QGraphicsItem*> colliding_items = player.collidingItems();
+    bool collided = false;
     while(colliding_items.size() != 0)
     {
+        collided = true;
         auto col = static_cast<Player*>(colliding_items[0]);
         State p_state = player.getState();
         if(p_state.x_speed > 0)
@@ -165,29 +167,53 @@ void World::fixCollisions(Player &player)
                 player.setPos(player.x()-1, player.y()-1);
                 col->setPos(col->x()+1, col->y()+1);
             }
-            else
+            else if(p_state.y_speed < 0)
             {
                 player.setPos(player.x()-1, player.y()+1);
                 col->setPos(col->x()+1, col->y()-1);
             }
+            else
+            {
+                player.setPos(player.x()-1, player.y());
+                col->setPos(col->x()+1, col->y());
+            }
         }
-        else
+        else if(p_state.x_speed < 0)
         {
             if(p_state.y_speed > 0)
             {
                 player.setPos(player.x()+1, player.y()-1);
                 col->setPos(col->x()-1, col->y()+1);
             }
-            else
+            else if(p_state.y_speed < 0)
             {
                 player.setPos(player.x()+1, player.y()+1);
                 col->setPos(col->x()-1, col->y()-1);
             }
+            else
+            {
+                player.setPos(player.x()+1, player.y());
+                col->setPos(col->x()-1, col->y());
+            }
         }
-        player.setSpeed(0,0);
+        else
+        {
+            if(p_state.y_speed > 0)
+            {
+                player.setPos(player.x(), player.y()-1);
+                col->setPos(col->x(), col->y()+1);
+            }
+            else
+            {
+                player.setPos(player.x(), player.y()+1);
+                col->setPos(col->x(), col->y()-1);
+            }
+        }
         col->setSpeed(0,0);
         colliding_items = player.collidingItems();
     }
+    if(collided)
+        player.setSpeed(0,0);
 }
 
 }
