@@ -76,8 +76,9 @@ public:
     QString getMessage() const;
 
 private:
+
     class Private;
-    Private *d;
+    Private* d;
 };
 
 }

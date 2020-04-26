@@ -18,6 +18,7 @@
 // Local include
 #include "option_parser.h"
 #include "communication_manager.h"
+#include "vector_clock.h"
 
 namespace AirPlug
 {
@@ -58,6 +59,21 @@ public:
 public:
 
     /**
+     * @brief generatedSiteID : generate random siteID by random UUID generator, therefore the probability of having 2 identical IDs is really low
+     * @return
+     */
+    static QString generatedSiteID();
+
+    /**
+     * @brief captureLocalState : save local state of the application to a Json object for snapshot.
+     * The general state will contains siteID, local clock and application local variable
+     * @return
+     */
+    virtual QJsonObject captureLocalState() const;
+
+public:
+
+    /**
      * slotReceiveMessage: main notification handler
      *
      */
@@ -68,6 +84,8 @@ protected:
     CommunicationManager* m_communication;
 
     OptionParser          m_optionParser;
+
+    VectorClock*          m_clock;
 };
 
 }

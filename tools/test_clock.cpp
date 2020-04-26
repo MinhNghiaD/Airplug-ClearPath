@@ -1,8 +1,7 @@
 // Qt includes
-#include <QCoreApplication>
-
 #include <QString>
 #include <QJsonDocument>
+#include <QUuid>
 #include <QDebug>
 
 // Local includes
@@ -10,24 +9,26 @@
 
 using namespace AirPlug;
 
-int main(int argc, char *argv[])
+int main()
 {
-    QCoreApplication a(argc, argv);
-
     VectorClock clock1(QLatin1String("Site1"));
     VectorClock clock2(QLatin1String("Site2"));
 
     ++clock1;
-    qDebug() << "clock 1 after +1: " << QJsonDocument(clock1.convertToJson()).toJson();
+    qDebug() << "clock 1 after +1: " << QJsonDocument(clock1.convertToJson()).toJson(QJsonDocument::Compact);
 
     ++clock2;
-    qDebug() << "clock 2 after +1: " << QJsonDocument(clock2.convertToJson()).toJson();
+    qDebug() << "clock 2 after +1: " << QJsonDocument(clock2.convertToJson()).toJson(QJsonDocument::Compact);
 
     clock1.updateClock(clock2);
-    qDebug() << "clock 1 after receive from clock 2: " << QJsonDocument(clock1.convertToJson()).toJson();
+    qDebug() << "clock 1 after receive from clock 2: " << QJsonDocument(clock1.convertToJson()).toJson(QJsonDocument::Compact);
+
+    VectorClock clock3(clock1.convertToJson());
+    qDebug() << "clock 3 copied from clock 1:        " << QJsonDocument(clock3.convertToJson()).toJson(QJsonDocument::Compact);
+
 
     clock2.updateClock(clock1);
-    qDebug() << "clock 2 after receive from clock 1: " << QJsonDocument(clock2.convertToJson()).toJson();
+    qDebug() << "clock 2 after receive from clock 1: " << QJsonDocument(clock2.convertToJson()).toJson(QJsonDocument::Compact);
 
-    return a.exec();
+    qDebug() << "uuid : " << QUuid::createUuid().toByteArray();
 }

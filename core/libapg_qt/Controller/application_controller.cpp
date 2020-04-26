@@ -1,7 +1,8 @@
 #include "application_controller.h"
 
 //Qt includes
-#include <QTimer>
+
+#include <QUuid>
 #include <QDebug>
 
 namespace AirPlug
@@ -9,7 +10,8 @@ namespace AirPlug
 
 ApplicationController::ApplicationController(const QString& appName, QObject* parent)
     : QObject(parent),
-      m_communication(nullptr)
+      m_communication(nullptr),
+      m_clock(new VectorClock(generatedSiteID()))
 {
     setObjectName(appName);
 }
@@ -17,15 +19,16 @@ ApplicationController::ApplicationController(const QString& appName, QObject* pa
 ApplicationController::~ApplicationController()
 {
     delete m_communication;
+    delete m_clock;
 }
 
 void ApplicationController::init(const QCoreApplication& app)
 {
+    // parse application options
     m_optionParser.parseOptions(app);
-
-    // Debug
     m_optionParser.showOption();
 
+    // setup transport layer
     m_communication = new CommunicationManager(m_optionParser.ident,
                                                m_optionParser.destination,
                                                Header::airHost,
@@ -94,6 +97,21 @@ bool ApplicationController::isAuto() const
 Header::HeaderMode ApplicationController::headerMode() const
 {
     return m_optionParser.headerMode;
+}
+
+QString ApplicationController::generatedSiteID()
+{
+    // TODO: use more effective method to generate UUID
+    // Generate random UUID
+    return QUuid::createUuid().toString();
+}
+
+QJsonObject ApplicationController::captureLocalState() const
+{
+    QJsonObject localState = m_clock->convertToJson();
+    localState[QLatin1String("options")] = m_optionParser.convertToJson();
+
+    return localState;
 }
 
 }

@@ -176,7 +176,7 @@ bool Message::isKnownField(const QString& text) const
 
 void Message::addContent(const QString& key, const QString& value)
 {
-     d->content.insert(key, value);
+     d->content[key] = value;
 }
 
 QHash<QString, QString> Message::getContents() const

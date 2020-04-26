@@ -14,6 +14,7 @@
 
 // Qt includes
 #include <QCoreApplication>
+#include <QJsonObject>
 
 // Local includes
 #include "header.h"
@@ -40,6 +41,12 @@ public:
      * @brief showOption: display current options for debugging purpose
      */
     void showOption() const;
+
+    /**
+     * @brief convertToJson : convert application options into Json object
+     * @return
+     */
+    QJsonObject convertToJson() const;
 
 public:
 

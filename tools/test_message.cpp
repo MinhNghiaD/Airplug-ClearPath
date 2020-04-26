@@ -5,26 +5,50 @@
 #include <QDebug>
 
 // Local includes
-#include "message.h"
+#include "aclmessage.h"
 #include "header.h"
+#include "vector_clock.h"
 
 using namespace AirPlug;
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
-    a.setApplicationName("TEST");
+    ACLMessage message(ACLMessage::INFORM);
 
-    Message msg("init");
+     VectorClock clock1(QLatin1String("Site1"));
+     ++clock1;
 
-    msg.parseText(QLatin1String("^value~10^key~x"));
+    message.setTimeStamp(clock1);
 
-    qDebug() << "msg 1 " << msg.getMessage();
+    QJsonObject content;
+    content[QLatin1String("color")] = QLatin1String("white");
+    content[QLatin1String("message")] = QLatin1String("haha");
 
-    Message msg2(msg.getMessage());
+    message.setContent(content);
 
-    msg2.parseText(msg.getMessage());
+    qDebug() << "message 1:" << message.getMessage();
 
+    ACLMessage aclMessage2(message.getMessage());
 
-    return a.exec();
+    VectorClock* timestamp = aclMessage2.getTimeStamp();
+
+    if (timestamp)
+    {
+        qDebug() << "timestamp :" << QJsonDocument(timestamp->convertToJson()).toJson(QJsonDocument::Compact);
+    }
+
+    content = aclMessage2.getContent();
+
+    content.remove(QLatin1String("color"));
+
+    aclMessage2.setContent(content);
+
+    qDebug() << "message 2" << aclMessage2.getMessage();
+
+    qDebug() << "content :" <<  QJsonDocument(aclMessage2.getContent()).toJson(QJsonDocument::Compact);
+
+    qDebug() << "performative :" <<  aclMessage2.getPerformative();
+
+    ACLMessage message3(aclMessage2);
+    qDebug() << "message 3 : " << message3.getMessage();
 }

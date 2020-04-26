@@ -38,6 +38,8 @@ public:
 
     void setMessage(const QString& msg);
 
+    QJsonObject captureLocalState() const override;
+
 public:
 
     Q_SLOT void slotActivateTimer(int period);

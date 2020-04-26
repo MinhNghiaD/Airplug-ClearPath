@@ -29,6 +29,9 @@ public:
 
     VectorClock(const QString& siteID);
     VectorClock(const QString& siteID, const QHash<QString, int>& vector);
+
+    VectorClock(const QJsonObject& json);
+
     VectorClock(const VectorClock& other);
 
     ~VectorClock();
@@ -62,11 +65,26 @@ public:
      */
     bool operator < (const VectorClock& other);
 
+public:
+
     /**
      * @brief convertToJson: turn Clock to Json format
      * @return
      */
     QJsonObject convertToJson() const;
+
+    /**
+     * @brief getSiteID: return siteID
+     * @return
+     */
+    QString getSiteID() const;
+
+    /**
+     * @brief getValue : return decimal clock value of a particular site
+     * @param siteID
+     * @return
+     */
+    int getValue(const QString& siteID) const;
 
 private:
 
