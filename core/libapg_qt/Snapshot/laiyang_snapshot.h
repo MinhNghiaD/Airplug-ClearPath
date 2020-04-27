@@ -29,6 +29,7 @@ class LaiYangSnapshot : public QObject
     Q_OBJECT
 public:
 
+    // TODO integrate with Wave
     enum ForwardPort
     {
         BAS = 0,        // forward to Basic application
@@ -107,7 +108,7 @@ private:
      *     siteID : Uuid
      *     clock  : vector clock
      *     state  : {
-     *                  options: application option
+     *                  options       : application option
      *                  local varable : jsonObject
      *              }
      * }

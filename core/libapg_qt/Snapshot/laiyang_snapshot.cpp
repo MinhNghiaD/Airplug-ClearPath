@@ -160,7 +160,6 @@ LaiYangSnapshot::ForwardPort LaiYangSnapshot::processStateMessage(const ACLMessa
 
     if (d->initiator)
     {
-        // Collect state
         collectState(state);
 
         return ForwardPort::DROP;
