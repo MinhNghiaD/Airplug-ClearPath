@@ -1,5 +1,8 @@
 #include "router.h"
 
+// Qt includes
+#include <QDebug>
+
 namespace AirPlug
 {
 
@@ -18,7 +21,12 @@ public:
 
 public:
 
-    void forwardApptoNet(Header& header, ACLMessage& message);
+    void forwardAppToNet(Header& header, ACLMessage& message);
+    void forwardNetToApp(Header& header, ACLMessage& message);
+
+public:
+
+    bool isOldMessage(const ACLMessage& messsage);
 
 public:
 
@@ -32,7 +40,7 @@ public:
 };
 
 
-void Router::Private::forwardApptoNet(Header& header, ACLMessage& message)
+void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 {
     // mark message ID
     message.setSender(siteID);
@@ -40,11 +48,43 @@ void Router::Private::forwardApptoNet(Header& header, ACLMessage& message)
 
     QJsonObject contents =  message.getContent();
 
+    // set App name
     contents[QLatin1String("app")] = header.what();
 
     message.setContent(contents);
 
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), header.where());
+}
+
+void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
+{
+    // TODO filter
+    if (isOldMessage(message))
+    {
+        return;
+    }
+
+
+}
+
+bool Router::Private::isOldMessage(const ACLMessage& messsage)
+{
+    QString sender = messsage.getSender();
+    int sequence   = messsage.getNbSequence();
+
+    if ( recentSequences.contains(sender) && (recentSequences[sender] >= sequence) )
+    {
+        // Here we suppose the channels are FIFO
+        // therefore for each router, by keeing the sequence number of each site, we can identify old repeated message
+        qDebug() << "Drop old message";
+
+        return true;
+    }
+
+    // Update recent sequence
+    recentSequences[sender] = sequence;
+
+    return false;
 }
 /*----------------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -74,33 +114,18 @@ Router::~Router()
 
 void Router::slotReceiveMessage(Header header, Message message)
 {
-    //ACLMessage aclMessage(message);
+    // cast message to ACL format
+    ACLMessage aclMessage(*(static_cast<ACLMessage*>(&message)));
 
     QString app;
 
     if (header.what() == QLatin1String("NET"))
     {
-        // receive from other NET ==> filter message
-        //message = d->snapshotManager.preprocessMessage(message);
-
-        // remove this pair and move to app
-        //QHash<QString, QString> contents = message.getContents();
-
-        //app = contents[QLatin1String("app")];
-
-        //contents.remove(QLatin1String("app"));
-
-        //message = Message(contents);
+        d->forwardNetToApp(header, aclMessage);
     }
     else
     {
-        // forward from app to other nets
-        message.addContent(QLatin1String("app"), header.what());
-
-        app = QLatin1String("NET");
-
-        // color message before sending to other NET
-        //d->snapshotManager.colorMessage(message);
+        d->forwardAppToNet(header, aclMessage);
     }
 
     //sendMessage(message, QLatin1String("NET"), app, header.where());
