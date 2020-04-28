@@ -3,14 +3,14 @@
  * This file is a part of Airplug project
  *
  * Date        : 2020-4-27
- * Description : broadcast handler using vector clock to filter out redundant messages
+ * Description : Handler for Message routing
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
  * ============================================================ */
 
-#ifndef BROADCAST_HANDLER_H
-#define BROADCAST_HANDLER_H
+#ifndef ROUTER_H
+#define ROUTER_H
 
 // libapg include
 #include "aclmessage.h"
@@ -18,12 +18,12 @@
 namespace AirPlug
 {
 
-class BroadcastHandler
+class Router
 {
 public:
 
-    BroadcastHandler();
-    ~BroadcastHandler();
+    Router();
+    ~Router();
 
 private:
 
@@ -31,4 +31,4 @@ private:
     Private* d;
 };
 }
-#endif // BROADCAST_HANDLER_H
+#endif // ROUTER_H
