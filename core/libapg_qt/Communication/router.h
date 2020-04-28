@@ -31,6 +31,10 @@ public:
 
     Q_SLOT void slotReceiveMessage(Header, Message);
 
+public:
+
+    Q_SIGNAL void signalSnapshotMessage(ACLMessage message);
+
 private:
 
     class Private;
