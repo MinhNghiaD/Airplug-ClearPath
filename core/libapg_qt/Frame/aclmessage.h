@@ -62,9 +62,15 @@ public:
     void setContent(const QJsonObject& content);
     void setTimeStamp(const VectorClock& clock);
 
+    // siteID of sender's NET
+    void setSender(const QString& siteID);
+    void setNbSequence(int nbSequence);
+
     Performative getPerformative() const;
     VectorClock* getTimeStamp()    const;
     QJsonObject  getContent()      const;
+    QString      getSender()       const;
+    int          getNbSequence()   const;
 };
 
 }

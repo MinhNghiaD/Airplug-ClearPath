@@ -28,7 +28,11 @@ int main(int argc, char *argv[])
 
     qDebug() << "message 1:" << message.getMessage();
 
-    ACLMessage aclMessage2(message.getMessage());
+    Message casted(message);
+
+    qDebug() << "casted message" << casted.getMessage();
+
+    ACLMessage aclMessage2(*(static_cast<ACLMessage*>(&casted)));
 
     VectorClock* timestamp = aclMessage2.getTimeStamp();
 

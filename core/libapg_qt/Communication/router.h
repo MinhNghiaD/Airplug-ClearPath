@@ -3,7 +3,7 @@
  * This file is a part of Airplug project
  *
  * Date        : 2020-4-27
- * Description : Handler for Message routing
+ * Description : Handler for Message routing at NET layer
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
@@ -14,21 +14,28 @@
 
 // libapg include
 #include "aclmessage.h"
+#include "communication_manager.h"
 
 namespace AirPlug
 {
 
-class Router
+class Router : public QObject
 {
+    Q_OBJECT
 public:
 
-    Router();
+    Router(CommunicationManager* communication, const QString& siteID);
     ~Router();
+
+public:
+
+    Q_SLOT void slotReceiveMessage(Header, Message);
 
 private:
 
     class Private;
     Private* d;
 };
+
 }
 #endif // ROUTER_H

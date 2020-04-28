@@ -33,6 +33,16 @@ void ACLMessage::setTimeStamp(const VectorClock& clock)
     addContent(QLatin1String("timestamp"), QJsonDocument(clock.convertToJson()).toJson(QJsonDocument::Compact));
 }
 
+void ACLMessage::setSender(const QString& siteID)
+{
+    addContent(QLatin1String("sender"), siteID);
+}
+
+void ACLMessage::setNbSequence(int nbSequence)
+{
+    addContent(QLatin1String("nbSequence"), QString::number(nbSequence));
+}
+
 ACLMessage::Performative ACLMessage::getPerformative() const
 {
     return static_cast<Performative>(getContents()[QLatin1String("perfomative")].toInt());
@@ -57,6 +67,14 @@ QJsonObject ACLMessage::getContent() const
     return QJsonDocument::fromJson(getContents()[QLatin1String("content")].toUtf8()).object();
 }
 
+QString ACLMessage::getSender() const
+{
+    return getContents()[QLatin1String("sender")];
+}
 
+int ACLMessage::getNbSequence() const
+{
+    return getContents()[QLatin1String("nbSequence")].toInt();
+}
 
 }
