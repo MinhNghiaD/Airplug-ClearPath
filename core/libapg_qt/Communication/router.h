@@ -15,6 +15,7 @@
 // libapg include
 #include "aclmessage.h"
 #include "communication_manager.h"
+#include "laiyang_snapshot.h"
 
 namespace AirPlug
 {
@@ -26,6 +27,8 @@ public:
 
     Router(CommunicationManager* communication, const QString& siteID);
     ~Router();
+
+    bool addSnapshot(LaiYangSnapshot* snapshot);
 
 public:
 

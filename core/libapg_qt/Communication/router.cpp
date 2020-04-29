@@ -12,7 +12,8 @@ class Q_DECL_HIDDEN Router::Private
 public:
     Private()
         : communicationMngr(nullptr),
-          nbSequence(0)
+          nbSequence(0),
+          snapshot(nullptr)
     {
     }
 
@@ -39,6 +40,8 @@ public:
     int                   nbSequence;
 
     QHash<QString, int>   recentSequences;
+
+    LaiYangSnapshot*      snapshot;
 };
 
 
@@ -148,6 +151,18 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
 Router::~Router()
 {
     delete d;
+}
+
+bool Router::addSnapshot(LaiYangSnapshot* snapshot)
+{
+    if (!snapshot)
+    {
+        return false;
+    }
+
+    d->snapshot = snapshot;
+
+    return true;
 }
 
 void Router::slotReceiveMessage(Header header, Message message)
