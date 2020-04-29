@@ -84,11 +84,18 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
     QString sender = messsage.getSender();
     int sequence   = messsage.getNbSequence();
 
+    if (sender == siteID)
+    {
+        qDebug() << siteID << "Drop round back message";
+
+        return true;
+    }
+
     if ( recentSequences.contains(sender) && (recentSequences[sender] >= sequence) )
     {
         // Here we suppose the channels are FIFO
         // therefore for each router, by keeing the sequence number of each site, we can identify old repeated message
-        qDebug() << "Drop old message";
+        qDebug() << siteID << "Drop old message";
 
         return true;
     }

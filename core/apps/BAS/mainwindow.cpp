@@ -24,6 +24,15 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
     connect(m_controller, SIGNAL(signalSequenceChange(int)),
             this,         SLOT(slotUpdateSequence(int)));
 
+    if (!m_controller->siteID().isEmpty())
+    {
+        setWindowTitle(m_controller->siteID());
+    }
+    else
+    {
+        setWindowTitle(QString("BAS %1").arg(QCoreApplication::applicationPid()));
+    }
+
     int period = controller->getPeriod();
 
     ui->frequencySpinBox->setSingleStep(500);
@@ -94,7 +103,7 @@ void MainWindow::slotShowReceivedMessage(Header header, Message message)
     {
         QString content = header.generateHeader(m_controller->headerMode()) + " > " + message.getMessage();
 
-        qDebug() << "MainWindow::slotShowReceivedMessage" << content;
+        //qDebug() << "MainWindow::slotShowReceivedMessage" << content;
 
         ui->messageReceived->setText(content);
     }

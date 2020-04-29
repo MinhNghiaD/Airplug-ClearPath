@@ -272,7 +272,7 @@ void CommunicationManager::slotReceiveMessage(const QString& data)
     }
     else
     {
-        qWarning() << "Message is not belong to this host ----> drop message: " << data;
+        qWarning() << d->what << ": Message is not belong to this host ----> drop message: " << data;
     }
 }
 
@@ -282,7 +282,7 @@ bool CommunicationManager::subscribe(const QString& who, QString where)
     // TODO print verbose: self.app().vrb("APP.com.subscribe({},{})".format(who, where),6)
     if (d->headerMode == Header::HeaderMode::What)
     {
-        qWarning() << "No subscriptions in what mode";
+        //qWarning() << "No subscriptions in what mode";
 
         return true;
     }
@@ -330,7 +330,7 @@ void CommunicationManager::unsubscribe(const QString& who, QString where)
 {
     if (d->headerMode == Header::HeaderMode::What)
     {
-        qWarning() << "No subscriptions in what mode";
+        //qWarning() << "No subscriptions in what mode";
 
         return;
     }
@@ -497,7 +497,7 @@ bool CommunicationManager::filterMessage(const QString& what, const QString& who
         safeMessage = true;
         // TODO: print verbose vrb("Every message is accepted in what mode",6)
     }
-    else if (who == QCoreApplication::applicationName().toUpper())
+    else if (who == d->what)
     {
         if (isSubscribed(what, where))
         {

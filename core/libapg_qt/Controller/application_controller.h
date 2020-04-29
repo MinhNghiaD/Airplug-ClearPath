@@ -47,6 +47,8 @@ public:
 
     Header::HeaderMode headerMode() const;
 
+    QString siteID() const;
+
     /**
      * @brief sendMessage: send message to Transporter interface
      * @param message

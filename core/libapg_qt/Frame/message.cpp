@@ -81,7 +81,7 @@ void Message::parseText(const QString& text)
     // TODO: print verbose
     QStringList msg = text.split(d->delimiter, QString::SkipEmptyParts);
 
-    qDebug() << "splited message " << msg;
+    //qDebug() << "splited message " << msg;
 
     for (QStringList::const_iterator iter  = msg.constBegin();
                                      iter != msg.constEnd();
@@ -102,7 +102,7 @@ void Message::parseText(const QString& text)
         }
     }
 
-    qDebug() << "Content of parsed message: " << d->content;
+    //qDebug() << "Content of parsed message: " << d->content;
 }
 
 void Message::parseTextWithKnownFields(const QString& text)
@@ -149,7 +149,7 @@ void Message::parseTextWithKnownFields(const QString& text)
         }
     }
 
-    qDebug() << "Content of parsed message with known field: " << d->content;
+    //qDebug() << "Content of parsed message with known field: " << d->content;
 }
 
 bool Message::isKnownField(const QString& text) const
