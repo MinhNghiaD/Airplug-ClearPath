@@ -8,7 +8,8 @@
 # BAS2 <--> NET2
 #
 
-# TODO: remove existing pipes before creating
+rm in*
+rm out*
 
 mkfifo in1 out1
 mkfifo in2 out2

@@ -2,6 +2,7 @@
 
 // Qt includes
 #include <QDebug>
+#include <QThread>
 
 namespace AirPlug
 {
@@ -75,6 +76,9 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     contents.remove(QLatin1String("app"));
 
     message.setContent(contents);
+
+    // NOTE: avoid signal lost at receiver
+    QThread::msleep(1);
 
     communicationMngr->send(message, QLatin1String("NET"), app, header.where());
 }

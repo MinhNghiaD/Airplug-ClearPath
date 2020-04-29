@@ -147,7 +147,7 @@ void CommunicationManager::addStdTransporter()
     d->protocols[ProtocolType::StandardIO] = transporter;
 
     connect(transporter, &MessageTransporter::signalMessageReceived,
-            this,        &CommunicationManager::slotReceiveMessage);
+            this,        &CommunicationManager::slotReceiveMessage, Qt::DirectConnection);
 
 }
 
@@ -160,7 +160,7 @@ void CommunicationManager::addUdpTransporter(const QString& host,
     d->protocols[ProtocolType::UDP] = transporter;
 
     connect(transporter, &MessageTransporter::signalMessageReceived,
-            this,        &CommunicationManager::slotReceiveMessage);
+            this,        &CommunicationManager::slotReceiveMessage, Qt::DirectConnection);
 }
 
 void CommunicationManager::setHeaderMode(Header::HeaderMode mode)
