@@ -316,6 +316,7 @@ bool CommunicationManager::subscribeLocalHost(const QString& who)
 {
     return subscribe(who, Header::localHost);
 }
+
 bool CommunicationManager::subscribeAir(const QString& who)
 {
     return subscribe(who, Header::airHost);
@@ -511,7 +512,7 @@ bool CommunicationManager::filterMessage(const QString& what, const QString& who
             // TODO print verbose self.app().vrb("Message designed for this app from a local app",6)
         }
     }
-    else if (who == Header::allHost && isSubscribed(what, where))
+    else if (who == Header::allApp && isSubscribed(what, where))
     {
         safeMessage = true;
         // TODO print verbose ("Message designed for all apps from a subscribed app",6)

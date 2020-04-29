@@ -63,7 +63,7 @@ void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 
     message.setContent(contents);
 
-    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), header.where());
+    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
 void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
@@ -93,7 +93,7 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     // NOTE: avoid signal lost at receiver
     QThread::msleep(1);
 
-    communicationMngr->send(message, QLatin1String("NET"), app, header.where());
+    communicationMngr->send(message, QLatin1String("NET"), app, Header::localHost);
 }
 
 bool Router::Private::isOldMessage(const ACLMessage& messsage)
@@ -172,6 +172,9 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
 
     d->snapshot = snapshot;
 
+    connect(d->snapshot, &LaiYangSnapshot::signalRequestSnapshot,
+            this,        &Router::slotSendMarker, Qt::DirectConnection);
+
     return true;
 }
 
@@ -194,7 +197,6 @@ void Router::slotReceiveMessage(Header header, Message message)
         }
         else
         {
-            // TODO: where to check color (use marker instead???)
             d->forwardNetToApp(header, aclMessage);
         }
     }
@@ -204,5 +206,10 @@ void Router::slotReceiveMessage(Header header, Message message)
     }
 }
 
+void Router::slotSendMarker(const Message* marker)
+{
+    // broadcast to all app in local site
+    d->communicationMngr->send(*marker, QLatin1String("NET"), Header::allApp, Header::localHost);
+}
 
 }

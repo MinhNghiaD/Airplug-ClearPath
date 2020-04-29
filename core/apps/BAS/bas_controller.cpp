@@ -53,6 +53,8 @@ void BasController::init(const QCoreApplication& app)
 {
     ApplicationController::init(app);
 
+    // All Bas will subscribe to local NET
+    m_communication->subscribeLocalHost(QLatin1String("NET"));
 
     if (m_optionParser.autoSend && m_optionParser.delay > 0)
     {

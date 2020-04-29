@@ -33,6 +33,7 @@ public:
 public:
 
     Q_SLOT void slotReceiveMessage(Header, Message);
+    Q_SLOT void slotSendMarker(const Message* marker);
 
 public:
 
