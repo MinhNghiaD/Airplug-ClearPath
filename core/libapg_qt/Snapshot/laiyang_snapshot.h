@@ -57,6 +57,18 @@ public:
      */
     ForwardPort processMessage(ACLMessage* message, bool fromLocal);
 
+    /**
+     * @brief colorMessage: append additional color field to the message from Base application before sending them
+     * @param message
+     */
+    void colorMessage(ACLMessage& message);
+
+    /**
+     * @brief getColor : get color of incomming message
+     * @param message
+     */
+    void getColor(ACLMessage& message);
+
 public:
 
     // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
@@ -70,19 +82,6 @@ private:
      * this function send a request to Base application to take a snapshot
      */
     void requestSnapshot();
-
-    /**
-     * @brief colorMessage: append additional color field to the message from Base application before sending them
-     * @param message
-     */
-    void colorMessage(ACLMessage* message);
-
-    /**
-     * @brief getColor : get color of incomming message
-     * @param message
-     * @return
-     */
-    QString getColor(ACLMessage* message) const;
 
     /**
      * @brief processStateMessage : action taken when receive an ACL message with performative INFORM_STATE

@@ -74,12 +74,13 @@ LaiYangSnapshot::ForwardPort LaiYangSnapshot::processMessage(ACLMessage* message
             if (fromLocal)
             {
                 // receive message from local application ==> add color and send
-                colorMessage(message);
+                //colorMessage(message);
 
                 return ForwardPort::NET;
             }
             else
             {
+                /*
                 // Receive from another NET ==> get color
                 QString color = getColor(message);
 
@@ -92,9 +93,48 @@ LaiYangSnapshot::ForwardPort LaiYangSnapshot::processMessage(ACLMessage* message
                     // prepost message
                     processPrePostMessage(message);
                 }
+                */
 
                 return ForwardPort::BAS;
             }
+    }
+}
+
+void LaiYangSnapshot::colorMessage(ACLMessage& message)
+{
+    QJsonObject content = message.getContent();
+
+    // append color field to the content of the message
+    if (d->recorded)
+    {
+        content[QLatin1String("color")] = QLatin1String("red");
+    }
+    else
+    {
+        content[QLatin1String("color")] = QLatin1String("white");
+    }
+
+    message.setContent(content);
+}
+
+void LaiYangSnapshot::getColor(ACLMessage& message)
+{
+    QJsonObject content = message.getContent();
+
+    QString color = content[QLatin1String("color")].toString();
+
+    content.remove(QLatin1String("color"));
+
+    message.setContent(content);
+
+    if (color == QLatin1String("red") && !d->recorded)
+    {
+        requestSnapshot();
+    }
+    else if (color == QLatin1String("white") && !d->recorded)
+    {
+        // prepost message
+        processPrePostMessage(&message);
     }
 }
 
@@ -111,35 +151,7 @@ void LaiYangSnapshot::requestSnapshot()
     emit signalRequestSnapshot(marker);
 }
 
-void LaiYangSnapshot::colorMessage(ACLMessage* message)
-{
-    QJsonObject content = message->getContent();
 
-    // append color field to the content of the message
-    if (d->recorded)
-    {
-        content[QLatin1String("color")] = QLatin1String("red");
-    }
-    else
-    {
-        content[QLatin1String("color")] = QLatin1String("white");
-    }
-
-    message->setContent(content);
-}
-
-QString LaiYangSnapshot::getColor(ACLMessage* message) const
-{
-    QJsonObject content = message->getContent();
-
-    QString color = content[QLatin1String("color")].toString();
-
-    content.remove(QLatin1String("color"));
-
-    message->setContent(content);
-
-    return color;
-}
 
 LaiYangSnapshot::ForwardPort LaiYangSnapshot::processStateMessage(const ACLMessage* message, bool fromLocal)
 {
