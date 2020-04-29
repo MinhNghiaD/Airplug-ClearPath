@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QDebug>
 
+#include "aclmessage.h"
 
 using namespace AirPlug;
 
@@ -123,33 +124,36 @@ void BasController::slotSendMessage()
 {
     ++(*m_clock);
 
-    Message message;
+    ACLMessage message(ACLMessage::INFORM);
 
     // attache clock to the message
-    message.addContent(QLatin1String("clock"), QJsonDocument(m_clock->convertToJson()).toJson(QJsonDocument::Compact));
-    message.addContent(QLatin1String("payload"), d->messageToSend);
-    message.addContent(QLatin1String("nseq"), QString::number(d->nbSequence));
+    message.setTimeStamp(*m_clock);
+
+    QJsonObject contents;
+
+    ++d->nbSequence;
+
+    contents[QLatin1String("payload")] =  d->messageToSend;
+    contents[QLatin1String("nseq")] =  d->nbSequence;
+
+    message.setContent(contents);
 
     // TODO: get what, where, who from user interface
     sendMessage(message, QString(), QString(), QString());
-
-    ++d->nbSequence;
 
     emit signalSequenceChange(d->nbSequence);
 }
 
 void BasController::slotReceiveMessage(Header header, Message message)
 {
-    QHash<QString, QString> contents = message.getContents();
+    ACLMessage aclMessage(*(static_cast<ACLMessage*>(&message)));
+
+    VectorClock* senderClock = aclMessage.getTimeStamp();
 
     // read sender's clock
-    if (contents.contains(QLatin1String("clock")))
+    if (senderClock)
     {
-        QJsonObject jsonClock =  QJsonDocument::fromJson(contents[QLatin1String("clock")].toUtf8()).object();
-
-        VectorClock senderClock(jsonClock);
-
-        m_clock->updateClock(senderClock);
+        m_clock->updateClock(*senderClock);
     }
 
     emit signalMessageReceived(header, message);

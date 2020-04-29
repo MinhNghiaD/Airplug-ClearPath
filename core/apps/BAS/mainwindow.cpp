@@ -101,7 +101,8 @@ void MainWindow::slotShowReceivedMessage(Header header, Message message)
 {
     if (m_controller->isStarted())
     {
-        QString content = header.generateHeader(m_controller->headerMode()) + " > " + message.getMessage();
+
+        QString content = header.what() + " > " + message.getContents()[QLatin1String("content")];
 
         //qDebug() << "MainWindow::slotShowReceivedMessage" << content;
 

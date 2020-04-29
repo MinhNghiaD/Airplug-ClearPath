@@ -95,7 +95,7 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
     {
         // Here we suppose the channels are FIFO
         // therefore for each router, by keeing the sequence number of each site, we can identify old repeated message
-        qDebug() << siteID << "Drop old message";
+        qDebug() << siteID << ": Drop old message because recent sequence = " << recentSequences[sender] << " > this sequence = " << sequence;
 
         return true;
     }
@@ -170,6 +170,8 @@ void Router::slotReceiveMessage(Header header, Message message)
     }
     else
     {
+        qDebug() << d->siteID << "receive message from " << header.what();
+
         d->forwardAppToNet(header, aclMessage);
     }
 }
