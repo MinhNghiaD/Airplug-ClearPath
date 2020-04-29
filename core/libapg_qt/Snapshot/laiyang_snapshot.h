@@ -103,29 +103,8 @@ private:
     void processPrePostMessage(const ACLMessage* message);
 
 
-    /**
-     * @brief collectState: collect a local state
-     * @param state
-     *
-     * A State object should have the form of :
-     * {
-     *     siteID : Uuid
-     *     clock  : vector clock
-     *     state  : {
-     *                  options       : application option
-     *                  local varable : jsonObject
-     *              }
-     * }
-     *
-     */
-    void collectState(const QJsonObject& state);
 
-    /**
-     * @brief validateState :  verify if a state is valide to record
-     * @param state
-     * @return
-     */
-    bool validateState(const QJsonObject& state);
+
 
     /**
      * @brief collectPrePostMessage : collect prepost message

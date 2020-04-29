@@ -112,7 +112,6 @@ void Router::Private::forwardStateMessage(ACLMessage& message, bool fromLocal)
         message.setNbSequence(++nbSequence);
     }
 
-
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 

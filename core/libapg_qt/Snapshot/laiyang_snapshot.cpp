@@ -1,9 +1,9 @@
 #include "laiyang_snapshot.h"
 
+// Qt includes
 #include <QDebug>
-#include <QUuid>
 
-
+// libapg include
 #include "vector_clock.h"
 
 namespace AirPlug
@@ -26,15 +26,92 @@ public:
 
 public:
 
+
+    /**
+     * @brief validateState :  verify if a state is valide to record
+     * @param state
+     * @return
+     */
+    bool validateState(const QJsonObject& state);
+
+    /**
+     * @brief collectState: collect a local state
+     * @param state
+     *
+     * A State object should have the form of :
+     * {
+     *     siteID : Uuid
+     *     clock  : vector clock
+     *     state  : {
+     *                  options       : application option
+     *                  local varable : jsonObject
+     *              }
+     * }
+     *
+     */
+    void collectState(const QJsonObject& state);
+
+public:
+
     bool recorded;
     bool initiator;
 
     int  msgCounter;
 
     // System state will be encoded in Json object
-    QHash<QUuid, QJsonObject> states;
-    QHash<QUuid, QJsonObject> prepostMessages;
+    QHash<QString, QJsonObject> states;
+    QHash<QString, QJsonObject> prepostMessages;
 };
+
+
+
+bool LaiYangSnapshot::Private::validateState(const QJsonObject& state)
+{
+    QJsonObject timestamp = state;
+    timestamp.remove(QLatin1String("state"));
+
+    QString siteID = timestamp[QLatin1String("siteID")].toString();
+
+    VectorClock newClock(timestamp);
+
+    // verify conference of snapshot by coherence property of a cut
+    for (QHash<QString, QJsonObject>::const_iterator iter  = states.cbegin();
+                                                     iter != states.cend();
+                                                     ++iter)
+    {
+        QJsonObject currentTimestamp = iter.value();
+        currentTimestamp.remove(QLatin1String("state"));
+
+        QString currentSiteID = currentTimestamp[QLatin1String("siteID")].toString();
+
+        VectorClock currentClock(currentTimestamp);
+
+        // every clock must be the most recent clock of its site
+        if ( (newClock.getValue(siteID)        < currentClock.getValue(siteID))         ||
+             (newClock.getValue(currentSiteID) > currentClock.getValue(currentSiteID)) )
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void LaiYangSnapshot::Private::collectState(const QJsonObject& state)
+{
+    if (validateState(state))
+    {
+        QString siteID    = state[QLatin1String("siteID")].toString();
+
+        states[siteID] = state;
+    }
+    else
+    {
+        qWarning() << "Inconherent Snapshot detected ---> drop state.";
+    }
+}
+
+/* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 LaiYangSnapshot::LaiYangSnapshot()
     : QObject(nullptr),
@@ -142,14 +219,14 @@ bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLo
 
     if (d->initiator)
     {
-        collectState(state);
+        d->collectState(state);
 
         return false;
     }
     else if (fromLocal)
     {
         // Record State from local application
-        collectState(state);
+        d->collectState(state);
     }
 
     // Forward to initiator
@@ -212,60 +289,18 @@ void LaiYangSnapshot::processPrePostMessage(const ACLMessage* message)
     }
 }
 
-void LaiYangSnapshot::collectState(const QJsonObject& state)
-{
-    if (validateState(state))
-    {
-        QUuid uuid = QUuid(state[QLatin1String("siteID")].toString());
 
-        d->states[uuid] = state;
-    }
-    else
-    {
-        qWarning() << "Inconherent Snapshot detected ---> drop state.";
-    }
-}
 
-bool LaiYangSnapshot::validateState(const QJsonObject& state)
-{
-    QJsonObject timestamp = state;
-    timestamp.remove(QLatin1String("state"));
 
-    QString siteID = timestamp[QLatin1String("siteID")].toString();
-
-    VectorClock newClock(timestamp);
-
-    // verify conference of snapshot by coherence property of a cut
-    for (QHash<QUuid, QJsonObject>::const_iterator iter  = d->states.cbegin();
-                                                   iter != d->states.cend();
-                                                   ++iter)
-    {
-        QJsonObject currentTimestamp = iter.value();
-        currentTimestamp.remove(QLatin1String("state"));
-
-        QString currentSiteID = currentTimestamp[QLatin1String("siteID")].toString();
-
-        VectorClock currentClock(currentTimestamp);
-
-        // every clock must be the most recent clock of its site
-        if ( (newClock.getValue(siteID)        < currentClock.getValue(siteID))         ||
-             (newClock.getValue(currentSiteID) > currentClock.getValue(currentSiteID)) )
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 void LaiYangSnapshot::collectPrePostMessage(const QJsonObject& prepostMessage)
 {
     // TODO : validate prepost if necessary
-    QUuid uuid = QUuid(prepostMessage[QLatin1String("siteID")].toString());
+    QString siteID = prepostMessage[QLatin1String("siteID")].toString();
 
-    if (!d->prepostMessages.contains(uuid))
+    if (!d->prepostMessages.contains(siteID))
     {
-        d->prepostMessages[uuid] = prepostMessage;
+        d->prepostMessages[siteID] = prepostMessage;
     }
 }
 
