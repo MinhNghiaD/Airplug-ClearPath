@@ -152,4 +152,3 @@ void MainWindow::on_startButton_clicked()
 }
 
 }
-

@@ -150,6 +150,15 @@ void BasController::slotReceiveMessage(Header header, Message message)
 {
     ACLMessage aclMessage(*(static_cast<ACLMessage*>(&message)));
 
+    if (aclMessage.getPerformative() == ACLMessage::REQUEST_SNAPSHOT)
+    {
+        qDebug() << siteID() << "record snapshot";
+
+        QJsonObject localState = captureLocalState();
+
+        return;
+    }
+
     VectorClock* senderClock = aclMessage.getTimeStamp();
 
     // read sender's clock

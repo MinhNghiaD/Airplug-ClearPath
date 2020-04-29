@@ -16,6 +16,7 @@
 
 //local includes
 #include "net_controller.h"
+#include "mainwindow.h"
 
 using namespace NetApplication;
 
@@ -27,6 +28,18 @@ int main(int argc, char *argv[])
     NetController controller;
 
     controller.init(app);
+
+    MainWindow* mainWindow = nullptr;
+
+    if (controller.hasGUI())
+    {
+        qDebug() << "------------------------- Start with GUI -------------------------------";
+
+        mainWindow = new MainWindow(&controller);
+        mainWindow->setWindowTitle(QLatin1String("NET"));
+
+        mainWindow->show();
+    }
 
     return app.exec();
 }

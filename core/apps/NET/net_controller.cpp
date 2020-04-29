@@ -59,6 +59,11 @@ void NetController::init(const QCoreApplication &app)
     d->router->addSnapshot(d->snapshot);
 }
 
+void NetController::takeSnapshot() const
+{
+    d->snapshot->init();
+}
+
 void NetController::slotReceiveMessage(Header, Message)
 {
 }
