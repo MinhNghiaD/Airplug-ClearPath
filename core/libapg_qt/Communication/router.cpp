@@ -30,7 +30,6 @@ public:
 public:
 
     bool isOldMessage(const ACLMessage& messsage);
-    bool isSnapshotMessage(const ACLMessage& messsage);
 
 public:
 
@@ -100,18 +99,19 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
 
 void Router::Private::forwardStateMessage(ACLMessage& message, bool fromLocal)
 {
-    if (snapshot)
+    if (snapshot && (snapshot->processStateMessage(message, fromLocal) == false))
     {
-        if (snapshot->processStateMessage(message, fromLocal) == false)
-        {
-           return;
-        }
+        return;
     }
 
     // Forward to Network
-    // mark message ID
-    message.setSender(siteID);
-    message.setNbSequence(++nbSequence);
+    // mark message ID if state come from local app
+    if (fromLocal)
+    {
+        message.setSender(siteID);
+        message.setNbSequence(++nbSequence);
+    }
+
 
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
@@ -143,19 +143,6 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
     return false;
 }
 
-bool Router::Private::isSnapshotMessage(const ACLMessage& messsage)
-{
-    ACLMessage::Performative performative = messsage.getPerformative();
-
-    if (performative == ACLMessage::REQUEST_SNAPSHOT || performative == ACLMessage::INFORM_STATE || performative == ACLMessage::PREPOST_MESSAGE)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -210,24 +197,30 @@ void Router::slotReceiveMessage(Header header, Message message)
             return;
         }
 
-        if (d->isSnapshotMessage(aclMessage))
+        switch (aclMessage.getPerformative())
         {
-            // TODO: put snapshot in here ???
-            emit signalSnapshotMessage(aclMessage);
-        }
-        else
-        {
-            d->forwardNetToApp(header, aclMessage);
+            case ACLMessage::INFORM_STATE:
+                d->forwardStateMessage(aclMessage, false);
+
+                break;
+
+            default:
+                d->forwardNetToApp(header, aclMessage);
+
+                break;
         }
     }
     else
     {
-        if (aclMessage.getPerformative() == ACLMessage::INFORM_STATE && d->snapshot)
+        if (aclMessage.getPerformative() == ACLMessage::INFORM_STATE)
         {
             // process state message
+            d->forwardStateMessage(aclMessage, true);
         }
-
-        d->forwardAppToNet(header, aclMessage);
+        else
+        {
+            d->forwardAppToNet(header, aclMessage);
+        }
     }
 }
 
