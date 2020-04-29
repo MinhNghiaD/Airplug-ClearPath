@@ -18,7 +18,8 @@ class Q_DECL_HIDDEN NetController::Private
 public:
 
     Private()
-        : router(nullptr)
+        : router(nullptr),
+          snapshot(nullptr)
     {
     }
 
@@ -28,8 +29,8 @@ public:
     }
 
 public:
-    //LaiYangSnapshot snapshotManager;
-    Router*         router;
+    LaiYangSnapshot* snapshot;
+    Router*          router;
 };
 
 
@@ -52,7 +53,10 @@ void NetController::init(const QCoreApplication &app)
     disconnect(m_communication, SIGNAL(signalMessageReceived(Header, Message)),
                this,            SLOT(slotReceiveMessage(Header, Message)));
 
-    d->router = new Router(m_communication, m_clock->getSiteID());
+    d->router   = new Router(m_communication, m_clock->getSiteID());
+    d->snapshot = new LaiYangSnapshot();
+
+    d->router->addSnapshot(d->snapshot);
 }
 
 void NetController::slotReceiveMessage(Header, Message)

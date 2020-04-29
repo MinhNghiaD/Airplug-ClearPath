@@ -100,41 +100,26 @@ LaiYangSnapshot::ForwardPort LaiYangSnapshot::processMessage(ACLMessage* message
     }
 }
 
-void LaiYangSnapshot::colorMessage(ACLMessage& message)
+void LaiYangSnapshot::colorMessage(QJsonObject& messageContent)
 {
-    QJsonObject content = message.getContent();
-
     // append color field to the content of the message
-    if (d->recorded)
-    {
-        content[QLatin1String("color")] = QLatin1String("red");
-    }
-    else
-    {
-        content[QLatin1String("color")] = QLatin1String("white");
-    }
-
-    message.setContent(content);
+    messageContent[QLatin1String("snapshotted")] = d->recorded;
 }
 
-void LaiYangSnapshot::getColor(ACLMessage& message)
+void LaiYangSnapshot::getColor(QJsonObject& messageContent)
 {
-    QJsonObject content = message.getContent();
+    bool snapshotted = messageContent[QLatin1String("snapshotted")].toBool();
 
-    QString color = content[QLatin1String("color")].toString();
+    messageContent.remove(QLatin1String("snapshotted"));
 
-    content.remove(QLatin1String("color"));
-
-    message.setContent(content);
-
-    if (color == QLatin1String("red") && !d->recorded)
+    if (snapshotted && !d->recorded)
     {
         requestSnapshot();
     }
-    else if (color == QLatin1String("white") && !d->recorded)
+    else if (!snapshotted && d->recorded)
     {
-        // prepost message
-        processPrePostMessage(&message);
+        // prepost message TODO
+        //processPrePostMessage(&message);
     }
 }
 

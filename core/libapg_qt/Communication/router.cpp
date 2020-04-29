@@ -56,6 +56,11 @@ void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
     // set App name
     contents[QLatin1String("app")] = header.what();
 
+    if (snapshot)
+    {
+        snapshot->colorMessage(contents);
+    }
+
     message.setContent(contents);
 
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), header.where());
@@ -77,6 +82,11 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
 
     QString app = contents[QLatin1String("app")].toString();
     contents.remove(QLatin1String("app"));
+
+    if (snapshot)
+    {
+        snapshot->getColor(contents);
+    }
 
     message.setContent(contents);
 

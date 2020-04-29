@@ -59,15 +59,15 @@ public:
 
     /**
      * @brief colorMessage: append additional color field to the message from Base application before sending them
-     * @param message
+     * @param messageContent
      */
-    void colorMessage(ACLMessage& message);
+    void colorMessage(QJsonObject& messageContent);
 
     /**
      * @brief getColor : get color of incomming message
-     * @param message
+     * @param messageContent
      */
-    void getColor(ACLMessage& message);
+    void getColor(QJsonObject& messageContent);
 
 public:
 
