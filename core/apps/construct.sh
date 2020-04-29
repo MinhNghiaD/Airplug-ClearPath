@@ -8,8 +8,13 @@
 # BAS2 <--> NET2
 #
 
-rm in*
-rm out*
+if test -f "in*"; then
+    rm in*
+fi
+
+if test -f "out*"; then
+    rm out*
+fi
 
 mkfifo in1 out1
 mkfifo in2 out2

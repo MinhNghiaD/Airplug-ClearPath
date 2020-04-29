@@ -272,7 +272,7 @@ void CommunicationManager::slotReceiveMessage(const QString& data)
     }
     else
     {
-        qWarning() << d->what << ": Message is not belong to this host ----> drop message: " << data;
+        //qWarning() << d->what << ": Message is not belong to this host ----> drop message: " << data;
     }
 }
 

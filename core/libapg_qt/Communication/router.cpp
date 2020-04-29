@@ -169,13 +169,12 @@ void Router::slotReceiveMessage(Header header, Message message)
         }
         else
         {
+            // TODO: where to check color (use marker instead???)
             d->forwardNetToApp(header, aclMessage);
         }
     }
     else
     {
-        qDebug() << d->siteID << "receive message from " << header.what();
-
         d->forwardAppToNet(header, aclMessage);
     }
 }

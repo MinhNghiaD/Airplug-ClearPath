@@ -31,6 +31,8 @@ set(QT_LIBRARIES Qt5::Core
 
 message(STATUS "Qt libraries           : ${QT_LIBRARIES}")
 
+
+
 set(libapg_includes_directories ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Frame/
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Transporters/
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Communication/
@@ -39,6 +41,9 @@ set(libapg_includes_directories ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Frame
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Clock/
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Snapshot/
    )
+
+
+
 
 include_directories(${libapg_includes_directories})
 
