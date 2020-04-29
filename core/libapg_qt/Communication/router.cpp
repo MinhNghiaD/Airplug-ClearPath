@@ -25,6 +25,7 @@ public:
 
     void forwardAppToNet(Header& header, ACLMessage& message);
     void forwardNetToApp(Header& header, ACLMessage& message);
+    void forwardStateMessage(ACLMessage& message, bool fromLocal);
 
 public:
 
@@ -35,7 +36,7 @@ public:
 
     CommunicationManager* communicationMngr;
 
-    // using siteID and sequence nb to control old message
+    // using siteID and sequence nb to identify old message
     QString               siteID;
     int                   nbSequence;
 
@@ -85,6 +86,7 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
 
     if (snapshot)
     {
+        QThread::msleep(1);
         snapshot->getColor(contents);
     }
 
@@ -94,6 +96,24 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     QThread::msleep(1);
 
     communicationMngr->send(message, QLatin1String("NET"), app, Header::localHost);
+}
+
+void Router::Private::forwardStateMessage(ACLMessage& message, bool fromLocal)
+{
+    if (snapshot)
+    {
+        if (snapshot->processStateMessage(message, fromLocal) == false)
+        {
+           return;
+        }
+    }
+
+    // Forward to Network
+    // mark message ID
+    message.setSender(siteID);
+    message.setNbSequence(++nbSequence);
+
+    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
 bool Router::Private::isOldMessage(const ACLMessage& messsage)
@@ -202,6 +222,11 @@ void Router::slotReceiveMessage(Header header, Message message)
     }
     else
     {
+        if (aclMessage.getPerformative() == ACLMessage::INFORM_STATE && d->snapshot)
+        {
+            // process state message
+        }
+
         d->forwardAppToNet(header, aclMessage);
     }
 }

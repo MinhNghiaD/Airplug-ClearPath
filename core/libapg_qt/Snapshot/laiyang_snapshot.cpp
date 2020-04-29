@@ -61,7 +61,7 @@ LaiYangSnapshot::ForwardPort LaiYangSnapshot::processMessage(ACLMessage* message
     {
         case ACLMessage::INFORM_STATE :
 
-            return processStateMessage(message, fromLocal);
+            //return processStateMessage(message, fromLocal);
 
         case ACLMessage::PREPOST_MESSAGE:
 
@@ -123,6 +123,39 @@ void LaiYangSnapshot::getColor(QJsonObject& messageContent)
     }
 }
 
+bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLocal)
+{
+    VectorClock* timestamp = message.getTimeStamp();
+
+    if (!timestamp)
+    {
+        qWarning() << "INFORM_STATE message doesn't contain timestamp.";
+
+        return false;
+    }
+
+    QJsonObject state = timestamp->convertToJson();
+
+    QJsonObject content = message.getContent();
+
+    state[QLatin1String("state")] = content;
+
+    if (d->initiator)
+    {
+        collectState(state);
+
+        return false;
+    }
+    else if (fromLocal)
+    {
+        // Record State from local application
+        collectState(state);
+    }
+
+    // Forward to initiator
+    return true;
+}
+
 
 /* ----------------------------------------------- Helper functions -----------------------------------------------*/
 
@@ -138,38 +171,7 @@ void LaiYangSnapshot::requestSnapshot()
 
 
 
-LaiYangSnapshot::ForwardPort LaiYangSnapshot::processStateMessage(const ACLMessage* message, bool fromLocal)
-{
-    VectorClock* timestamp = message->getTimeStamp();
 
-    if (!timestamp)
-    {
-        qWarning() << "INFORM_STATE message doesn't contain timestamp.";
-
-        return ForwardPort::DROP;
-    }
-
-    QJsonObject state = timestamp->convertToJson();
-
-    QJsonObject content = message->getContent();
-
-    state[QLatin1String("state")] = content;
-
-    if (d->initiator)
-    {
-        collectState(state);
-
-        return ForwardPort::DROP;
-    }
-    else if (fromLocal)
-    {
-        // Record State from local application
-        collectState(state);
-    }
-
-    // Forward to initiator
-    return ForwardPort::NET;
-}
 
 void LaiYangSnapshot::processPrePostMessage(const ACLMessage* message)
 {

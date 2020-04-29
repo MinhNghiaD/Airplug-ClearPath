@@ -69,6 +69,14 @@ public:
      */
     void getColor(QJsonObject& messageContent);
 
+    /**
+     * @brief processStateMessage : action taken when receive an ACL message with performative INFORM_STATE
+     * @param message
+     * @param isLocal
+     * @return
+     */
+    bool processStateMessage(const ACLMessage& message, bool fromLocal);
+
 public:
 
     // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
@@ -83,13 +91,10 @@ private:
      */
     void requestSnapshot();
 
-    /**
-     * @brief processStateMessage : action taken when receive an ACL message with performative INFORM_STATE
-     * @param message
-     * @param isLocal
-     * @return
-     */
-    ForwardPort processStateMessage(const ACLMessage* message, bool fromLocal);
+
+
+
+
 
     /**
      * @brief processPrePostMessage : action taken when receive an ACL Message with performative PREPOST_MESSAGE
