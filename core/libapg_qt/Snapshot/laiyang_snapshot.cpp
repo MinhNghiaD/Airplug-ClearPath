@@ -40,7 +40,7 @@ public:
      *
      * A State object should have the form of :
      * {
-     *     siteID : Uuid
+     *     siteID : QString
      *     clock  : vector clock
      *     state  : {
      *                  options       : application option
@@ -101,7 +101,7 @@ void LaiYangSnapshot::Private::collectState(const QJsonObject& state)
 {
     if (validateState(state))
     {
-        QString siteID    = state[QLatin1String("siteID")].toString();
+        QString siteID = state[QLatin1String("siteID")].toString();
 
         states[siteID] = state;
     }
@@ -128,7 +128,10 @@ void LaiYangSnapshot::init()
 {
     d->initiator = true;
 
-    requestSnapshot();
+    if (!d->recorded)
+    {
+        requestSnapshot();
+    }
 }
 
 // TODO: consider wave to build broadcast system after forward to BAS
@@ -220,6 +223,8 @@ bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLo
     if (d->initiator)
     {
         d->collectState(state);
+
+        qDebug() << "Initiator receives state : " << QJsonDocument(state).toJson(QJsonDocument::Compact);
 
         return false;
     }

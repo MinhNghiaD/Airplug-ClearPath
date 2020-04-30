@@ -9,3 +9,33 @@ Project dependencies:
 To configure project ======> ./boostrap.sh
 Go to ./build
 Enter command "make"
+
+
+- ACLMessage formats : {
+                            performative : ACLMessage::Performative,
+                            sender       : siteID
+                            nbSequence   : int
+                            timestamp    : VectorClock
+                            content      : JsonObject
+                       }
+
+- State message format : {
+                              performative : ACLMessage::INFORM_STATE,
+                              sender       : siteID     (optional if send from local app)
+                              nbSequence   : int        (optional if send from local app)
+                              timestamp    : VectorClock
+                              content      : {
+                                                options : application options
+                                                state   : local variables
+                                             }
+                         }
+
+- Collectted state : {
+                        siteID : String
+                        clock  : VectorClock
+                        state  : {
+                                     options : application options
+                                     state   : local variables
+                                 }
+                     }
+

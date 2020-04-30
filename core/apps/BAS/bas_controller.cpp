@@ -156,6 +156,12 @@ void BasController::slotReceiveMessage(Header header, Message message)
 
         QJsonObject localState = captureLocalState();
 
+        aclMessage.setPerformative(ACLMessage::INFORM_STATE);
+        aclMessage.setTimeStamp(*m_clock);
+        aclMessage.setContent(localState);
+
+        sendMessage(aclMessage, QString(), QString(), QString());
+
         return;
     }
 
