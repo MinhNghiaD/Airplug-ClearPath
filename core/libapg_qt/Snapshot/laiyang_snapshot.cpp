@@ -17,7 +17,9 @@ public:
         : recorded(false),
           initiator(false),
           msgCounter(0),
-          nbApp(0)
+          nbWaitPrepost(0),
+          nbApp(0),
+          nbNeighbor(0)
     {
     }
 
@@ -50,7 +52,7 @@ public:
      * }
      *
      */
-    void collectState(const QJsonObject& state);
+    bool collectState(const QJsonObject& state);
 
     /**
      * @brief verifyPrepost : reverify if a message is a prepost message becore recording snapshot
@@ -83,7 +85,10 @@ public:
     bool initiator;
 
     int  msgCounter;
+    int  nbWaitPrepost;
+
     int  nbApp;
+    int  nbNeighbor;
 
     // System state will be encoded in Json object
     QHash<QString, QJsonObject> states;
@@ -126,17 +131,21 @@ bool LaiYangSnapshot::Private::validateState(const QJsonObject& state) const
     return true;
 }
 
-void LaiYangSnapshot::Private::collectState(const QJsonObject& state)
+bool LaiYangSnapshot::Private::collectState(const QJsonObject& state)
 {
     if (validateState(state))
     {
         QString siteID = state[QLatin1String("siteID")].toString();
 
         states[siteID] = state;
+
+        return true;
     }
     else
     {
         qWarning() << "Inconherent Snapshot detected ---> drop state.";
+
+        return false;
     }
 }
 
@@ -198,7 +207,10 @@ bool LaiYangSnapshot::Private::allStateColltected() const
 
 bool LaiYangSnapshot::Private::allPrepostCollected() const
 {
-    // TODO
+    if (nbWaitPrepost == 0)
+    {
+        return true;
+    }
 
     return false;
 }
@@ -245,6 +257,9 @@ void LaiYangSnapshot::colorMessage(QJsonObject& messageContent)
 {
     // append color field to the content of the message
     messageContent[QLatin1String("snapshotted")] = d->recorded;
+
+    // broadcast ---> increment message by nb of neighbor
+    d->msgCounter += d->nbNeighbor;
 }
 
 bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
@@ -256,16 +271,22 @@ bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
     {
         requestSnapshot();
     }
-    else if (!snapshotted && d->recorded)
+    else
     {
-        // prepost detected
-        return true;
+        // decrement counter by 1
+        --(d->msgCounter);
+
+        if (!snapshotted && d->recorded)
+        {
+            // prepost detected
+            return true;
+        }
     }
 
     return false;
 }
 
-bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLocal)
+bool LaiYangSnapshot::processStateMessage(ACLMessage& message, bool fromLocal)
 {
     VectorClock* timestamp = message.getTimeStamp();
 
@@ -280,28 +301,48 @@ bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLo
 
     QJsonObject content = message.getContent();
 
-    state[QLatin1String("state")] = content;
-
     if (d->initiator)
     {
-        d->collectState(state);
-
-        qDebug() << "Initiator receives state : " << QJsonDocument(state).toJson(QJsonDocument::Compact);
-
-        // TODO check nb prepost message
-        if (d->allStateColltected())
+        if (content.contains(QLatin1String("msgCounter")))
         {
-            qDebug() << "Snapshot finish";
+            // NOTE : only the first state message from a site has this field, in order to avoid redundance
+            d->nbWaitPrepost += content[QLatin1String("msgCounter")].toInt();
 
-            d->recorded = false;
+            content.remove(QLatin1String("msgCounter"));
+        }
+
+        state[QLatin1String("state")] = content;
+
+        if (d->collectState(state))
+        {
+           if (d->allStateColltected() && d->allPrepostCollected())
+           {
+               qDebug() << "Snapshot finish";
+
+               d->recorded = false;
+           }
         }
 
         return false;
     }
     else if (fromLocal)
     {
+        state[QLatin1String("state")] = content;
+
         // Record State from local application
-        d->collectState(state);
+        if (d->collectState(state))
+        {
+            if (d->states.size() == 1)
+            {
+                // attach msgCounter of local site only to the first state message
+                content[QLatin1String("msgCounter")] = d->nbWaitPrepost;
+                message.setContent(content);
+            }
+        }
+        else
+        {
+            return false;
+        }
     }
 
     // Forward to initiator
@@ -322,7 +363,16 @@ bool LaiYangSnapshot::processPrePostMessage(ACLMessage& message)
         {
             d->prepostMessages[sender].append(prepostContent);
 
+            --(d->nbWaitPrepost);
+
             qDebug() << "Initiator receives prepost : " << QJsonDocument(prepostContent).toJson(QJsonDocument::Compact);
+
+            if (d->allStateColltected() && d->allPrepostCollected())
+            {
+                qDebug() << "Snapshot finish";
+
+                d->recorded = false;
+            }
         }
 
         return false;
@@ -335,6 +385,8 @@ void LaiYangSnapshot::requestSnapshot()
 {
     d->recorded = true;
 
+    d->nbWaitPrepost = d->msgCounter;
+
     // Chandy-Lamport marker
     ACLMessage* marker = new ACLMessage(ACLMessage::REQUEST_SNAPSHOT);
 
@@ -344,6 +396,11 @@ void LaiYangSnapshot::requestSnapshot()
 void LaiYangSnapshot::setNbOfApp(int nbApp)
 {
     d->nbApp = nbApp;
+}
+
+void LaiYangSnapshot::setNbOfNeighbor(int nbNeighbor)
+{
+    d->nbNeighbor = nbNeighbor;
 }
 
 }

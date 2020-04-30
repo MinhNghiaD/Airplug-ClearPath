@@ -45,15 +45,21 @@ public:
 public:
 
     /**
-     * @brief init snapshot action, this method is called only one time by initiator
-     */
-    void init();
-
-    /**
      * @brief setNbOfApp : update total nb of application
      * @param nbApp
      */
     void setNbOfApp(int nbApp);
+
+    /**
+     * @brief setNbOfNeighbor : update nb of neighbor
+     * @param nbNeighbor
+     */
+    void setNbOfNeighbor(int nbNeighbor);
+
+    /**
+     * @brief init snapshot action, this method is called only one time by initiator
+     */
+    void init();
 
     /**
      * @brief colorMessage: append additional color field to the message from Base application before sending them
@@ -76,7 +82,7 @@ public:
      * @param isLocal
      * @return
      */
-    bool processStateMessage(const ACLMessage& message, bool fromLocal);
+    bool processStateMessage(ACLMessage& message, bool fromLocal);
 
     /**
      * @brief processPrePostMessage : action taken when receive an ACL Message with performative PREPOST_MESSAGE

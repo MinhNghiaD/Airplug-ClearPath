@@ -350,6 +350,11 @@ int Router::nbOfApp() const
 
 void Router::slotRefreshActiveNeighbor()
 {
+    if (d->snapshot)
+    {
+        d->snapshot->setNbOfNeighbor(d->activeNeighBors.size());
+    }
+
     QStringList allNeighBor = d->neighborInfo.keys();
 
     for (QStringList::const_iterator iter  = allNeighBor.cbegin();

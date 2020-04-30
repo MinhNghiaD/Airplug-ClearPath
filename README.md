@@ -26,6 +26,7 @@ Enter command "make"
                               nbSequence   : int        (optional if send from local app)
                               timestamp    : VectorClock
                               content      : {
+                                                msgCounter : int (bilan, this field should only be attached to the first state message of each site to avoid redundance)
                                                 options : application options
                                                 state   : local variables
                                              }
