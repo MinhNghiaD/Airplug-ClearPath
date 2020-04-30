@@ -16,8 +16,7 @@ public:
     Private()
         : recorded(false),
           initiator(false),
-          msgCounter(0),
-          nbSite(0)
+          msgCounter(0)
     {
     }
 
@@ -60,10 +59,10 @@ public:
     bool verifyPrepost(const QJsonObject& content, QString& sender) const;
 
     /**
-     * @brief updateNbSite : nb of site = Max(nb of site in each clock)
+     * @brief updateSitesList : update the list of connected sites
      * @param siteClock
      */
-    void updateNbSite(VectorClock* siteClock);
+    void updateSitesList(VectorClock* siteClock);
 
     /**
      * @brief allStateColltected : check if all state are collected
@@ -77,11 +76,15 @@ public:
     bool initiator;
 
     int  msgCounter;
-    int  nbSite;
 
     // System state will be encoded in Json object
     QHash<QString, QJsonObject> states;
+
+    // Map of sender and its prepost messages
     QHash<QString, QVector<QJsonObject> > prepostMessages;
+
+    // list of all connected site in the system
+    QVector<QString> siteIDs;
 };
 
 
@@ -143,15 +146,13 @@ bool LaiYangSnapshot::Private::verifyPrepost(const QJsonObject& content, QString
         return false;
     }
 
-    QString receiver = content[QLatin1String("receiver")].toString();
-
     ACLMessage originalMessage(content[QLatin1String("message")].toString());
 
     VectorClock* messageClock = originalMessage.getTimeStamp();
 
     if (!messageClock)
     {
-        qWarning() << "Snapshot: prepost message don't have clock.";
+        qWarning() << "Snapshot: prepost message don't have clock --> drop.";
 
         return false;
     }
@@ -171,7 +172,7 @@ bool LaiYangSnapshot::Private::verifyPrepost(const QJsonObject& content, QString
         // if clock of sender at the moment of taking snapshot is smaller than clock of the message ==> it's not a pre-message
         if ((*senderClock) < (*messageClock))
         {
-            qWarning() << "Snapshot: not a pre-message";
+            qWarning() << "Snapshot: not a pre-message --> drop";
 
             return false;
         }
@@ -180,24 +181,29 @@ bool LaiYangSnapshot::Private::verifyPrepost(const QJsonObject& content, QString
     return true;
 }
 
-void LaiYangSnapshot::Private::updateNbSite(VectorClock* siteClock)
+void LaiYangSnapshot::Private::updateSitesList(VectorClock* siteClock)
 {
     if (!siteClock)
     {
         return;
     }
 
-    int clockDimension = siteClock->length();
+    QStringList sites = siteClock->siteLists();
 
-    if (nbSite < clockDimension)
+    for (QStringList::const_iterator iter  = sites.cbegin();
+                                     iter != sites.cend();
+                                     ++iter)
     {
-        nbSite = clockDimension;
+        if (!siteIDs.contains(*iter))
+        {
+            siteIDs.append(*iter);
+        }
     }
 }
 
 bool LaiYangSnapshot::Private::allStateColltected() const
 {
-    if (states.size() == nbSite)
+    if (states.size() == siteIDs.size())
     {
         return true;
     }
@@ -205,7 +211,7 @@ bool LaiYangSnapshot::Private::allStateColltected() const
     return false;
 }
 
-/* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* ----------------------------------------------------------------------- LaiYangSnapshot main functions --------------------------------------------------------------------------------------*/
 
 LaiYangSnapshot::LaiYangSnapshot()
     : QObject(nullptr),

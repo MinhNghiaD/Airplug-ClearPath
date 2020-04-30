@@ -87,10 +87,10 @@ public:
     int getValue(const QString& siteID) const;
 
     /**
-     * @brief length : return the dimension of clock
+     * @brief siteLists : return the list of siteIDs noted in the clock
      * @return
      */
-    int length() const;
+    QStringList siteLists() const;
 
 private:
 
