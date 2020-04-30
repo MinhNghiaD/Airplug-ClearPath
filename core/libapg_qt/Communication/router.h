@@ -46,6 +46,8 @@ public:
       */
     Q_SLOT void slotSendMarker(const Message* marker);
 
+    Q_SLOT void slotInformSnapshotFinished(const Message* message);
+
     /**
       * @brief slotHealthCheck : broadcast PING message to local applications
       *

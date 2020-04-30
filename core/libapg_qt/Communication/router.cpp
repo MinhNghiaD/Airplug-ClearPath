@@ -2,7 +2,6 @@
 
 // Qt includes
 #include <QDebug>
-#include <QThread>
 #include <QPair>
 #include <QTimer>
 
@@ -97,7 +96,6 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
 
     if (snapshot)
     {
-        QThread::msleep(1);
         if (snapshot->getColor(contents))
         {
             // detected prepost message
@@ -108,7 +106,6 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     message.setContent(contents);
 
     // NOTE: avoid signal lost at receiver
-    QThread::msleep(1);
 
     communicationMngr->send(message, QLatin1String("NET"), app, Header::localHost);
 }
@@ -222,6 +219,8 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
     connect(d->snapshot, &LaiYangSnapshot::signalRequestSnapshot,
             this,        &Router::slotSendMarker, Qt::DirectConnection);
 
+    connect(d->snapshot, &LaiYangSnapshot::signalFinishSnapshot,
+            this,        &Router::slotInformSnapshotFinished, Qt::DirectConnection);
 
     return true;
 }
@@ -254,6 +253,13 @@ void Router::slotReceiveMessage(Header header, Message message)
                 break;
             case ACLMessage::PREPOST_MESSAGE:
                 d->forwardPrepost(aclMessage, false);
+
+                break;
+            case ACLMessage::SNAPSHOT_FINISH:
+                if (d->snapshot)
+                {
+                    d->snapshot->finishSnapshot();
+                }
 
                 break;
             case ACLMessage::UPDATE_ACTIVE:
@@ -295,6 +301,12 @@ void Router::slotSendMarker(const Message* marker)
 {
     // broadcast to all app in local site
     d->communicationMngr->send(*marker, QLatin1String("NET"), Header::allApp, Header::localHost);
+}
+
+void Router::slotInformSnapshotFinished(const Message* message)
+{
+    // broadcast to all app in local site
+    d->communicationMngr->send(*message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
 void Router::slotHeathCheck()

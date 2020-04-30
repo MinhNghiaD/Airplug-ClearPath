@@ -94,10 +94,16 @@ public:
      */
     bool processPrePostMessage(ACLMessage& message);
 
+    /**
+     * @brief finishSnapshot : terminate snapshot procedure and refresh it
+     */
+    void finishSnapshot();
+
 public:
 
     // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
     Q_SIGNAL void signalRequestSnapshot(const Message* marker);         // send to BAS
+    Q_SIGNAL void signalFinishSnapshot(const Message* message);         // send to NET
 
 private:
 

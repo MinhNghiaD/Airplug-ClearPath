@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QMap>
 #include <QStringList>
+#include <QThread>
 
 // Local includes
 #include "std_transporter.h"
@@ -200,6 +201,8 @@ void CommunicationManager::send(const Message& message,
 
         QString package = header.generateHeader(d->headerMode) + message.getMessage();
 
+        // NOTE minimum interval between messages is 1ms to avoid signal loss in Qt
+        QThread::msleep(1);
         d->protocols[protocol]->send(package);
 
         if (save)
