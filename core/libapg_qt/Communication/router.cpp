@@ -302,8 +302,11 @@ void Router::slotHeathCheck()
 
     d->communicationMngr->send(ping, QLatin1String("NET"), Header::allApp, Header::localHost);
 
-    // activate timeout timer of 3 seconds
+    // activate timeout timer of 3s
     QTimer::singleShot(3000, this, SLOT(slotPingTimeOut()));
+
+    // recheck after 20s
+    QTimer::singleShot(20000, this, SLOT(slotHeathCheck()));
 }
 
 void Router::slotPingTimeOut()
@@ -353,7 +356,7 @@ void Router::slotRefreshActiveNeighbor()
                                      iter != allNeighBor.cend();
                                      ++iter)
     {
-        // if there is no recent activity from a neighbor
+        // every neighbor that doesn't have any activity withit 30s is considered as inactive
         if (! d->activeNeighBors.contains(*iter))
         {
             d->neighborInfo[*iter].second = 0;

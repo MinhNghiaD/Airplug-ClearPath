@@ -255,6 +255,13 @@ bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLo
 
         qDebug() << "Initiator receives state : " << QJsonDocument(state).toJson(QJsonDocument::Compact);
 
+        if (d->allStateColltected())
+        {
+            qDebug() << "Snapshot finish";
+
+            d->recorded = false;
+        }
+
         return false;
     }
     else if (fromLocal)
