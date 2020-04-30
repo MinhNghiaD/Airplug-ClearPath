@@ -69,7 +69,7 @@ public:
      * @brief allStateColltected : check if all state are collected
      * @return
      */
-    bool allStateColltected();
+    bool allStateColltected() const;
 
 public:
 
@@ -193,6 +193,16 @@ void LaiYangSnapshot::Private::updateNbSite(VectorClock* siteClock)
     {
         nbSite = clockDimension;
     }
+}
+
+bool LaiYangSnapshot::Private::allStateColltected() const
+{
+    if (states.size() == nbSite)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
