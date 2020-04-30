@@ -32,7 +32,7 @@ public:
      * @param state
      * @return
      */
-    bool validateState(const QJsonObject& state);
+    bool validateState(const QJsonObject& state) const;
 
     /**
      * @brief collectState: collect a local state
@@ -51,6 +51,13 @@ public:
      */
     void collectState(const QJsonObject& state);
 
+    /**
+     * @brief verifyPrepost : reverify if a message is a prepost message becore recording snapshot
+     * @param content
+     * @return
+     */
+    bool verifyPrepost(const QJsonObject& content, QString& sender) const;
+
 public:
 
     bool recorded;
@@ -60,12 +67,12 @@ public:
 
     // System state will be encoded in Json object
     QHash<QString, QJsonObject> states;
-    QHash<QString, QJsonObject> prepostMessages;
+    QHash<QString, QVector<QJsonObject> > prepostMessages;
 };
 
 
 
-bool LaiYangSnapshot::Private::validateState(const QJsonObject& state)
+bool LaiYangSnapshot::Private::validateState(const QJsonObject& state) const
 {
     QJsonObject timestamp = state;
     timestamp.remove(QLatin1String("state"));
@@ -111,6 +118,53 @@ void LaiYangSnapshot::Private::collectState(const QJsonObject& state)
     }
 }
 
+
+bool LaiYangSnapshot::Private::verifyPrepost(const QJsonObject& content, QString& sender) const
+{
+    if (! content.contains(QLatin1String("receiver")) ||
+        ! content.contains(QLatin1String("message")))
+    {
+        qWarning() << "Snapshot: prepost message has incorrect format";
+
+        return false;
+    }
+
+    QString receiver = content[QLatin1String("receiver")].toString();
+
+    ACLMessage originalMessage(content[QLatin1String("message")].toString());
+
+    VectorClock* messageClock = originalMessage.getTimeStamp();
+
+    if (!messageClock)
+    {
+        qWarning() << "Snapshot: prepost message don't have clock.";
+
+        return false;
+    }
+
+   sender = messageClock->getSiteID();
+
+    // verify pre-message, avoid post-post or post-pre for a conherent snapshot
+
+    if (states.contains(sender))
+    {
+        QJsonObject jsonClock = states[sender];
+
+        jsonClock.remove(QLatin1String("state"));
+
+        VectorClock* senderClock = new VectorClock(jsonClock);
+
+        // if clock of sender at the moment of taking snapshot is smaller than clock of the message ==> it's not a pre-message
+        if ((*senderClock) < (*messageClock))
+        {
+            qWarning() << "Snapshot: not a pre-message";
+
+            return false;
+        }
+    }
+
+    return true;
+}
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 LaiYangSnapshot::LaiYangSnapshot()
@@ -134,51 +188,6 @@ void LaiYangSnapshot::init()
     }
 }
 
-// TODO: consider wave to build broadcast system after forward to BAS
-LaiYangSnapshot::ForwardPort LaiYangSnapshot::processMessage(ACLMessage* message, bool fromLocal)
-{
-    switch (message->getPerformative())
-    {
-        case ACLMessage::INFORM_STATE :
-
-            //return processStateMessage(message, fromLocal);
-
-        case ACLMessage::PREPOST_MESSAGE:
-
-            processPrePostMessage(message);
-
-            return ForwardPort::DROP;
-
-        default:
-            // Normal message
-            if (fromLocal)
-            {
-                // receive message from local application ==> add color and send
-                //colorMessage(message);
-
-                return ForwardPort::NET;
-            }
-            else
-            {
-                /*
-                // Receive from another NET ==> get color
-                QString color = getColor(message);
-
-                if (color == QLatin1String("red") && !d->recorded)
-                {
-                    requestSnapshot();
-                }
-                else if (color == QLatin1String("white") && !d->recorded)
-                {
-                    // prepost message
-                    processPrePostMessage(message);
-                }
-                */
-
-                return ForwardPort::BAS;
-            }
-    }
-}
 
 void LaiYangSnapshot::colorMessage(QJsonObject& messageContent)
 {
@@ -186,10 +195,9 @@ void LaiYangSnapshot::colorMessage(QJsonObject& messageContent)
     messageContent[QLatin1String("snapshotted")] = d->recorded;
 }
 
-void LaiYangSnapshot::getColor(QJsonObject& messageContent)
+bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
 {
     bool snapshotted = messageContent[QLatin1String("snapshotted")].toBool();
-
     messageContent.remove(QLatin1String("snapshotted"));
 
     if (snapshotted && !d->recorded)
@@ -198,9 +206,11 @@ void LaiYangSnapshot::getColor(QJsonObject& messageContent)
     }
     else if (!snapshotted && d->recorded)
     {
-        // prepost message TODO
-        //processPrePostMessage(&message);
+        // prepost detected
+        return true;
     }
+
+    return false;
 }
 
 bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLocal)
@@ -239,7 +249,27 @@ bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLo
 }
 
 
-/* ----------------------------------------------- Helper functions -----------------------------------------------*/
+
+bool LaiYangSnapshot::processPrePostMessage(ACLMessage& message)
+{
+    QJsonObject prepostContent = message.getContent();
+
+    QString sender;
+
+    if (d->initiator)
+    {
+        if (d->verifyPrepost(prepostContent, sender))
+        {
+            d->prepostMessages[sender].append(prepostContent);
+
+            qDebug() << "Initiator receives prepost : " << QJsonDocument(prepostContent).toJson(QJsonDocument::Compact);
+        }
+
+        return false;
+    }
+
+    return true;
+}
 
 void LaiYangSnapshot::requestSnapshot()
 {
@@ -249,64 +279,6 @@ void LaiYangSnapshot::requestSnapshot()
     ACLMessage* marker = new ACLMessage(ACLMessage::REQUEST_SNAPSHOT);
 
     emit signalRequestSnapshot(marker);
-}
-
-
-
-
-
-void LaiYangSnapshot::processPrePostMessage(const ACLMessage* message)
-{
-    VectorClock* timestamp = message->getTimeStamp();
-
-    if (!timestamp)
-    {
-        qWarning() << "INFORM_STATE message doesn't contain timestamp.";
-
-        return;
-    }
-
-    if (d->initiator)
-    {
-        QJsonObject prepost = timestamp->convertToJson();
-
-        QJsonObject content = message->getContent();
-
-        prepost[QLatin1String("payload")] = content;
-
-        collectPrePostMessage(prepost);
-    }
-    else
-    {
-        if (message->getPerformative() == ACLMessage::PREPOST_MESSAGE)
-        {
-            emit signalForwardPrePost(message);
-        }
-        else
-        {
-            // mark as prepost and forward message to the network
-            ACLMessage* prepostMessage = new ACLMessage(*message);
-
-            prepostMessage->setPerformative(ACLMessage::PREPOST_MESSAGE);
-
-            emit signalForwardPrePost(prepostMessage);
-        }
-    }
-}
-
-
-
-
-
-void LaiYangSnapshot::collectPrePostMessage(const QJsonObject& prepostMessage)
-{
-    // TODO : validate prepost if necessary
-    QString siteID = prepostMessage[QLatin1String("siteID")].toString();
-
-    if (!d->prepostMessages.contains(siteID))
-    {
-        d->prepostMessages[siteID] = prepostMessage;
-    }
 }
 
 }

@@ -10,6 +10,7 @@ To configure project ======> ./boostrap.sh
 Go to ./build
 Enter command "make"
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 - ACLMessage formats : {
                             performative : ACLMessage::Performative,
@@ -29,6 +30,17 @@ Enter command "make"
                                                 state   : local variables
                                              }
                          }
+
+- Prepost message format : {
+                                performative : ACLMessage::PREPOST_MESSAGE,
+                                sender       : siteID of receiver,
+                                nbSequence   : nbSequence of receiver,
+                                timestamp    : VectorClock of original message
+                                content      : {
+                                                    receiver : siteID of receiver of prepost message
+                                                    message  : original message (include siteID and nbSequence of sender)
+                                               }
+                           }
 
 - Collectted state : {
                         siteID : String

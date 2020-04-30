@@ -50,14 +50,6 @@ public:
     void init();
 
     /**
-     * @brief processMessage : process a new message before forwarding it
-     * @param message
-     * @param fromLocal
-     * @return
-     */
-    ForwardPort processMessage(ACLMessage* message, bool fromLocal);
-
-    /**
      * @brief colorMessage: append additional color field to the message from Base application before sending them
      * @param messageContent
      */
@@ -66,8 +58,11 @@ public:
     /**
      * @brief getColor : get color of incomming message
      * @param messageContent
+     * @return
+     *      - true if prepost message detected
+     *      - false if not
      */
-    void getColor(QJsonObject& messageContent);
+    bool getColor(QJsonObject& messageContent);
 
     /**
      * @brief processStateMessage : action taken when receive an ACL message with performative INFORM_STATE
@@ -77,11 +72,17 @@ public:
      */
     bool processStateMessage(const ACLMessage& message, bool fromLocal);
 
+    /**
+     * @brief processPrePostMessage : action taken when receive an ACL Message with performative PREPOST_MESSAGE
+     * @param message
+     * @return
+     */
+    bool processPrePostMessage(ACLMessage& message);
+
 public:
 
     // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
     Q_SIGNAL void signalRequestSnapshot(const Message* marker);         // send to BAS
-    Q_SIGNAL void signalForwardPrePost(const Message* prepost);         // send to NET
 
 private:
 
@@ -90,27 +91,6 @@ private:
      * this function send a request to Base application to take a snapshot
      */
     void requestSnapshot();
-
-
-
-
-
-
-    /**
-     * @brief processPrePostMessage : action taken when receive an ACL Message with performative PREPOST_MESSAGE
-     * @param message
-     */
-    void processPrePostMessage(const ACLMessage* message);
-
-
-
-
-
-    /**
-     * @brief collectPrePostMessage : collect prepost message
-     * @param message
-     */
-    void collectPrePostMessage(const QJsonObject& prepostMessage);
 
     //TODO: implement condition of termination after implementing wave
 private:

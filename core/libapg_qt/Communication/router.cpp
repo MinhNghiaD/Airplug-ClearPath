@@ -26,6 +26,7 @@ public:
     void forwardAppToNet(Header& header, ACLMessage& message);
     void forwardNetToApp(Header& header, ACLMessage& message);
     void forwardStateMessage(ACLMessage& message, bool fromLocal);
+    void forwardPrepost(ACLMessage message, bool newPrepost);
 
 public:
 
@@ -86,7 +87,11 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     if (snapshot)
     {
         QThread::msleep(1);
-        snapshot->getColor(contents);
+        if (snapshot->getColor(contents))
+        {
+            // detected prepost message
+            forwardPrepost(message, true);
+        }
     }
 
     message.setContent(contents);
@@ -113,6 +118,28 @@ void Router::Private::forwardStateMessage(ACLMessage& message, bool fromLocal)
     }
 
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
+void Router::Private::forwardPrepost(ACLMessage message, bool newPrepost)
+{
+    if (newPrepost)
+    {
+        QJsonObject originalMessage;
+        originalMessage[QLatin1String("receiver")] = siteID;
+        originalMessage[QLatin1String("message")]  = message.getMessage();
+
+        // encapsulate original message into Prepost message content
+        message.setContent(originalMessage);
+
+        message.setPerformative(ACLMessage::PREPOST_MESSAGE);
+        message.setSender(siteID);
+        message.setNbSequence(++nbSequence);
+    }
+
+    if (snapshot && snapshot->processPrePostMessage(message))
+    {
+        communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+    }
 }
 
 bool Router::Private::isOldMessage(const ACLMessage& messsage)
@@ -181,6 +208,7 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
     connect(d->snapshot, &LaiYangSnapshot::signalRequestSnapshot,
             this,        &Router::slotSendMarker, Qt::DirectConnection);
 
+
     return true;
 }
 
@@ -202,7 +230,10 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->forwardStateMessage(aclMessage, false);
 
                 break;
+            case ACLMessage::PREPOST_MESSAGE:
+                d->forwardPrepost(aclMessage, false);
 
+                break;
             default:
                 d->forwardNetToApp(header, aclMessage);
 
