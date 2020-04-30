@@ -65,6 +65,18 @@ public:
      */
     bool allStateColltected() const;
 
+    /**
+     * @brief allPrepostCollected : verify if all prepost messages are collected
+     * @return
+     */
+    bool allPrepostCollected() const;
+
+    /**
+     * @brief nbCollectedPrepost : return number of collected prepost message
+     * @return
+     */
+    int nbCollectedPrepost() const;
+
 public:
 
     bool recorded;
@@ -184,6 +196,27 @@ bool LaiYangSnapshot::Private::allStateColltected() const
     return false;
 }
 
+bool LaiYangSnapshot::Private::allPrepostCollected() const
+{
+    // TODO
+
+    return false;
+}
+
+int LaiYangSnapshot::Private::nbCollectedPrepost() const
+{
+    int nbPrepost = 0;
+
+    for (QHash<QString, QVector<QJsonObject> >::const_iterator iter  = prepostMessages.cbegin();
+                                                               iter != prepostMessages.cend();
+                                                               ++iter)
+    {
+        nbPrepost += iter.value().size();
+    }
+
+    return nbPrepost;
+}
+
 /* ----------------------------------------------------------------------- LaiYangSnapshot main functions --------------------------------------------------------------------------------------*/
 
 LaiYangSnapshot::LaiYangSnapshot()
@@ -255,6 +288,7 @@ bool LaiYangSnapshot::processStateMessage(const ACLMessage& message, bool fromLo
 
         qDebug() << "Initiator receives state : " << QJsonDocument(state).toJson(QJsonDocument::Compact);
 
+        // TODO check nb prepost message
         if (d->allStateColltected())
         {
             qDebug() << "Snapshot finish";
