@@ -61,6 +61,8 @@ void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
     message.setSender(siteID);
     message.setNbSequence(++nbSequence);
 
+    // TODO: mark receiver for routing
+
     QJsonObject contents =  message.getContent();
 
     // set App name

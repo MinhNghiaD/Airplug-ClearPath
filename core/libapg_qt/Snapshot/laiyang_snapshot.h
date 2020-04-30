@@ -64,8 +64,11 @@ public:
     /**
      * @brief colorMessage: append additional color field to the message from Base application before sending them
      * @param messageContent
+     * @param nbReceivers
+     *
+     * (broadcast => nbReceivers = 0)
      */
-    void colorMessage(QJsonObject& messageContent);
+    void colorMessage(QJsonObject& messageContent, int nbReceivers = 0);
 
     /**
      * @brief getColor : get color of incomming message

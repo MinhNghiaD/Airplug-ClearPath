@@ -253,13 +253,18 @@ void LaiYangSnapshot::init()
 }
 
 
-void LaiYangSnapshot::colorMessage(QJsonObject& messageContent)
+void LaiYangSnapshot::colorMessage(QJsonObject& messageContent, int nbReceivers)
 {
     // append color field to the content of the message
     messageContent[QLatin1String("snapshotted")] = d->recorded;
 
-    // broadcast ---> increment message by nb of neighbor
-    d->msgCounter += d->nbNeighbor;
+    if (nbReceivers == 0)
+    {
+        // broadcast ---> increment message by nb of neighbor
+        nbReceivers = d->nbNeighbor;
+    }
+
+    d->msgCounter += nbReceivers;
 }
 
 bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
@@ -348,8 +353,6 @@ bool LaiYangSnapshot::processStateMessage(ACLMessage& message, bool fromLocal)
     // Forward to initiator
     return true;
 }
-
-
 
 bool LaiYangSnapshot::processPrePostMessage(ACLMessage& message)
 {
