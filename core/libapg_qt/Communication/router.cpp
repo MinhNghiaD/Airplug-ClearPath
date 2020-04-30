@@ -260,6 +260,7 @@ void Router::slotReceiveMessage(Header header, Message message)
                 if (d->snapshot)
                 {
                     d->snapshot->setNbOfApp(nbOfApp());
+                    d->snapshot->setNbOfNeighbor(nbOfNeighbor());
                 }
 
                 break;
@@ -317,6 +318,7 @@ void Router::slotPingTimeOut()
     if (d->snapshot)
     {
         d->snapshot->setNbOfApp(nbOfApp());
+        d->snapshot->setNbOfNeighbor(nbOfNeighbor());
     }
 
     // broadcast local nb of app to other sites
@@ -348,13 +350,25 @@ int Router::nbOfApp() const
     return totalNbApp;
 }
 
-void Router::slotRefreshActiveNeighbor()
+int Router::nbOfNeighbor() const
 {
-    if (d->snapshot)
+    int nbNeighbor = 0;
+
+    for (QHash<QString, QPair<int, int> >::const_iterator iter  = d->neighborInfo.cbegin();
+                                                          iter != d->neighborInfo.cend();
+                                                          ++iter)
     {
-        d->snapshot->setNbOfNeighbor(d->activeNeighBors.size());
+        if (iter.value().second > 0)
+        {
+            ++nbNeighbor;
+        }
     }
 
+    return nbNeighbor;
+}
+
+void Router::slotRefreshActiveNeighbor()
+{
     QStringList allNeighBor = d->neighborInfo.keys();
 
     for (QStringList::const_iterator iter  = allNeighBor.cbegin();
