@@ -19,7 +19,8 @@ public:
 
     Private()
         : router(nullptr),
-          snapshot(nullptr)
+          snapshot(nullptr),
+          pingTimer(nullptr)
     {
     }
 
@@ -31,6 +32,7 @@ public:
 public:
     LaiYangSnapshot* snapshot;
     Router*          router;
+    QTimer*          pingTimer;
 };
 
 
@@ -57,6 +59,13 @@ void NetController::init(const QCoreApplication &app)
     d->snapshot = new LaiYangSnapshot();
 
     d->router->addSnapshot(d->snapshot);
+
+    d->pingTimer = new QTimer(this);
+
+    connect(d->pingTimer, &QTimer::timeout,
+            d->router,    &Router::slotHeathCheck, Qt::DirectConnection);
+
+    d->pingTimer->start(20000);
 }
 
 void NetController::takeSnapshot() const

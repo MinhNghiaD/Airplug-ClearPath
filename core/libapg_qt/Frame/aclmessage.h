@@ -49,6 +49,7 @@ public:
         REQUEST_SNAPSHOT,
         INFORM_STATE,
         PREPOST_MESSAGE,
+        UPDATE_ACTIVE,
     };
 
 public:

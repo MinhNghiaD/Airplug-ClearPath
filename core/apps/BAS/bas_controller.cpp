@@ -164,6 +164,13 @@ void BasController::slotReceiveMessage(Header header, Message message)
 
         return;
     }
+    else if (aclMessage.getPerformative() == ACLMessage::PING)
+    {
+        aclMessage.setPerformative(ACLMessage::PONG);
+        sendMessage(aclMessage, QString(), QString(), QString());
+
+        return;
+    }
 
     VectorClock* senderClock = aclMessage.getTimeStamp();
 

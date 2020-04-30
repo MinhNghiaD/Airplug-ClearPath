@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QThread>
 #include <QPair>
+#include <QTimer>
 
 namespace AirPlug
 {
@@ -14,6 +15,8 @@ public:
     Private()
         : communicationMngr(nullptr),
           nbSequence(0),
+          nbApp(0),
+          temporaryNbApp(0),
           snapshot(nullptr)
     {
     }
@@ -40,6 +43,8 @@ public:
     // using siteID and sequence nb to identify old message
     QString               siteID;
     int                   nbSequence;
+    int                   nbApp;
+    int                   temporaryNbApp;
 
     // map external router with : - first, the most nbSequence received  - second, the nb of active applications hosted at each site
     QHash<QString, QPair<int, int> > neighborInfo;
@@ -236,6 +241,10 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->forwardPrepost(aclMessage, false);
 
                 break;
+            case ACLMessage::UPDATE_ACTIVE:
+                d->neighborInfo[aclMessage.getSender()].second = (aclMessage.getContent()[QLatin1String("nbApp")].toInt());
+
+                break;
             default:
                 d->forwardNetToApp(header, aclMessage);
 
@@ -248,6 +257,11 @@ void Router::slotReceiveMessage(Header header, Message message)
         {
             // process state message
             d->forwardStateMessage(aclMessage, true);
+        }
+        else if (aclMessage.getPerformative() == ACLMessage::PONG)
+        {
+            // update nb of local applications
+            ++(d->temporaryNbApp);
         }
         else
         {
@@ -264,9 +278,34 @@ void Router::slotSendMarker(const Message* marker)
 
 void Router::slotHeathCheck()
 {
+    d->temporaryNbApp = 0;
+
     ACLMessage ping(ACLMessage::PING);
 
     d->communicationMngr->send(ping, QLatin1String("NET"), Header::allApp, Header::localHost);
+
+    // activate timeout timer of 3 seconds
+    QTimer::singleShot(3000, this, SLOT(slotPingTimeOut()));
+}
+
+void Router::slotPingTimeOut()
+{
+    // update nb of active application
+    d->nbApp = d->temporaryNbApp;
+
+    // broadcast local nb of app to other sites
+    // mark message ID
+    ACLMessage message(ACLMessage::UPDATE_ACTIVE);
+
+    message.setSender(d->siteID);
+    message.setNbSequence(++d->nbSequence);
+
+    QJsonObject contents;
+
+    contents[QLatin1String("nbApp")] = d->nbApp;
+    message.setContent(contents);
+
+    d->communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
 }

@@ -55,7 +55,7 @@ public:
 
 private:
 
-
+    Q_SLOT void slotPingTimeOut();
 
 private:
 
