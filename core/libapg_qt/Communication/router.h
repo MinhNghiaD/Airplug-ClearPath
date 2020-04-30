@@ -32,12 +32,30 @@ public:
 
 public:
 
+    /**
+      * @brief slotReceiveMessage :  main event handler
+      */
     Q_SLOT void slotReceiveMessage(Header, Message);
+
+    /**
+      * @brief slotSendMarker : broadcast marker to local applications to take snapshot
+      * @param marker
+      */
     Q_SLOT void slotSendMarker(const Message* marker);
+
+    /**
+      * @brief slotHealthCheck : broadcast PING message to local applications
+      *
+      */
+    Q_SLOT void slotHeathCheck();
 
 public:
 
     Q_SIGNAL void signalSnapshotMessage(ACLMessage message);
+
+private:
+
+
 
 private:
 

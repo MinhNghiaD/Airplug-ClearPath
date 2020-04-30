@@ -42,6 +42,8 @@ public:
         REFUSE,
         CONFIRM,
         UNKNOWN,
+        PING,
+        PONG,
 
         // custom Distributed perfomative
         REQUEST_SNAPSHOT,

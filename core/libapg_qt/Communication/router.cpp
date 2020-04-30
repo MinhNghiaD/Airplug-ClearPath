@@ -3,6 +3,7 @@
 // Qt includes
 #include <QDebug>
 #include <QThread>
+#include <QPair>
 
 namespace AirPlug
 {
@@ -40,7 +41,8 @@ public:
     QString               siteID;
     int                   nbSequence;
 
-    QHash<QString, int>   recentSequences;
+    // map external router with : - first, the most nbSequence received  - second, the nb of active applications hosted at each site
+    QHash<QString, QPair<int, int> > neighborInfo;
 
     LaiYangSnapshot*      snapshot;
 };
@@ -154,17 +156,17 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
         return true;
     }
 
-    if ( recentSequences.contains(sender) && (recentSequences[sender] >= sequence) )
+    if ( neighborInfo.contains(sender) && (neighborInfo[sender].first >= sequence) )
     {
         // Here we suppose the channels are FIFO
         // therefore for each router, by keeing the sequence number of each site, we can identify old repeated message
-        //qDebug() << siteID << ": Drop old message because recent sequence = " << recentSequences[sender] << " > this sequence = " << sequence;
+        //qDebug() << siteID << ": Drop old message because recent sequence = " << neighborInfo[sender] << " > this sequence = " << sequence;
 
         return true;
     }
 
     // Update recent sequence
-    recentSequences[sender] = sequence;
+    neighborInfo[sender].first = sequence;
 
     return false;
 }
@@ -258,6 +260,13 @@ void Router::slotSendMarker(const Message* marker)
 {
     // broadcast to all app in local site
     d->communicationMngr->send(*marker, QLatin1String("NET"), Header::allApp, Header::localHost);
+}
+
+void Router::slotHeathCheck()
+{
+    ACLMessage ping(ACLMessage::PING);
+
+    d->communicationMngr->send(ping, QLatin1String("NET"), Header::allApp, Header::localHost);
 }
 
 }
