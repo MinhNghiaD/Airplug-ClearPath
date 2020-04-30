@@ -50,6 +50,12 @@ public:
     void init();
 
     /**
+     * @brief setNbOfApp : update total nb of application
+     * @param nbApp
+     */
+    void setNbOfApp(int nbApp);
+
+    /**
      * @brief colorMessage: append additional color field to the message from Base application before sending them
      * @param messageContent
      */

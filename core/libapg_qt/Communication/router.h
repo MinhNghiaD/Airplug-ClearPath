@@ -30,6 +30,8 @@ public:
 
     bool addSnapshot(LaiYangSnapshot* snapshot);
 
+    int nbOfApp() const;
+
 public:
 
     /**
@@ -56,6 +58,7 @@ public:
 private:
 
     Q_SLOT void slotPingTimeOut();
+    Q_SLOT void slotRefreshActiveNeighbor();
 
 private:
 

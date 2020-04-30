@@ -16,7 +16,8 @@ public:
     Private()
         : recorded(false),
           initiator(false),
-          msgCounter(0)
+          msgCounter(0),
+          nbApp(0)
     {
     }
 
@@ -59,12 +60,6 @@ public:
     bool verifyPrepost(const QJsonObject& content, QString& sender) const;
 
     /**
-     * @brief updateSitesList : update the list of connected sites
-     * @param siteClock
-     */
-    void updateSitesList(VectorClock* siteClock);
-
-    /**
      * @brief allStateColltected : check if all state are collected
      * @return
      */
@@ -76,15 +71,13 @@ public:
     bool initiator;
 
     int  msgCounter;
+    int  nbApp;
 
     // System state will be encoded in Json object
     QHash<QString, QJsonObject> states;
 
     // Map of sender and its prepost messages
     QHash<QString, QVector<QJsonObject> > prepostMessages;
-
-    // list of all connected site in the system
-    QVector<QString> siteIDs;
 };
 
 
@@ -181,29 +174,9 @@ bool LaiYangSnapshot::Private::verifyPrepost(const QJsonObject& content, QString
     return true;
 }
 
-void LaiYangSnapshot::Private::updateSitesList(VectorClock* siteClock)
-{
-    if (!siteClock)
-    {
-        return;
-    }
-
-    QStringList sites = siteClock->siteLists();
-
-    for (QStringList::const_iterator iter  = sites.cbegin();
-                                     iter != sites.cend();
-                                     ++iter)
-    {
-        if (!siteIDs.contains(*iter))
-        {
-            siteIDs.append(*iter);
-        }
-    }
-}
-
 bool LaiYangSnapshot::Private::allStateColltected() const
 {
-    if (states.size() == siteIDs.size())
+    if (states.size() == nbApp)
     {
         return true;
     }
@@ -325,6 +298,11 @@ void LaiYangSnapshot::requestSnapshot()
     ACLMessage* marker = new ACLMessage(ACLMessage::REQUEST_SNAPSHOT);
 
     emit signalRequestSnapshot(marker);
+}
+
+void LaiYangSnapshot::setNbOfApp(int nbApp)
+{
+    d->nbApp = nbApp;
 }
 
 }

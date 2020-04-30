@@ -49,6 +49,8 @@ public:
     // map external router with : - first, the most nbSequence received  - second, the nb of active applications hosted at each site
     QHash<QString, QPair<int, int> > neighborInfo;
 
+    QVector<QString>      activeNeighBors;
+
     LaiYangSnapshot*      snapshot;
 };
 
@@ -196,6 +198,9 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
 
     connect(d->communicationMngr, SIGNAL(signalMessageReceived(Header, Message)),
             this,                 SLOT(slotReceiveMessage(Header, Message)));
+
+    // health check neighbors periodically
+    QTimer::singleShot(30000, this, SLOT(slotRefreshActiveNeighbor()));
 }
 
 Router::~Router()
@@ -231,6 +236,14 @@ void Router::slotReceiveMessage(Header header, Message message)
             return;
         }
 
+        // active neighbor :
+        QString neighborID = aclMessage.getSender();
+
+        if(! d->activeNeighBors.contains(neighborID))
+        {
+            d->activeNeighBors.append(neighborID);
+        }
+
         switch (aclMessage.getPerformative())
         {
             case ACLMessage::INFORM_STATE:
@@ -243,6 +256,11 @@ void Router::slotReceiveMessage(Header header, Message message)
                 break;
             case ACLMessage::UPDATE_ACTIVE:
                 d->neighborInfo[aclMessage.getSender()].second = (aclMessage.getContent()[QLatin1String("nbApp")].toInt());
+
+                if (d->snapshot)
+                {
+                    d->snapshot->setNbOfApp(nbOfApp());
+                }
 
                 break;
             default:
@@ -293,6 +311,11 @@ void Router::slotPingTimeOut()
     // update nb of active application
     d->nbApp = d->temporaryNbApp;
 
+    if (d->snapshot)
+    {
+        d->snapshot->setNbOfApp(nbOfApp());
+    }
+
     // broadcast local nb of app to other sites
     // mark message ID
     ACLMessage message(ACLMessage::UPDATE_ACTIVE);
@@ -306,6 +329,41 @@ void Router::slotPingTimeOut()
     message.setContent(contents);
 
     d->communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
+int Router::nbOfApp() const
+{
+    int totalNbApp = d->nbApp;
+
+    for (QHash<QString, QPair<int, int> >::const_iterator iter  = d->neighborInfo.cbegin();
+                                                          iter != d->neighborInfo.cend();
+                                                          ++iter)
+    {
+        totalNbApp += iter.value().second;
+    }
+
+    return totalNbApp;
+}
+
+void Router::slotRefreshActiveNeighbor()
+{
+    QStringList allNeighBor = d->neighborInfo.keys();
+
+    for (QStringList::const_iterator iter  = allNeighBor.cbegin();
+                                     iter != allNeighBor.cend();
+                                     ++iter)
+    {
+        // if there is no recent activity from a neighbor
+        if (! d->activeNeighBors.contains(*iter))
+        {
+            d->neighborInfo[*iter].second = 0;
+        }
+    }
+
+    d->activeNeighBors.clear();
+
+    // reactivate timer
+    QTimer::singleShot(30000, this, SLOT(slotRefreshActiveNeighbor()));
 }
 
 }
