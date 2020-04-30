@@ -167,4 +167,9 @@ int VectorClock::getValue(const QString& siteID) const
     return 0;
 }
 
+int VectorClock::length() const
+{
+    return d->localClock.size();
+}
+
 }

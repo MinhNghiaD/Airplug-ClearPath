@@ -16,7 +16,8 @@ public:
     Private()
         : recorded(false),
           initiator(false),
-          msgCounter(0)
+          msgCounter(0),
+          nbSite(0)
     {
     }
 
@@ -58,12 +59,25 @@ public:
      */
     bool verifyPrepost(const QJsonObject& content, QString& sender) const;
 
+    /**
+     * @brief updateNbSite : nb of site = Max(nb of site in each clock)
+     * @param siteClock
+     */
+    void updateNbSite(VectorClock* siteClock);
+
+    /**
+     * @brief allStateColltected : check if all state are collected
+     * @return
+     */
+    bool allStateColltected();
+
 public:
 
     bool recorded;
     bool initiator;
 
     int  msgCounter;
+    int  nbSite;
 
     // System state will be encoded in Json object
     QHash<QString, QJsonObject> states;
@@ -165,6 +179,17 @@ bool LaiYangSnapshot::Private::verifyPrepost(const QJsonObject& content, QString
 
     return true;
 }
+
+void LaiYangSnapshot::Private::updateNbSite(VectorClock* siteClock)
+{
+    if (!siteClock)
+    {
+        return;
+    }
+
+
+}
+
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 LaiYangSnapshot::LaiYangSnapshot()
