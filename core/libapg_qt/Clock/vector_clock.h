@@ -87,7 +87,7 @@ public:
     int getValue(const QString& siteID) const;
 
     /**
-     * @brief length : get dimension of clock
+     * @brief length : return the dimension of clock
      * @return
      */
     int length() const;

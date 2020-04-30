@@ -187,7 +187,12 @@ void LaiYangSnapshot::Private::updateNbSite(VectorClock* siteClock)
         return;
     }
 
+    int clockDimension = siteClock->length();
 
+    if (nbSite < clockDimension)
+    {
+        nbSite = clockDimension;
+    }
 }
 
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
