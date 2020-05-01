@@ -23,9 +23,6 @@ public:
           nbNeighbor(0),
           nbReadyNeighbor(0)
     {
-        // TODO debug this
-        nbApp = 4;
-        nbNeighbor = 3;
     }
 
     ~Private()
@@ -370,7 +367,7 @@ ACLMessage LaiYangSnapshot::encodePrepostMessage(const ACLMessage& message)
     return prepost;
 }
 
-bool LaiYangSnapshot::processRecoveringMessage(ACLMessage& message)
+bool LaiYangSnapshot::processRecoveringMessage(const ACLMessage& message)
 {
     if (d->initiator && d->status == RECOVERING)
     {
@@ -390,7 +387,7 @@ bool LaiYangSnapshot::processRecoveringMessage(ACLMessage& message)
     return true;
 }
 
-bool LaiYangSnapshot::processReadyMessage(ACLMessage& message)
+bool LaiYangSnapshot::processReadyMessage(const ACLMessage& message)
 {
     if (d->initiator)
     {
@@ -438,12 +435,12 @@ void LaiYangSnapshot::finishSnapshot()
 
 void LaiYangSnapshot::setNbOfApp(int nbApp)
 {
-    //d->nbApp = nbApp;
+    d->nbApp = nbApp;
 }
 
 void LaiYangSnapshot::setNbOfNeighbor(int nbNeighbor)
 {
-    //d->nbNeighbor = nbNeighbor;
+    d->nbNeighbor = nbNeighbor;
 
 }
 

@@ -31,8 +31,14 @@ public:
 
     void forwardStateMessage(ACLMessage& message, bool fromLocal);
     void forwardPrepost(const ACLMessage& message);
+    void forwardRecover(const ACLMessage& message);
+    void forwardReady(const ACLMessage& message);
 
     bool isOldMessage(const ACLMessage& messsage);
+
+    void updateActiveNeighbor(const ACLMessage& messsage);
+    int  nbOfApp() const;
+    int  nbOfNeighbor() const;
 
 public:
 
@@ -139,6 +145,26 @@ void Router::Private::forwardPrepost(const ACLMessage& prepost)
     communicationMngr->send(prepost, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
+void Router::Private::forwardRecover(const ACLMessage& message)
+{
+    if (snapshot && !snapshot->processRecoveringMessage(message))
+    {
+        return;
+    }
+
+    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
+void Router::Private::forwardReady(const ACLMessage& message)
+{
+    if (snapshot && !snapshot->processReadyMessage(message))
+    {
+        return;
+    }
+
+    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
 bool Router::Private::isOldMessage(const ACLMessage& messsage)
 {
     QString sender = messsage.getSender();
@@ -147,7 +173,6 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
     if (sender == siteID)
     {
         //qDebug() << siteID << "Drop round back message";
-
         return true;
     }
 
@@ -165,8 +190,53 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
     return false;
 }
 
+void Router::Private::updateActiveNeighbor(const ACLMessage& messsage)
+{
+    neighborInfo[messsage.getSender()].second = (messsage.getContent()[QLatin1String("nbApp")].toInt());
 
-/*----------------------------------------------------------------------------------------------------------------------------------------------------*/
+    if (snapshot)
+    {
+        snapshot->setNbOfApp(nbOfApp());
+        snapshot->setNbOfNeighbor(nbOfNeighbor());
+    }
+
+    // forward
+    communicationMngr->send(messsage, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
+
+int Router::Private::nbOfApp() const
+{
+    int totalNbApp = nbApp;
+
+    for (QHash<QString, QPair<int, int> >::const_iterator iter  = neighborInfo.cbegin();
+                                                          iter != neighborInfo.cend();
+                                                          ++iter)
+    {
+        totalNbApp += iter.value().second;
+    }
+
+    return totalNbApp;
+}
+
+int Router::Private::nbOfNeighbor() const
+{
+    int nbNeighbor = 0;
+
+    for (QHash<QString, QPair<int, int> >::const_iterator iter  = neighborInfo.cbegin();
+                                                          iter != neighborInfo.cend();
+                                                          ++iter)
+    {
+        if (iter.value().second > 0)
+        {
+            ++nbNeighbor;
+        }
+    }
+
+    return nbNeighbor;
+}
+
+/*------------------------------------------------------------ Router implementations ----------------------------------------------------------------------------------------*/
 
 
 Router::Router(CommunicationManager* communication, const QString& siteID)
@@ -246,41 +316,15 @@ void Router::slotReceiveMessage(Header header, Message message)
                 break;
 
             case ACLMessage::SNAPSHOT_RECOVER:
-                if (d->snapshot)
-                {
-                    if (d->snapshot->processRecoveringMessage(aclMessage))
-                    {
-                        // forward message
-                        d->communicationMngr->send(aclMessage, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
-                    }
-                }
-
+                d->forwardRecover(aclMessage);
                 break;
 
             case ACLMessage::READY_SNAPSHOT:
-                if (d->snapshot)
-                {
-                    if (d->snapshot->processReadyMessage(aclMessage))
-                    {
-                        // forward message
-                        d->communicationMngr->send(aclMessage, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
-                    }
-                }
-
+                d->forwardReady(aclMessage);
                 break;
 
             case ACLMessage::UPDATE_ACTIVE:
-                d->neighborInfo[aclMessage.getSender()].second = (aclMessage.getContent()[QLatin1String("nbApp")].toInt());
-
-                if (d->snapshot)
-                {
-                    d->snapshot->setNbOfApp(nbOfApp());
-                    d->snapshot->setNbOfNeighbor(nbOfNeighbor());
-                }
-
-                // forward
-                d->communicationMngr->send(aclMessage, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
-
+                d->updateActiveNeighbor(aclMessage);
                 break;
 
             default:
@@ -324,18 +368,6 @@ void Router::slotForwardSnapshotMessage(ACLMessage& message)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 void Router::slotHeathCheck()
 {
     d->temporaryNbApp = 0;
@@ -358,8 +390,8 @@ void Router::slotPingTimeOut()
 
     if (d->snapshot)
     {
-        d->snapshot->setNbOfApp(nbOfApp());
-        d->snapshot->setNbOfNeighbor(nbOfNeighbor());
+        d->snapshot->setNbOfApp(d->nbOfApp());
+        d->snapshot->setNbOfNeighbor(d->nbOfNeighbor());
     }
 
     // broadcast local nb of app to other sites
@@ -377,49 +409,6 @@ void Router::slotPingTimeOut()
     d->communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-int Router::nbOfApp() const
-{
-    int totalNbApp = d->nbApp;
-
-    for (QHash<QString, QPair<int, int> >::const_iterator iter  = d->neighborInfo.cbegin();
-                                                          iter != d->neighborInfo.cend();
-                                                          ++iter)
-    {
-        totalNbApp += iter.value().second;
-    }
-
-    return totalNbApp;
-}
-
-int Router::nbOfNeighbor() const
-{
-    int nbNeighbor = 0;
-
-    for (QHash<QString, QPair<int, int> >::const_iterator iter  = d->neighborInfo.cbegin();
-                                                          iter != d->neighborInfo.cend();
-                                                          ++iter)
-    {
-        if (iter.value().second > 0)
-        {
-            ++nbNeighbor;
-        }
-    }
-
-    return nbNeighbor;
-}
 
 void Router::slotRefreshActiveNeighbor()
 {

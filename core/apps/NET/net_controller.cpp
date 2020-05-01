@@ -59,7 +59,7 @@ void NetController::init(const QCoreApplication &app)
     d->router->addSnapshot(d->snapshot);
 
     // start healthcheck routine
-    //d->router->slotHeathCheck();
+    d->router->slotHeathCheck();
 }
 
 void NetController::takeSnapshot() const

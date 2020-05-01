@@ -116,14 +116,14 @@ public:
      * @param message
      * @return
      */
-    bool processRecoveringMessage(ACLMessage& message);
+    bool processRecoveringMessage(const ACLMessage& message);
 
     /**
      * @brief processReadyMessage : action taken when receive a message inform initiator ready for snapshot
      * @param message
      * @return
      */
-    bool processReadyMessage(ACLMessage& message);
+    bool processReadyMessage(const ACLMessage& message);
 
 public:
 

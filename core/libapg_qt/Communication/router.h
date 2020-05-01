@@ -30,9 +30,6 @@ public:
 
     bool addSnapshot(LaiYangSnapshot* snapshot);
 
-    int nbOfApp() const;
-    int nbOfNeighbor() const;
-
 public:
 
     /**
