@@ -8,6 +8,8 @@
 # BAS2 <--> NET2
 #
 
+APPDIR="$(dirname "$PWD")"
+
 if test -f "in*"; then
     rm in*
 fi
@@ -22,10 +24,10 @@ mkfifo in3 out3
 mkfifo in4 out4
 
 echo "init applications"
-./BAS/bas --whatwho --auto --dest=NET --ident=bas1 < in1 > out1 &
-./NET/net --whatwho --ident=net1 < in2 > out2 &
-./BAS/bas --whatwho --auto --dest=NET --ident=bas2 < in3 > out3 &
-./NET/net --whatwho --ident=net2 --nogui < in4 > out4 &
+$APPDIR/BAS/bas --whatwho --auto --dest=NET --ident=bas1 < in1 > out1 &
+$APPDIR/NET/net --whatwho --ident=net1 < in2 > out2 &
+$APPDIR/BAS/bas --whatwho --auto --dest=NET --ident=bas2 < in3 > out3 &
+$APPDIR/NET/net --whatwho --ident=net2 --nogui < in4 > out4 &
 
 # wait for the link creations
 sleep 1

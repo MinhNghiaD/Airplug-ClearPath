@@ -1,0 +1,396 @@
+///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////
+ - States : 
++ app = bas1 : 
+{
+    "clock": [
+        {
+            "bas1": 18
+        },
+        {
+            "bas2": 16
+        }
+    ],
+    "siteID": "bas1",
+    "state": {
+        "clock": [
+            {
+                "bas1": 18
+            },
+            {
+                "bas2": 16
+            }
+        ],
+        "options": {
+            "autoSend": true,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas1",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": 105011616,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas1",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 6
+        }
+    }
+}
+
++ app = bas2 : 
+{
+    "clock": [
+        {
+            "bas1": 16
+        },
+        {
+            "bas2": 19
+        }
+    ],
+    "siteID": "bas2",
+    "state": {
+        "clock": [
+            {
+                "bas2": 19
+            },
+            {
+                "bas1": 16
+            }
+        ],
+        "options": {
+            "autoSend": true,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas2",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": -1511089760,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas2",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 9
+        }
+    }
+}
+
+ - Prepost messages : 
++ sender = bas2 : 
+{
+    "message": "^sender~net2^content~{\"app\":\"BAS\",\"nseq\":9,\"payload\":\"-\",\"snapshotStatus\":0}^timestamp~{\"clock\":[{\"bas2\":18},{\"bas1\":16}],\"siteID\":\"bas2\"}^nbSequence~10^perfomative~1^",
+    "receiver": "net1"
+}
+
+///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////
+ - States : 
++ app = bas1 : 
+{
+    "clock": [
+        {
+            "bas1": 37
+        },
+        {
+            "bas2": 35
+        }
+    ],
+    "siteID": "bas1",
+    "state": {
+        "clock": [
+            {
+                "bas1": 37
+            },
+            {
+                "bas2": 35
+            }
+        ],
+        "options": {
+            "autoSend": true,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas1",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": 105011616,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas1",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 15
+        }
+    }
+}
+
++ app = bas2 : 
+{
+    "clock": [
+        {
+            "bas1": 35
+        },
+        {
+            "bas2": 38
+        }
+    ],
+    "siteID": "bas2",
+    "state": {
+        "clock": [
+            {
+                "bas2": 38
+            },
+            {
+                "bas1": 35
+            }
+        ],
+        "options": {
+            "autoSend": true,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas2",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": -1511089760,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas2",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 18
+        }
+    }
+}
+
+ - Prepost messages : 
++ sender = bas2 : 
+{
+    "message": "^sender~net2^content~{\"app\":\"BAS\",\"nseq\":18,\"payload\":\"-\",\"snapshotStatus\":0}^timestamp~{\"clock\":[{\"bas2\":37},{\"bas1\":35}],\"siteID\":\"bas2\"}^nbSequence~21^perfomative~1^",
+    "receiver": "net1"
+}
+
+///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////
+ - States : 
++ app = bas1 : 
+{
+    "clock": [
+        {
+            "bas1": 50
+        },
+        {
+            "bas2": 48
+        }
+    ],
+    "siteID": "bas1",
+    "state": {
+        "clock": [
+            {
+                "bas1": 50
+            },
+            {
+                "bas2": 48
+            }
+        ],
+        "options": {
+            "autoSend": true,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas1",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": 105011616,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas1",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 21
+        }
+    }
+}
+
++ app = bas2 : 
+{
+    "clock": [
+        {
+            "bas1": 48
+        },
+        {
+            "bas2": 51
+        }
+    ],
+    "siteID": "bas2",
+    "state": {
+        "clock": [
+            {
+                "bas2": 51
+            },
+            {
+                "bas1": 48
+            }
+        ],
+        "options": {
+            "autoSend": true,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas2",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": -1511089760,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas2",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 24
+        }
+    }
+}
+
+ - Prepost messages : 
++ sender = bas2 : 
+{
+    "message": "^sender~net2^content~{\"app\":\"BAS\",\"nseq\":24,\"payload\":\"-\",\"snapshotStatus\":0}^timestamp~{\"clock\":[{\"bas2\":50},{\"bas1\":48}],\"siteID\":\"bas2\"}^nbSequence~29^perfomative~1^",
+    "receiver": "net1"
+}
+
+///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////
+ - States : 
++ app = bas1 : 
+{
+    "clock": [
+        {
+            "bas1": 63
+        },
+        {
+            "bas2": 61
+        }
+    ],
+    "siteID": "bas1",
+    "state": {
+        "clock": [
+            {
+                "bas1": 63
+            },
+            {
+                "bas2": 61
+            }
+        ],
+        "options": {
+            "autoSend": true,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas1",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": 105011616,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas1",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 27
+        }
+    }
+}
+
++ app = bas2 : 
+{
+    "clock": [
+        {
+            "bas1": 61
+        },
+        {
+            "bas2": 64
+        }
+    ],
+    "siteID": "bas2",
+    "state": {
+        "clock": [
+            {
+                "bas2": 64
+            },
+            {
+                "bas1": 61
+            }
+        ],
+        "options": {
+            "autoSend": true,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas2",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": -1511089760,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas2",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 30
+        }
+    }
+}
+
+ - Prepost messages : 
++ sender = bas2 : 
+{
+    "message": "^sender~net2^content~{\"app\":\"BAS\",\"nseq\":30,\"payload\":\"-\",\"snapshotStatus\":0}^timestamp~{\"clock\":[{\"bas2\":63},{\"bas1\":61}],\"siteID\":\"bas2\"}^nbSequence~37^perfomative~1^",
+    "receiver": "net1"
+}
+
