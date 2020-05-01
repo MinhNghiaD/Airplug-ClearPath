@@ -1,0 +1,159 @@
+///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////
+ - States : 
++ app = bas2 : 
+{
+    "clock": [
+        {
+            "bas2": 3
+        }
+    ],
+    "siteID": "bas2",
+    "state": {
+        "clock": [
+            {
+                "bas2": 3
+            }
+        ],
+        "options": {
+            "autoSend": false,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas2",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": 670247328,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas2",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 0
+        }
+    }
+}
+
++ app = bas1 : 
+{
+    "clock": [
+        {
+            "bas1": 3
+        }
+    ],
+    "siteID": "bas1",
+    "state": {
+        "clock": [
+            {
+                "bas1": 3
+            }
+        ],
+        "options": {
+            "autoSend": false,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas1",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": -615405152,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas1",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 0
+        }
+    }
+}
+
++ app = bas4 : 
+{
+    "clock": [
+        {
+            "bas4": 3
+        }
+    ],
+    "siteID": "bas4",
+    "state": {
+        "clock": [
+            {
+                "bas4": 3
+            }
+        ],
+        "options": {
+            "autoSend": false,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas4",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": 1049110944,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas4",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 0
+        }
+    }
+}
+
++ app = bas3 : 
+{
+    "clock": [
+        {
+            "bas3": 3
+        }
+    ],
+    "siteID": "bas3",
+    "state": {
+        "clock": [
+            {
+                "bas3": 3
+            }
+        ],
+        "options": {
+            "autoSend": false,
+            "debug": false,
+            "delay": 500,
+            "destination": "NET",
+            "ident": "bas3",
+            "mode": "",
+            "nogui": false,
+            "remote": true,
+            "remoteHost": "",
+            "remotePort": -1030805088,
+            "safemode": false,
+            "save": false,
+            "source": "",
+            "start": true,
+            "verbose": 0
+        },
+        "siteID": "bas3",
+        "state": {
+            "messageToSend": "-",
+            "nbSequence": 0
+        }
+    }
+}
+
+ - Prepost messages : 

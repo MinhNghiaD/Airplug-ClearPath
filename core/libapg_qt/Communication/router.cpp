@@ -286,6 +286,9 @@ void Router::slotReceiveMessage(Header header, Message message)
                     d->snapshot->setNbOfNeighbor(nbOfNeighbor());
                 }
 
+                // forward
+                d->communicationMngr->send(aclMessage, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+
                 break;
             default:
                 d->forwardNetToApp(header, aclMessage);
@@ -335,8 +338,8 @@ void Router::slotHeathCheck()
 
     d->communicationMngr->send(ping, QLatin1String("NET"), Header::allApp, Header::localHost);
 
-    // activate timeout timer of 3s
-    QTimer::singleShot(3000, this, SLOT(slotPingTimeOut()));
+    // activate timeout timer of 4s
+    QTimer::singleShot(4000, this, SLOT(slotPingTimeOut()));
 
     // recheck after 20s
     QTimer::singleShot(20000, this, SLOT(slotHeathCheck()));
@@ -370,12 +373,14 @@ void Router::slotPingTimeOut()
 
 int Router::nbOfApp() const
 {
+    qDebug() << d->siteID <<": nb of local app :" << d->nbApp;
     int totalNbApp = d->nbApp;
 
     for (QHash<QString, QPair<int, int> >::const_iterator iter  = d->neighborInfo.cbegin();
                                                           iter != d->neighborInfo.cend();
                                                           ++iter)
     {
+        qDebug() << d->siteID << ": nb app of" << iter.key() <<":" << d->nbApp;
         totalNbApp += iter.value().second;
     }
 
