@@ -14,7 +14,7 @@ class Q_DECL_HIDDEN LaiYangSnapshot::Private
 public:
 
     Private()
-        : recorded(false),
+        : status(READY),
           initiator(false),
           msgCounter(0),
           nbWaitPrepost(0),
@@ -81,7 +81,7 @@ public:
 
 public:
 
-    bool recorded;
+    Status status;
     bool initiator;
 
     int  msgCounter;
@@ -249,7 +249,7 @@ void LaiYangSnapshot::init()
 {
     d->initiator = true;
 
-    if (!d->recorded)
+    if (d->status == READY)
     {
         requestSnapshot();
     }
@@ -259,7 +259,7 @@ void LaiYangSnapshot::init()
 void LaiYangSnapshot::colorMessage(QJsonObject& messageContent, int nbReceivers)
 {
     // append color field to the content of the message
-    messageContent[QLatin1String("snapshotted")] = d->recorded;
+    messageContent[QLatin1String("snapshotStatus")] = d->status;
 
     if (nbReceivers == 0)
     {
@@ -272,10 +272,10 @@ void LaiYangSnapshot::colorMessage(QJsonObject& messageContent, int nbReceivers)
 
 bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
 {
-    bool snapshotted = messageContent[QLatin1String("snapshotted")].toBool();
-    messageContent.remove(QLatin1String("snapshotted"));
+    Status snapshotStatus = static_cast<Status>(messageContent[QLatin1String("snapshotStatus")].toInt());
+    messageContent.remove(QLatin1String("snapshotStatus"));
 
-    if (snapshotted && !d->recorded)
+    if (snapshotStatus == RECORDED && d->status == READY)
     {
         requestSnapshot();
     }
@@ -283,7 +283,7 @@ bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
     // decrement counter by 1
     --(d->msgCounter);
 
-    if (!snapshotted && d->recorded)
+    if (snapshotStatus == READY && d->status == RECORDED)
     {
         // prepost detected
         return true;
@@ -387,7 +387,7 @@ bool LaiYangSnapshot::processPrePostMessage(ACLMessage& message)
 
 void LaiYangSnapshot::requestSnapshot()
 {
-    d->recorded = true;
+    d->status = RECORDED;
 
     d->nbWaitPrepost = d->msgCounter;
 
@@ -408,8 +408,9 @@ void LaiYangSnapshot::finishSnapshot()
         emit signalFinishSnapshot(message);
     }
 
-    d->recorded  = false;
-    d->initiator = false;
+    d->status    = RECOVERING;
+    //TODO wave still need an initiator
+    //d->initiator = false;
 
     d->nbWaitPrepost = 0;
 

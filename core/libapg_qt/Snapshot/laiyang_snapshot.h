@@ -29,12 +29,11 @@ class LaiYangSnapshot : public QObject
     Q_OBJECT
 public:
 
-    // TODO integrate with Wave
-    enum ForwardPort
+    enum Status
     {
-        BAS = 0,        // forward to Basic application
-        NET,            // forward to the network
-        DROP,           // drop the message
+        READY = 0,
+        RECORDED,
+        RECOVERING,
     };
 
 public:
