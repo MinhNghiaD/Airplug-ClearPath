@@ -50,6 +50,7 @@ public:
         INFORM_STATE,
         PREPOST_MESSAGE,
         SNAPSHOT_RECOVER,
+        READY_SNAPSHOT,
         UPDATE_ACTIVE,
     };
 

@@ -266,6 +266,17 @@ void Router::slotReceiveMessage(Header header, Message message)
                 }
 
                 break;
+            case ACLMessage::READY_SNAPSHOT:
+                if (d->snapshot)
+                {
+                    if (d->snapshot->processReadyMessage(aclMessage))
+                    {
+                        // forward message
+                        d->communicationMngr->send(aclMessage, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+                    }
+                }
+
+                break;
             case ACLMessage::UPDATE_ACTIVE:
                 d->neighborInfo[aclMessage.getSender()].second = (aclMessage.getContent()[QLatin1String("nbApp")].toInt());
 

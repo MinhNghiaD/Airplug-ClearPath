@@ -250,11 +250,15 @@ LaiYangSnapshot::~LaiYangSnapshot()
 
 void LaiYangSnapshot::init()
 {
-    d->initiator = true;
-
     if (d->status == READY)
     {
+        d->initiator = true;
+
         requestSnapshot();
+    }
+    else
+    {
+        qWarning() << "Snapshot is not ready";
     }
 }
 
@@ -303,15 +307,7 @@ bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
 
         emit signalSendSnapshotMessage(message);
     }
-/*
-    // RECOVERING -> READY transition
-    if (snapshotStatus == READY && d->status == RECOVERING)
-    {
-        d->status = READY;
 
-        finishSnapshot();
-    }
-*/
     return false;
 }
 
@@ -416,10 +412,9 @@ bool LaiYangSnapshot::processRecoveringMessage(ACLMessage& message)
 
         if (d->nbReadyNeighbor == d->nbNeighbor)
         {
-            d->status = READY;
-
             qDebug() << "initiator: all recover from snapshot";
-            // TODO broadcast to inform ready
+
+            finishSnapshot();
 
             d->nbReadyNeighbor = 0;
         }
@@ -428,6 +423,18 @@ bool LaiYangSnapshot::processRecoveringMessage(ACLMessage& message)
     }
 
     // Forward to initiator
+    return true;
+}
+
+bool LaiYangSnapshot::processReadyMessage(ACLMessage& message)
+{
+    if (d->initiator)
+    {
+        return false;
+    }
+
+    finishSnapshot();
+
     return true;
 }
 
@@ -449,12 +456,14 @@ void LaiYangSnapshot::finishSnapshot()
 
     if (d->initiator)
     {
-        ACLMessage* message = new ACLMessage(ACLMessage::SNAPSHOT_RECOVER);
+        // broadcast to all site to get ready for snapshot
+        ACLMessage* inform = new ACLMessage(ACLMessage::READY_SNAPSHOT);
+
+        emit signalSendSnapshotMessage(inform);
     }
 
-    d->status    = RECOVERING;
-    //TODO wave still need an initiator
-    //d->initiator = false;
+    d->status    = READY;
+    d->initiator = false;
 
     d->nbWaitPrepost = 0;
 

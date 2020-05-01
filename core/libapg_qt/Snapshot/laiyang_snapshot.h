@@ -111,6 +111,13 @@ public:
      */
     bool processRecoveringMessage(ACLMessage& message);
 
+    /**
+     * @brief processReadyMessage : action taken when receive a message inform initiator ready for snapshot
+     * @param message
+     * @return
+     */
+    bool processReadyMessage(ACLMessage& message);
+
 public:
 
     // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
