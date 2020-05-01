@@ -202,7 +202,7 @@ void CommunicationManager::send(const Message& message,
         QString package = header.generateHeader(d->headerMode) + message.getMessage();
 
         // NOTE minimum interval between messages is 1ms to avoid signal loss in Qt
-        QThread::msleep(1);
+        QThread::msleep(30);
         d->protocols[protocol]->send(package);
 
         if (save)
