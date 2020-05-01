@@ -44,9 +44,9 @@ public:
       * @brief slotSendMarker : broadcast marker to local applications to take snapshot
       * @param marker
       */
-    Q_SLOT void slotSendMarker(const Message* marker);
+    Q_SLOT void slotSendMarker(const Message& marker);
 
-    Q_SLOT void slotForwardSnapshotMessage(ACLMessage* message);
+    Q_SLOT void slotForwardSnapshotMessage(ACLMessage& message);
 
     /**
       * @brief slotHealthCheck : broadcast PING message to local applications

@@ -77,4 +77,24 @@ int ACLMessage::getNbSequence() const
     return getContents()[QLatin1String("nbSequence")].toInt();
 }
 
+QJsonObject ACLMessage::toJsonObject() const
+{
+    QHash<QString, QString> contents = getContents();
+
+    QJsonObject json;
+
+    json[QLatin1String("perfomative")] = contents[QLatin1String("perfomative")];
+    json[QLatin1String("sender")]      = contents[QLatin1String("sender")];
+    json[QLatin1String("nbSequence")]  = contents[QLatin1String("nbSequence")].toInt();
+
+    if (contents.contains(QLatin1String("timestamp")))
+    {
+        json[QLatin1String("timestamp")] = QJsonDocument::fromJson(contents[QLatin1String("timestamp")].toUtf8()).object();
+    }
+
+    json[QLatin1String("content")]     = QJsonDocument::fromJson(getContents()[QLatin1String("content")].toUtf8()).object();
+
+    return json;
+}
+
 }

@@ -97,7 +97,14 @@ public:
      * @param message
      * @return
      */
-    bool processPrePostMessage(ACLMessage& message);
+    bool processPrePostMessage(const ACLMessage& message);
+
+    /**
+     * @brief encodePrepostMessage : encode a prepost message to send to initiator
+     * @param message
+     * @return
+     */
+    ACLMessage encodePrepostMessage(const ACLMessage& message);
 
     /**
      * @brief finishSnapshot : terminate snapshot procedure and refresh it
@@ -121,8 +128,8 @@ public:
 public:
 
     // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
-    Q_SIGNAL void signalRequestSnapshot(const Message* marker);         // send to BAS
-    Q_SIGNAL void signalSendSnapshotMessage(ACLMessage* message);         // send to NET
+    Q_SIGNAL void signalRequestSnapshot(const Message& marker);           // send to BAS
+    Q_SIGNAL void signalSendSnapshotMessage(ACLMessage& message);         // send to NET
 
 private:
 
@@ -133,7 +140,7 @@ private:
     void requestSnapshot();
 
     /**
-      * @brief saveSnapshot : save snapshot
+      * @brief saveSnapshot : save snapshot to file
       */
     void saveSnapshot() const;
 

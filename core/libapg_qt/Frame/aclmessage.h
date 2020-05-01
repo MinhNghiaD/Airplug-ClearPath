@@ -76,6 +76,8 @@ public:
     QJsonObject  getContent()      const;
     QString      getSender()       const;
     int          getNbSequence()   const;
+
+    QJsonObject  toJsonObject()    const;
 };
 
 }
