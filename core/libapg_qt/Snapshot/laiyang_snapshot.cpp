@@ -19,7 +19,8 @@ public:
           msgCounter(0),
           nbWaitPrepost(0),
           nbApp(0),
-          nbNeighbor(0)
+          nbNeighbor(0),
+          nbReadyNeighbor(0)
     {
     }
 
@@ -89,6 +90,8 @@ public:
 
     int  nbApp;
     int  nbNeighbor;
+
+    int  nbReadyNeighbor;
 
     // System state will be encoded in Json object
     QHash<QString, QJsonObject> states;
@@ -275,6 +278,7 @@ bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
     Status snapshotStatus = static_cast<Status>(messageContent[QLatin1String("snapshotStatus")].toInt());
     messageContent.remove(QLatin1String("snapshotStatus"));
 
+    // READY -> RECORDED transition
     if (snapshotStatus == RECORDED && d->status == READY)
     {
         requestSnapshot();
@@ -289,6 +293,25 @@ bool LaiYangSnapshot::getColor(QJsonObject& messageContent)
         return true;
     }
 
+    // RECORDED -> RECOVERING transition
+    if (snapshotStatus == RECOVERING && d->status == RECORDED)
+    {
+        d->status = RECOVERING;
+
+        // forward message to inform initiator
+        ACLMessage* message = new ACLMessage(ACLMessage::SNAPSHOT_RECOVER);
+
+        emit signalSendSnapshotMessage(message);
+    }
+/*
+    // RECOVERING -> READY transition
+    if (snapshotStatus == READY && d->status == RECOVERING)
+    {
+        d->status = READY;
+
+        finishSnapshot();
+    }
+*/
     return false;
 }
 
@@ -325,7 +348,7 @@ bool LaiYangSnapshot::processStateMessage(ACLMessage& message, bool fromLocal)
         {
            if (d->allStateColltected() && d->allPrepostCollected())
            {
-               finishSnapshot();
+               d->status = RECOVERING;
            }
         }
 
@@ -375,13 +398,36 @@ bool LaiYangSnapshot::processPrePostMessage(ACLMessage& message)
 
             if (d->allStateColltected() && d->allPrepostCollected())
             {
-                finishSnapshot();
+                d->status = RECOVERING;
             }
         }
 
         return false;
     }
 
+    return true;
+}
+
+bool LaiYangSnapshot::processRecoveringMessage(ACLMessage& message)
+{
+    if (d->initiator && d->status == RECOVERING)
+    {
+        ++d->nbReadyNeighbor;
+
+        if (d->nbReadyNeighbor == d->nbNeighbor)
+        {
+            d->status = READY;
+
+            qDebug() << "initiator: all recover from snapshot";
+            // TODO broadcast to inform ready
+
+            d->nbReadyNeighbor = 0;
+        }
+
+        return false;
+    }
+
+    // Forward to initiator
     return true;
 }
 
@@ -403,9 +449,7 @@ void LaiYangSnapshot::finishSnapshot()
 
     if (d->initiator)
     {
-        ACLMessage* message = new ACLMessage(ACLMessage::SNAPSHOT_FINISH);
-
-        emit signalFinishSnapshot(message);
+        ACLMessage* message = new ACLMessage(ACLMessage::SNAPSHOT_RECOVER);
     }
 
     d->status    = RECOVERING;

@@ -49,7 +49,7 @@ public:
         REQUEST_SNAPSHOT,
         INFORM_STATE,
         PREPOST_MESSAGE,
-        SNAPSHOT_FINISH,
+        SNAPSHOT_RECOVER,
         UPDATE_ACTIVE,
     };
 

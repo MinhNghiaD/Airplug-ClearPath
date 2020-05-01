@@ -219,8 +219,8 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
     connect(d->snapshot, &LaiYangSnapshot::signalRequestSnapshot,
             this,        &Router::slotSendMarker, Qt::DirectConnection);
 
-    connect(d->snapshot, &LaiYangSnapshot::signalFinishSnapshot,
-            this,        &Router::slotInformSnapshotFinished, Qt::DirectConnection);
+    connect(d->snapshot, &LaiYangSnapshot::signalSendSnapshotMessage,
+            this,        &Router::slotForwardSnapshotMessage, Qt::DirectConnection);
 
     return true;
 }
@@ -255,10 +255,14 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->forwardPrepost(aclMessage, false);
 
                 break;
-            case ACLMessage::SNAPSHOT_FINISH:
+            case ACLMessage::SNAPSHOT_RECOVER:
                 if (d->snapshot)
                 {
-                    d->snapshot->finishSnapshot();
+                    if (d->snapshot->processRecoveringMessage(aclMessage))
+                    {
+                        // forward message
+                        d->communicationMngr->send(aclMessage, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+                    }
                 }
 
                 break;
@@ -303,9 +307,12 @@ void Router::slotSendMarker(const Message* marker)
     d->communicationMngr->send(*marker, QLatin1String("NET"), Header::allApp, Header::localHost);
 }
 
-void Router::slotInformSnapshotFinished(const Message* message)
+void Router::slotForwardSnapshotMessage(ACLMessage* message)
 {
     // broadcast to all app in local site
+    message->setSender(d->siteID);
+    message->setNbSequence(++d->nbSequence);
+
     d->communicationMngr->send(*message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 

@@ -29,6 +29,12 @@ class LaiYangSnapshot : public QObject
     Q_OBJECT
 public:
 
+    /**
+     * @brief The Status enum : current status of snapshot
+     * The goal of the algorithm is to maintain, at every point in time, there should be at most 2 status exist in the system
+     * Snapshot algorithm operates in the transition READY -> RECORDED
+     * Wave algorithm operates in the transition RECORDED -> RECOVERING ->READY
+     */
     enum Status
     {
         READY = 0,
@@ -98,11 +104,18 @@ public:
      */
     void finishSnapshot();
 
+    /**
+     * @brief processRecoveringMessage : action taken when receive a message inform a site is recovering after snapshot
+     * @param message
+     * @return
+     */
+    bool processRecoveringMessage(ACLMessage& message);
+
 public:
 
     // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
     Q_SIGNAL void signalRequestSnapshot(const Message* marker);         // send to BAS
-    Q_SIGNAL void signalFinishSnapshot(const Message* message);         // send to NET
+    Q_SIGNAL void signalSendSnapshotMessage(ACLMessage* message);         // send to NET
 
 private:
 

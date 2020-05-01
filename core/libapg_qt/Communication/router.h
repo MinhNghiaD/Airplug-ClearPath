@@ -46,17 +46,13 @@ public:
       */
     Q_SLOT void slotSendMarker(const Message* marker);
 
-    Q_SLOT void slotInformSnapshotFinished(const Message* message);
+    Q_SLOT void slotForwardSnapshotMessage(ACLMessage* message);
 
     /**
       * @brief slotHealthCheck : broadcast PING message to local applications
       *
       */
     Q_SLOT void slotHeathCheck();
-
-public:
-
-    Q_SIGNAL void signalSnapshotMessage(ACLMessage message);
 
 private:
 
