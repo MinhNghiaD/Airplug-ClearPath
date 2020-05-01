@@ -1,6 +1,7 @@
 #include "laiyang_snapshot.h"
 
 // Qt includes
+#include <QFile>
 #include <QDebug>
 
 // libapg include
@@ -467,7 +468,7 @@ void LaiYangSnapshot::finishSnapshot()
 
     d->nbWaitPrepost = 0;
 
-    // TODO save snapshot
+    saveSnapshot();
 
     d->states.clear();
     d->prepostMessages.clear();
@@ -481,6 +482,38 @@ void LaiYangSnapshot::setNbOfApp(int nbApp)
 void LaiYangSnapshot::setNbOfNeighbor(int nbNeighbor)
 {
     d->nbNeighbor = nbNeighbor;
+}
+
+void LaiYangSnapshot::saveSnapshot() const
+{
+    QFile file("snapshot.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append))
+    {
+        return;
+    }
+
+    QTextStream out(&file);
+
+    out << "///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////\n";
+
+    out << "\t - States : \n";
+    for (QHash<QString, QJsonObject>::const_iterator iter  = d->states.cbegin();
+                                                     iter != d->states.cend();
+                                                     ++iter)
+    {
+        out << QJsonDocument(iter.value()).toJson() << "\n";
+    }
+
+    out << "\t - Prepost messages : \n";
+    for (QHash<QString, QVector<QJsonObject> >::const_iterator iter  = d->prepostMessages.cbegin();
+                                                               iter != d->prepostMessages.cend();
+                                                               ++iter)
+    {
+        for (int i = 0; i < iter.value().size(); ++i)
+        {
+            out << QJsonDocument(iter.value()[i]).toJson() << "\n";
+        }
+    }
 }
 
 }

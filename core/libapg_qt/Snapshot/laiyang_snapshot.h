@@ -132,7 +132,11 @@ private:
      */
     void requestSnapshot();
 
-    //TODO: implement condition of termination after implementing wave
+    /**
+      * @brief saveSnapshot : save snapshot
+      */
+    void saveSnapshot() const;
+
 private:
 
     class Private;
