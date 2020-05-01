@@ -461,14 +461,14 @@ void LaiYangSnapshot::finishSnapshot()
         ACLMessage* inform = new ACLMessage(ACLMessage::READY_SNAPSHOT);
 
         emit signalSendSnapshotMessage(inform);
+
+        saveSnapshot();
     }
 
     d->status    = READY;
     d->initiator = false;
 
     d->nbWaitPrepost = 0;
-
-    saveSnapshot();
 
     d->states.clear();
     d->prepostMessages.clear();
@@ -496,19 +496,22 @@ void LaiYangSnapshot::saveSnapshot() const
 
     out << "///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////\n";
 
-    out << "\t - States : \n";
+    out << " - States : \n";
     for (QHash<QString, QJsonObject>::const_iterator iter  = d->states.cbegin();
                                                      iter != d->states.cend();
                                                      ++iter)
     {
+        out << "+ app = " << iter.key() << " : \n";
         out << QJsonDocument(iter.value()).toJson() << "\n";
     }
 
-    out << "\t - Prepost messages : \n";
+    out << " - Prepost messages : \n";
     for (QHash<QString, QVector<QJsonObject> >::const_iterator iter  = d->prepostMessages.cbegin();
                                                                iter != d->prepostMessages.cend();
                                                                ++iter)
     {
+        out << "+ sender = " << iter.key() << " : \n";
+
         for (int i = 0; i < iter.value().size(); ++i)
         {
             out << QJsonDocument(iter.value()[i]).toJson() << "\n";
