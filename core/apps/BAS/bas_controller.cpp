@@ -67,6 +67,9 @@ void BasController::init(const QCoreApplication& app)
 
     connect(d->mutex, &RicartLock::signalResponse,
             this, &BasController::slotForwardMutex, Qt::DirectConnection);
+
+    connect(d->mutex, &RicartLock::signalEnterRaceCondition,
+            this, &BasController::slotEnterCriticalSection, Qt::DirectConnection);
 }
 
 void BasController::pause(bool b)
@@ -131,29 +134,7 @@ void BasController::slotPeriodChanged(int period)
 
 void BasController::slotSendMessage()
 {
-    ++(*m_clock);
-
-    // TODO : try lock here
-    tryLock();
-
-    ACLMessage message(ACLMessage::INFORM);
-
-    // attache clock to the message
-    message.setTimeStamp(*m_clock);
-
-    QJsonObject contents;
-
-    ++d->nbSequence;
-
-    contents[QLatin1String("payload")] =  d->messageToSend;
-    contents[QLatin1String("nseq")] =  d->nbSequence;
-
-    message.setContent(contents);
-
-    // TODO: get what, where, who from user interface
-    sendMessage(message, QString(), QString(), QString());
-
-    emit signalSequenceChange(d->nbSequence);
+    d->mutex->trylock((*m_clock));
 }
 
 void BasController::slotReceiveMessage(Header header, Message message)
@@ -183,8 +164,16 @@ void BasController::slotReceiveMessage(Header header, Message message)
     }
     else if (aclMessage.getPerformative() == ACLMessage::REQUEST_MUTEX)
     {
-        qDebug() << siteID() << "receives mutex request";
-        receiveMutexRequest(aclMessage);
+        if (aclMessage.getTimeStamp()->getSiteID() != siteID())
+        {
+            qDebug() << siteID() << "receives mutex request";
+            receiveMutexRequest(aclMessage);
+        }
+    }
+    else if (aclMessage.getPerformative() == ACLMessage::ACCEPT_MUTEX)
+    {
+        qDebug() << siteID() << "enter race condition";
+        d->mutex->lock();
     }
 
     VectorClock* senderClock = aclMessage.getTimeStamp();
@@ -214,11 +203,6 @@ QJsonObject BasController::captureLocalState() const
     return localState;
 }
 
-void BasController::tryLock() const
-{
-    d->mutex->request(++(*m_clock));
-}
-
 void BasController::receiveMutexRequest(const ACLMessage& request) const
 {
     VectorClock* senderClock = request.getTimeStamp();
@@ -234,6 +218,31 @@ void BasController::slotForwardMutex(const ACLMessage& message)
     sendMessage(message, QString(), QString(), QString());
 }
 
+void BasController::slotEnterCriticalSection()
+{
+    ++(*m_clock);
+
+    ACLMessage message(ACLMessage::INFORM);
+
+    // attache clock to the message
+    message.setTimeStamp(*m_clock);
+
+    QJsonObject contents;
+
+    ++d->nbSequence;
+
+    contents[QLatin1String("payload")] =  d->messageToSend;
+    contents[QLatin1String("nseq")] =  d->nbSequence;
+
+    message.setContent(contents);
+
+    // TODO: get what, where, who from user interface
+    sendMessage(message, QString(), QString(), QString());
+
+    emit signalSequenceChange(d->nbSequence);
+
+    d->mutex->unlock();
+}
 
 
 }

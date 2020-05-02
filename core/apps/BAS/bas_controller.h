@@ -57,7 +57,6 @@ signals:
 
 private:
 
-    void tryLock() const;
     void receiveMutexRequest(const ACLMessage& request) const;
 
 private:
@@ -65,6 +64,8 @@ private:
     // main notification handler
     Q_SLOT void slotReceiveMessage(Header, Message) override;
     Q_SLOT void slotForwardMutex(const ACLMessage&);
+
+    Q_SLOT void slotEnterCriticalSection();
 
 private:
 

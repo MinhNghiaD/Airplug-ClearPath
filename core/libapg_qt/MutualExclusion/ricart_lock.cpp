@@ -32,7 +32,7 @@ public:
 
 bool RicartLock::Private::isLessPriority(const VectorClock& requesterClock) const
 {
-    if (!clock || (requesterClock < (*clock)))
+    if (clock == nullptr || (requesterClock < (*clock)))
     {
         return true;
     }
@@ -57,7 +57,7 @@ RicartLock::~RicartLock()
     delete d;
 }
 
-void RicartLock::request(const VectorClock& requesterClock)
+void RicartLock::trylock(const VectorClock& requesterClock)
 {
     if (d->clock != nullptr)
     {
@@ -65,6 +65,7 @@ void RicartLock::request(const VectorClock& requesterClock)
         return;
     }
 
+    qDebug() << requesterClock.getSiteID()<< "start request";
     d->clock = new VectorClock(requesterClock);
 
     // broadcast request
@@ -101,9 +102,37 @@ void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
     }
 }
 
-void RicartLock::receivePermission()
+void RicartLock::lock()
 {
+    emit signalEnterRaceCondition();
+}
 
+void RicartLock::unlock()
+{
+    // give permission to all pending apps
+    ACLMessage approval(ACLMessage::ACCEPT_MUTEX);
+
+    QJsonArray apps;
+
+    for (int i = 0; i <d->queue.size(); ++i)
+    {
+         qDebug() << d->queue[i]<< "is approved";
+         apps.append(d->queue[i]);
+    }
+
+    QJsonObject content;
+    content[QLatin1String("apps")] = apps;
+
+    approval.setContent(content);
+
+    emit signalResponse(approval);
+
+    qDebug() << d->clock->getSiteID() << "out of race condition";
+
+    delete d->clock;
+
+    d->clock = nullptr;
+    d->queue.clear();
 }
 
 }

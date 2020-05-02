@@ -207,7 +207,8 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
         }
         else
         {
-            localMutexWaitingList[timestamp->getSiteID()] = nbOfApp() - 1;
+            localMutexWaitingList[timestamp->getSiteID()] = nbApprove;
+            qDebug() << siteID << "add" << timestamp->getSiteID() << "to waiting list : " << localMutexWaitingList;
 
             // mark message ID
             request.setSender(siteID);
@@ -245,7 +246,7 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
                 communicationMngr->send(approval, QLatin1String("NET"), Header::allApp, Header::localHost);
             }
 
-            qDebug() << localMutexWaitingList;
+            qDebug() << siteID << "waiting list" << localMutexWaitingList;
         }
     }
 

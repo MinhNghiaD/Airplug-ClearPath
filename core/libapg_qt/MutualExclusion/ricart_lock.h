@@ -32,14 +32,24 @@ public:
 
 public:
 
-    void request(const VectorClock& requesterClock);
+    void trylock(const VectorClock& requesterClock);
 
-    void receivePermission();
+    /**
+     * @brief lock : enter critical section
+     */
+    void lock();
+
+    /**
+     * @brief unlock : exit critical section
+     */
+    void unlock();
+
     void receiveExternalRequest(const VectorClock& requesterClock);
 
 public:
 
     Q_SIGNAL void signalResponse(const ACLMessage& request);
+    Q_SIGNAL void signalEnterRaceCondition();
 
 private:
 
