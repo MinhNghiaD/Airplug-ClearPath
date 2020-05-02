@@ -75,7 +75,7 @@ void RicartLock::trylock(const VectorClock& requesterClock)
 
     emit signalResponse(message);
 
-    qDebug() << requesterClock.getSiteID() << "try lock";
+    //qDebug() << requesterClock.getSiteID() << "try lock";
 }
 
 void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
@@ -123,7 +123,7 @@ void RicartLock::unlock()
         emit signalResponse(approval);
     }
 
-    qDebug() << d->clock->getSiteID() << "Out of race condition";
+    //qDebug() << d->clock->getSiteID() << "Out of race condition";
 
     delete d->clock;
 

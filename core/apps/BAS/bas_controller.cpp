@@ -19,7 +19,7 @@ public:
           nbSequence(0)
     {
         // TODO: get default message ffrom QSettings
-        messageToSend = QLatin1String("~");
+        sharedMessage = QLatin1String("~");
 
         mutex         = new RicartLock();
     }
@@ -33,7 +33,9 @@ public:
 public:
 
     QTimer*               timer;
-    QString               messageToSend;
+
+    // sharedMessage and nbSequence are shared variables => sync sharedMessage = concatenate of nbSequence
+    QString               sharedMessage;
     int                   nbSequence;
 
     RicartLock*           mutex;
@@ -84,7 +86,7 @@ void BasController::pause(bool b)
 
 void BasController::setMessage(const QString& msg)
 {
-    d->messageToSend = msg;
+    //d->sharedMessage = msg;
 
     ++(*m_clock);
 }
@@ -178,7 +180,13 @@ void BasController::slotReceiveMessage(Header header, Message message)
                 m_clock->updateClock(*senderClock);
             }
 
+            QJsonObject contents = aclMessage->getContent();
+
+            d->sharedMessage = contents[QLatin1String("payload")].toString();
+            d->nbSequence    = contents[QLatin1String("nseq")].toInt();
+
             emit signalMessageReceived(header, message);
+            emit signalSequenceChange(d->nbSequence);
 
             break;
     }
@@ -190,7 +198,7 @@ QJsonObject BasController::captureLocalState() const
 
     QJsonObject applicationState;
 
-    applicationState[QLatin1String("messageToSend")] = d->messageToSend;
+    applicationState[QLatin1String("sharedMessage")] = d->sharedMessage;
     applicationState[QLatin1String("nbSequence")] = d->nbSequence;
 
     QJsonObject localState;
@@ -240,15 +248,17 @@ void BasController::slotEnterCriticalSection()
     QJsonObject contents;
 
     ++d->nbSequence;
+    d->sharedMessage += QString::number(d->nbSequence);
 
-    contents[QLatin1String("payload")] =  d->messageToSend;
-    contents[QLatin1String("nseq")] =  d->nbSequence;
+    contents[QLatin1String("payload")] =  d->sharedMessage;
+    contents[QLatin1String("nseq")]    =  d->nbSequence;
 
     message.setContent(contents);
 
     // TODO: get what, where, who from user interface
     sendMessage(message, QString(), QString(), QString());
 
+    emit signalMessageReceived(Header("NET", "BAS", Header::localHost), message);
     emit signalSequenceChange(d->nbSequence);
 
     d->mutex->unlock();

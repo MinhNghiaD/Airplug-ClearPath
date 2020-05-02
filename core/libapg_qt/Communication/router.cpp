@@ -247,7 +247,7 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
                 localMutexWaitingList.remove((*iter).toString());
             }
 
-            qDebug() << siteID << "waiting list" << localMutexWaitingList;
+            //qDebug() << siteID << "waiting list" << localMutexWaitingList;
             iter = approvedApps.erase(iter);
         }
         else
