@@ -58,6 +58,7 @@ signals:
 private:
 
     void tryLock() const;
+    void receiveMutexRequest(const ACLMessage& request) const;
 
 private:
 

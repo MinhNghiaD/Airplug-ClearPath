@@ -34,6 +34,8 @@ public:
     void forwardRecover(const ACLMessage& message);
     void forwardReady(const ACLMessage& message);
 
+    void receiveMutexRequest(ACLMessage& request, bool fromLocal);
+
     bool isOldMessage(const ACLMessage& messsage);
 
     void updateActiveNeighbor(const ACLMessage& messsage);
@@ -55,6 +57,9 @@ public:
     // map external router with : - first, the most nbSequence received  - second, the nb of active applications hosted at each site
     QHash<QString, QPair<int, int> > neighborInfo;
     QVector<QString>                 activeNeighBors;
+
+    // each NET will keep track of its applications request
+    QHash<QString, int>            localMutexWaitingList;
 };
 
 
@@ -164,6 +169,55 @@ void Router::Private::forwardReady(const ACLMessage& message)
 
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
+
+
+void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
+{
+    if (fromLocal)
+    {
+        // append to Waiting list
+        VectorClock* timestamp = request.getTimeStamp();
+
+        if (!timestamp)
+        {
+            qDebug() << "receiveMutexRequest: local clock is null";
+
+            return;
+        }
+
+        int nbApprove = nbOfApp() - 1;
+
+        if (nbApprove == 0)
+        {
+            // give permission to app
+            request.setPerformative(ACLMessage::ACCEPT_MUTEX);
+
+            QJsonObject content;
+            content[QLatin1String("app")] = timestamp->getSiteID();
+
+            request.setContent(content);
+
+            communicationMngr->send(request, QLatin1String("NET"), Header::allApp, Header::localHost);
+        }
+        else
+        {
+            localMutexWaitingList[timestamp->getSiteID()] = nbOfApp() - 1;
+
+            // forward to network
+            request.setSender(siteID);
+            request.setNbSequence(++nbSequence);
+
+            communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+        }
+    }
+    else
+    {
+        // forward to all Apps
+        communicationMngr->send(request, QLatin1String("NET"), Header::allApp, Header::localHost);
+        communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
+    }
+}
+
 
 bool Router::Private::isOldMessage(const ACLMessage& messsage)
 {
@@ -327,6 +381,10 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->updateActiveNeighbor(aclMessage);
                 break;
 
+            case ACLMessage::REQUEST_MUTEX:
+                d->receiveMutexRequest(aclMessage, false);
+                break;
+
             default:
                 d->forwardNetToApp(header, aclMessage);
                 break;
@@ -343,6 +401,10 @@ void Router::slotReceiveMessage(Header header, Message message)
 
             case ACLMessage::PONG:
                 ++(d->temporaryNbApp);
+                break;
+
+            case ACLMessage::REQUEST_MUTEX:
+                d->receiveMutexRequest(aclMessage, true);
                 break;
 
             default:

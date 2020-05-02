@@ -134,6 +134,7 @@ void BasController::slotSendMessage()
     ++(*m_clock);
 
     // TODO : try lock here
+    tryLock();
 
     ACLMessage message(ACLMessage::INFORM);
 
@@ -180,6 +181,11 @@ void BasController::slotReceiveMessage(Header header, Message message)
 
         return;
     }
+    else if (aclMessage.getPerformative() == ACLMessage::REQUEST_MUTEX)
+    {
+        qDebug() << siteID() << "receives mutex request";
+        receiveMutexRequest(aclMessage);
+    }
 
     VectorClock* senderClock = aclMessage.getTimeStamp();
 
@@ -194,6 +200,7 @@ void BasController::slotReceiveMessage(Header header, Message message)
 
 void BasController::slotRequestMutex(const ACLMessage& request)
 {
+    // broadcast request to enter race condition
     sendMessage(request, QString(), QString(), QString());
 }
 
@@ -216,6 +223,15 @@ QJsonObject BasController::captureLocalState() const
 void BasController::tryLock() const
 {
     d->mutex->request(++(*m_clock));
+}
+
+void BasController::receiveMutexRequest(const ACLMessage& request) const
+{
+    VectorClock* senderClock = request.getTimeStamp();
+
+    m_clock->updateClock(*senderClock);
+
+
 }
 
 

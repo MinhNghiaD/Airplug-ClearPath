@@ -59,3 +59,11 @@ Enter command "make"
                         timestamp    : VectorClock of Application
                   }
 
+- Mutex approve : {
+                        performative : ACLMessage::ACCEPT_MUTEX,
+                        sender       : NET ID                           (optional for local app)
+                        nbSequence   : int                              (optional for local app)
+                        timestamp    : VectorClock of Application       (optional for local app)
+                        content      : {app : appID}
+                  }
+
