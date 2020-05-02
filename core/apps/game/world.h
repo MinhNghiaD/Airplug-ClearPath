@@ -20,6 +20,9 @@
 #include <QTimer>
 #include <QLinearGradient>
 #include <QColor>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonDocument>
 
 //std includes
 #include <vector>
@@ -29,6 +32,7 @@
 #include <QList>
 
 // Local include
+#include "state.h"
 #include "player.h"
 #include "constants.h"
 

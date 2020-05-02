@@ -81,4 +81,9 @@ void Player::setSpeed(int x_speed, int y_speed)
     state.y_speed = y_speed;
 }
 
+void Player::incrementFrame(void)
+{
+    state.frame++;
+}
+
 }

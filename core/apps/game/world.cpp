@@ -95,6 +95,8 @@ void World::moveAndUpdatePlayer(Player &player)
 {
     State state = player.getState();
 
+    //QJsonObject obj = QJsonDocument::fromJson(state.toJsonString().toUtf8()).object();
+
     //apply speed modifications from controls
     if(state.left == true)
         state.x_speed -= X_CONTROL_ACCELERATION;
@@ -148,6 +150,7 @@ void World::moveAndUpdatePlayer(Player &player)
     //write changes
     player.setSpeed(state.x_speed, state.y_speed);
     player.setPos(state.x + state.x_speed, state.y + state.y_speed);
+    player.incrementFrame();
 }
 
 void World::fixCollisions(Player &player)

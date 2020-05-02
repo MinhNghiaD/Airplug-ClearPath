@@ -21,6 +21,7 @@
 #include <cmath>
 
 // Local include
+#include "state.h"
 #include "constants.h"
 
 //using namespace AirPlug;
@@ -28,25 +29,11 @@
 namespace GameApplication
 {
 
-typedef struct
-{
-    bool left;
-    bool right;
-    bool up;
-    bool down;
-
-    int x_speed;
-    int y_speed;
-
-    int x;
-    int y;
-} State;
-
 class Player : public QGraphicsRectItem
 {
     //Q_OBJECT
 private:
-    State state = {false,false,false,false,0,0,0,0};
+    State state;
 
 public:
     Player();
@@ -57,6 +44,7 @@ public:
 
     State getState(void);
     void setSpeed(int x_speed, int y_speed);
+    void incrementFrame(void);
 };
 
 }
