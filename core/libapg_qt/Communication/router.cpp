@@ -192,8 +192,11 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
             // give permission to app
             request.setPerformative(ACLMessage::ACCEPT_MUTEX);
 
+            QJsonArray apps;
+            apps.append(timestamp->getSiteID());
+
             QJsonObject content;
-            content[QLatin1String("app")] = timestamp->getSiteID();
+            content[QLatin1String("apps")] = apps;
 
             request.setContent(content);
 

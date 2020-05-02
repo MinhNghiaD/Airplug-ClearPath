@@ -63,7 +63,7 @@ public:
      * @param other
      * @return
      */
-    bool operator < (const VectorClock& other);
+    bool operator < (const VectorClock& other) const;
 
 public:
 

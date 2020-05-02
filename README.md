@@ -64,6 +64,6 @@ Enter command "make"
                         sender       : NET ID                           (optional for local app)
                         nbSequence   : int                              (optional for local app)
                         timestamp    : VectorClock of Application       (optional for local app)
-                        content      : {app : appID}
+                        content      : {apps : [array of appID]}
                   }
 

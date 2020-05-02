@@ -32,12 +32,15 @@ public:
 
 public:
 
-    void request(const VectorClock& requestClock);
+    void request(const VectorClock& requesterClock);
+
     void receivePermission();
+    void receiveExternalRequest(const VectorClock& requesterClock);
 
 public:
 
     Q_SIGNAL void signalRequest(const ACLMessage& request);
+    Q_SIGNAL void signalApprove(const ACLMessage& request);
 
 private:
 

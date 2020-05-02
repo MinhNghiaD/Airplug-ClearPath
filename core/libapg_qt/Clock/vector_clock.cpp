@@ -113,7 +113,7 @@ void VectorClock::updateClock(const VectorClock& other)
     }
 }
 
-bool VectorClock::operator < (const VectorClock& other)
+bool VectorClock::operator < (const VectorClock& other) const
 {
     for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
                                              iter != d->localClock.cend();
