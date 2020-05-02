@@ -186,8 +186,9 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
             return;
         }
 
-        int nbApprove = nbOfApp() - 1;
 
+        int nbApprove = nbOfApp() - 1;
+        //int nbApprove = 3;                  // TODO test fix nb
         if (nbApprove == 0)
         {
             // give permission to app
@@ -208,7 +209,7 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
         else
         {
             localMutexWaitingList[timestamp->getSiteID()] = nbApprove;
-            qDebug() << siteID << "add" << timestamp->getSiteID() << "to waiting list : " << localMutexWaitingList;
+            //qDebug() << siteID << "add" << timestamp->getSiteID() << "to waiting list : " << localMutexWaitingList;
 
             // mark message ID
             request.setSender(siteID);
@@ -222,32 +223,42 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
 }
 
 void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
-{
+{    
     QJsonArray approvedApps = approval.getContent()[QLatin1String("apps")].toArray();
 
-    for (QHash<QString, int>::iterator iter  = localMutexWaitingList.begin();
-                                       iter != localMutexWaitingList.end();
-                                       ++iter)
+    QJsonArray::iterator iter = approvedApps.begin();
+
+    while (iter != approvedApps.end())
     {
-        if (approvedApps.contains(iter.key()))
+        if ( localMutexWaitingList.contains((*iter).toString()) )
         {
-            if ((--iter.value()) == 0)
+            if (--localMutexWaitingList[(*iter).toString()] == 0)
             {
                 // give permission to app
                 QJsonArray apps;
-
-                apps.append(iter.key());
+                apps.append((*iter));
 
                 QJsonObject content;
                 content[QLatin1String("apps")] = apps;
-
                 approval.setContent(content);
 
                 communicationMngr->send(approval, QLatin1String("NET"), Header::allApp, Header::localHost);
+
+                localMutexWaitingList.remove((*iter).toString());
             }
 
-            qDebug() << siteID << "waiting list" << localMutexWaitingList;
+            //qDebug() << siteID << "waiting list" << localMutexWaitingList;
+            iter = approvedApps.erase(iter);
         }
+        else
+        {
+            ++iter;
+        }
+    }
+
+    if (approvedApps.size() == 0)
+    {
+        return;
     }
 
     if (fromLocal)
@@ -256,6 +267,12 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
         approval.setSender(siteID);
         approval.setNbSequence(++nbSequence);
     }
+
+    // update list of approvedApps
+    QJsonObject content;
+    content[QLatin1String("apps")] = approvedApps;
+
+    approval.setContent(content);
 
     // forward to network
     communicationMngr->send(approval, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);

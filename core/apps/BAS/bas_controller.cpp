@@ -134,6 +134,7 @@ void BasController::slotPeriodChanged(int period)
 
 void BasController::slotSendMessage()
 {
+    qDebug() << siteID() << "try to race condition";
     d->mutex->trylock((*m_clock));
 }
 
@@ -166,7 +167,6 @@ void BasController::slotReceiveMessage(Header header, Message message)
     {
         if (aclMessage.getTimeStamp()->getSiteID() != siteID())
         {
-            qDebug() << siteID() << "receives mutex request";
             receiveMutexRequest(aclMessage);
         }
     }
