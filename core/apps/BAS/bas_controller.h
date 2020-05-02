@@ -58,6 +58,7 @@ signals:
 private:
 
     void receiveMutexRequest(const ACLMessage& request) const;
+    void sendLocalSnapshot();
 
 private:
 

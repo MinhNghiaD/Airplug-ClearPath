@@ -181,7 +181,7 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
 
         if (!timestamp)
         {
-            qDebug() << "receiveMutexRequest: local clock is null";
+            qWarning() << "receiveMutexRequest: local clock is null";
 
             return;
         }
@@ -189,7 +189,7 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
 
         int nbApprove = nbOfApp() - 1;
         //int nbApprove = 3;                  // TODO test fix nb
-        if (nbApprove == 0)
+        if (nbApprove <= 0)
         {
             // give permission to app
             request.setPerformative(ACLMessage::ACCEPT_MUTEX);
@@ -232,7 +232,7 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
     {
         if ( localMutexWaitingList.contains((*iter).toString()) )
         {
-            if (--localMutexWaitingList[(*iter).toString()] == 0)
+            if (--localMutexWaitingList[(*iter).toString()] <= 0)
             {
                 // give permission to app
                 QJsonArray apps;
@@ -247,7 +247,7 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
                 localMutexWaitingList.remove((*iter).toString());
             }
 
-            //qDebug() << siteID << "waiting list" << localMutexWaitingList;
+            qDebug() << siteID << "waiting list" << localMutexWaitingList;
             iter = approvedApps.erase(iter);
         }
         else

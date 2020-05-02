@@ -134,57 +134,54 @@ void BasController::slotPeriodChanged(int period)
 
 void BasController::slotSendMessage()
 {
-    qDebug() << siteID() << "try to race condition";
     d->mutex->trylock((*m_clock));
 }
 
 void BasController::slotReceiveMessage(Header header, Message message)
 {
-    ACLMessage aclMessage(*(static_cast<ACLMessage*>(&message)));
+    ACLMessage* aclMessage = (static_cast<ACLMessage*>(&message));
 
-    if (aclMessage.getPerformative() == ACLMessage::REQUEST_SNAPSHOT)
+    switch (aclMessage->getPerformative())
     {
-        qDebug() << siteID() << "record snapshot";
+        case ACLMessage::REQUEST_SNAPSHOT:
+            sendLocalSnapshot();
 
-        QJsonObject localState = captureLocalState();
+            break;
 
-        aclMessage.setPerformative(ACLMessage::INFORM_STATE);
-        aclMessage.setTimeStamp(*m_clock);
-        aclMessage.setContent(localState);
+        case ACLMessage::PING:
+            aclMessage->setPerformative(ACLMessage::PONG);
+            sendMessage(*aclMessage, QString(), QString(), QString());
+            ++(*m_clock);
 
-        sendMessage(aclMessage, QString(), QString(), QString());
+            break;
 
-        return;
+        case ACLMessage::REQUEST_MUTEX:
+            if (aclMessage->getTimeStamp()->getSiteID() != siteID())
+            {
+                receiveMutexRequest(*aclMessage);
+            }
+
+            break;
+
+        case ACLMessage::ACCEPT_MUTEX:
+            qDebug() << siteID() << "enter race condition";
+            d->mutex->lock();
+
+            break;
+
+        default:
+            VectorClock* senderClock = aclMessage->getTimeStamp();
+
+            // read sender's clock
+            if (senderClock)
+            {
+                m_clock->updateClock(*senderClock);
+            }
+
+            emit signalMessageReceived(header, message);
+
+            break;
     }
-    else if (aclMessage.getPerformative() == ACLMessage::PING)
-    {
-        aclMessage.setPerformative(ACLMessage::PONG);
-        sendMessage(aclMessage, QString(), QString(), QString());
-
-        return;
-    }
-    else if (aclMessage.getPerformative() == ACLMessage::REQUEST_MUTEX)
-    {
-        if (aclMessage.getTimeStamp()->getSiteID() != siteID())
-        {
-            receiveMutexRequest(aclMessage);
-        }
-    }
-    else if (aclMessage.getPerformative() == ACLMessage::ACCEPT_MUTEX)
-    {
-        qDebug() << siteID() << "enter race condition";
-        d->mutex->lock();
-    }
-
-    VectorClock* senderClock = aclMessage.getTimeStamp();
-
-    // read sender's clock
-    if (senderClock)
-    {
-        m_clock->updateClock(*senderClock);
-    }
-
-    emit signalMessageReceived(header, message);
 }
 
 QJsonObject BasController::captureLocalState() const
@@ -196,11 +193,24 @@ QJsonObject BasController::captureLocalState() const
     applicationState[QLatin1String("messageToSend")] = d->messageToSend;
     applicationState[QLatin1String("nbSequence")] = d->nbSequence;
 
-    QJsonObject localState = m_clock->convertToJson();
+    QJsonObject localState;
     localState[QLatin1String("options")] = m_optionParser.convertToJson();
     localState[QLatin1String("state")]   = applicationState;
 
     return localState;
+}
+
+void BasController::sendLocalSnapshot()
+{
+    qDebug() << siteID() << "record snapshot";
+    QJsonObject localState = captureLocalState();
+
+    ACLMessage stateMessage(ACLMessage::INFORM_STATE);
+
+    stateMessage.setTimeStamp(*m_clock);
+    stateMessage.setContent(localState);
+
+    sendMessage(stateMessage, QString(), QString(), QString());
 }
 
 void BasController::receiveMutexRequest(const ACLMessage& request) const

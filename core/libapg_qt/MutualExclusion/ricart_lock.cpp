@@ -74,6 +74,8 @@ void RicartLock::trylock(const VectorClock& requesterClock)
     message.setTimeStamp(*(d->clock));
 
     emit signalResponse(message);
+
+    qDebug() << requesterClock.getSiteID() << "try lock";
 }
 
 void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
