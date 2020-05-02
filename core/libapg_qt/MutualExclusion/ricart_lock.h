@@ -39,8 +39,7 @@ public:
 
 public:
 
-    Q_SIGNAL void signalRequest(const ACLMessage& request);
-    Q_SIGNAL void signalApprove(const ACLMessage& request);
+    Q_SIGNAL void signalResponse(const ACLMessage& request);
 
 private:
 

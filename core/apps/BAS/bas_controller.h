@@ -64,7 +64,7 @@ private:
 
     // main notification handler
     Q_SLOT void slotReceiveMessage(Header, Message) override;
-    Q_SLOT void slotRequestMutex(const ACLMessage&);
+    Q_SLOT void slotForwardMutex(const ACLMessage&);
 
 private:
 

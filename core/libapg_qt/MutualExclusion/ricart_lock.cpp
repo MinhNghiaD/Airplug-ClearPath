@@ -1,5 +1,6 @@
 #include "ricart_lock.h"
 
+#include <QDebug>
 
 namespace AirPlug
 {
@@ -72,13 +73,15 @@ void RicartLock::request(const VectorClock& requesterClock)
 
     message.setTimeStamp(*(d->clock));
 
-    emit signalRequest(message);
+    emit signalResponse(message);
 }
 
 void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
 {
     if (d->isLessPriority(requesterClock))
     {
+        qDebug() << requesterClock.getSiteID() << "is approved";
+
         ACLMessage approval(ACLMessage::ACCEPT_MUTEX);
 
         QJsonArray apps;
@@ -89,7 +92,7 @@ void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
 
         approval.setContent(content);
 
-        emit signalApprove(approval);
+        emit signalResponse(approval);
     }
     else
     {

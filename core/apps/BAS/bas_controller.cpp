@@ -65,8 +65,8 @@ void BasController::init(const QCoreApplication& app)
         slotActivateTimer(m_optionParser.delay);
     }
 
-    connect(d->mutex, &RicartLock::signalRequest,
-            this, &BasController::slotRequestMutex, Qt::DirectConnection);
+    connect(d->mutex, &RicartLock::signalResponse,
+            this, &BasController::slotForwardMutex, Qt::DirectConnection);
 }
 
 void BasController::pause(bool b)
@@ -198,12 +198,6 @@ void BasController::slotReceiveMessage(Header header, Message message)
     emit signalMessageReceived(header, message);
 }
 
-void BasController::slotRequestMutex(const ACLMessage& request)
-{
-    // broadcast request to enter race condition
-    sendMessage(request, QString(), QString(), QString());
-}
-
 QJsonObject BasController::captureLocalState() const
 {
     ++(*m_clock);
@@ -231,8 +225,15 @@ void BasController::receiveMutexRequest(const ACLMessage& request) const
 
     m_clock->updateClock(*senderClock);
 
-
+    d->mutex->receiveExternalRequest(*senderClock);
 }
+
+void BasController::slotForwardMutex(const ACLMessage& message)
+{
+    // broadcast request to enter race condition
+    sendMessage(message, QString(), QString(), QString());
+}
+
 
 
 }

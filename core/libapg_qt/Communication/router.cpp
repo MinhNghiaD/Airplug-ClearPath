@@ -35,6 +35,7 @@ public:
     void forwardReady(const ACLMessage& message);
 
     void receiveMutexRequest(ACLMessage& request, bool fromLocal);
+    void receiveMutexApproval(ACLMessage& request, bool fromLocal);
 
     bool isOldMessage(const ACLMessage& messsage);
 
@@ -201,24 +202,62 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
             request.setContent(content);
 
             communicationMngr->send(request, QLatin1String("NET"), Header::allApp, Header::localHost);
+
+            return;
         }
         else
         {
             localMutexWaitingList[timestamp->getSiteID()] = nbOfApp() - 1;
 
-            // forward to network
+            // mark message ID
             request.setSender(siteID);
             request.setNbSequence(++nbSequence);
-
-            communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
         }
     }
-    else
+
+    // forward to all Apps
+    communicationMngr->send(request, QLatin1String("NET"), Header::allApp, Header::localHost);
+    communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
+}
+
+void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
+{
+    QJsonArray approvedApps = approval.getContent()[QLatin1String("apps")].toArray();
+
+    for (QHash<QString, int>::iterator iter  = localMutexWaitingList.begin();
+                                       iter != localMutexWaitingList.end();
+                                       ++iter)
     {
-        // forward to all Apps
-        communicationMngr->send(request, QLatin1String("NET"), Header::allApp, Header::localHost);
-        communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
+        if (approvedApps.contains(iter.key()))
+        {
+            if ((--iter.value()) == 0)
+            {
+                // give permission to app
+                QJsonArray apps;
+
+                apps.append(iter.key());
+
+                QJsonObject content;
+                content[QLatin1String("apps")] = apps;
+
+                approval.setContent(content);
+
+                communicationMngr->send(approval, QLatin1String("NET"), Header::allApp, Header::localHost);
+            }
+
+            qDebug() << localMutexWaitingList;
+        }
     }
+
+    if (fromLocal)
+    {
+        // mark message ID
+        approval.setSender(siteID);
+        approval.setNbSequence(++nbSequence);
+    }
+
+    // forward to network
+    communicationMngr->send(approval, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
 }
 
 
@@ -388,6 +427,10 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->receiveMutexRequest(aclMessage, false);
                 break;
 
+            case ACLMessage::ACCEPT_MUTEX:
+                d->receiveMutexApproval(aclMessage, false);
+                break;
+
             default:
                 d->forwardNetToApp(header, aclMessage);
                 break;
@@ -408,6 +451,10 @@ void Router::slotReceiveMessage(Header header, Message message)
 
             case ACLMessage::REQUEST_MUTEX:
                 d->receiveMutexRequest(aclMessage, true);
+                break;
+
+            case ACLMessage::ACCEPT_MUTEX:
+                d->receiveMutexApproval(aclMessage, true);
                 break;
 
             default:
