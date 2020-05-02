@@ -20,7 +20,7 @@ set(libapg_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/Frame/header.cpp
 
                 ${CMAKE_CURRENT_SOURCE_DIR}/Snapshot/laiyang_snapshot.cpp
 
-                ${CMAKE_CURRENT_SOURCE_DIR}/MutualExclusion/raymond_lock.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/MutualExclusion/ricart_lock.cpp
     )
 
 add_library(apg STATIC ${libapg_SRCS})

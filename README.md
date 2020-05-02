@@ -52,3 +52,10 @@ Enter command "make"
                                  }
                      }
 
+- Mutex request : {
+                        performative : ACLMessage::REQUEST_MUTEX,
+                        sender       : NET ID
+                        nbSequence   : int
+                        timestamp    : VectorClock of Application
+                  }
+

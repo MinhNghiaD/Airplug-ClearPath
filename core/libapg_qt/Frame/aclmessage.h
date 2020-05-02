@@ -52,6 +52,7 @@ public:
         SNAPSHOT_RECOVER,
         READY_SNAPSHOT,
         UPDATE_ACTIVE,
+        REQUEST_MUTEX,
     };
 
 public:
