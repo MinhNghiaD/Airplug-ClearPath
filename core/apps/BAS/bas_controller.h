@@ -18,6 +18,8 @@
 // Local include
 #include "application_controller.h"
 
+#include "ricart_lock.h"
+
 using namespace AirPlug;
 
 namespace BasApplication
@@ -55,8 +57,13 @@ signals:
 
 private:
 
+    void tryLock() const;
+
+private:
+
     // main notification handler
     Q_SLOT void slotReceiveMessage(Header, Message) override;
+    Q_SLOT void slotRequestMutex(const ACLMessage&);
 
 private:
 

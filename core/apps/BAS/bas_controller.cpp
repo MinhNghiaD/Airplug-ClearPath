@@ -4,7 +4,6 @@
 #include <QTimer>
 #include <QDebug>
 
-#include "aclmessage.h"
 
 using namespace AirPlug;
 
@@ -21,22 +20,27 @@ public:
     {
         // TODO: get default message ffrom QSettings
         messageToSend = QLatin1String("~");
+
+        mutex         = new RicartLock();
     }
 
     ~Private()
     {
         delete timer;
+        delete mutex;
     }
 
 public:
 
     QTimer*               timer;
-
     QString               messageToSend;
     int                   nbSequence;
+
+    RicartLock*           mutex;
 };
 
 
+/* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 BasController::BasController(QObject* parent)
     : ApplicationController(QLatin1String("BAS"), parent),
@@ -60,6 +64,9 @@ void BasController::init(const QCoreApplication& app)
     {
         slotActivateTimer(m_optionParser.delay);
     }
+
+    connect(d->mutex, &RicartLock::signalRequest,
+            this, &BasController::slotRequestMutex, Qt::DirectConnection);
 }
 
 void BasController::pause(bool b)
@@ -126,6 +133,8 @@ void BasController::slotSendMessage()
 {
     ++(*m_clock);
 
+    // TODO : try lock here
+
     ACLMessage message(ACLMessage::INFORM);
 
     // attache clock to the message
@@ -183,6 +192,11 @@ void BasController::slotReceiveMessage(Header header, Message message)
     emit signalMessageReceived(header, message);
 }
 
+void BasController::slotRequestMutex(const ACLMessage& request)
+{
+    sendMessage(request, QString(), QString(), QString());
+}
+
 QJsonObject BasController::captureLocalState() const
 {
     ++(*m_clock);
@@ -198,5 +212,11 @@ QJsonObject BasController::captureLocalState() const
 
     return localState;
 }
+
+void BasController::tryLock() const
+{
+    d->mutex->request(++(*m_clock));
+}
+
 
 }
