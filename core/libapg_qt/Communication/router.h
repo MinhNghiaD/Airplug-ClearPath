@@ -47,7 +47,6 @@ public:
 
     /**
       * @brief slotHealthCheck : broadcast PING message to local applications
-      *
       */
     Q_SLOT void slotHeathCheck();
 

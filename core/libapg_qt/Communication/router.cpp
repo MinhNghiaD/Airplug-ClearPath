@@ -236,7 +236,7 @@ int Router::Private::nbOfNeighbor() const
     return nbNeighbor;
 }
 
-/*------------------------------------------------------------ Router implementations ----------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------ Router main functions ----------------------------------------------------------------------------------------*/
 
 
 Router::Router(CommunicationManager* communication, const QString& siteID)
