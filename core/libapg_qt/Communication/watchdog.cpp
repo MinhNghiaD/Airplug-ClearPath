@@ -7,7 +7,7 @@
 namespace AirPlug
 {
 
-class Q_DECL_HIDDEN WatchDog::Private
+class Q_DECL_HIDDEN Watchdog::Private
 {
 public:
 
@@ -33,7 +33,7 @@ public:
     QHash<QString, SiteInfo> neighborsInfo;
 };
 
-int WatchDog::Private::nbApps() const
+int Watchdog::Private::nbApps() const
 {
     int totalNb = localInfo.nbApp;
 
@@ -47,7 +47,7 @@ int WatchDog::Private::nbApps() const
     return totalNb;
 }
 
-bool WatchDog::Private::containDeprecatedInfo() const
+bool Watchdog::Private::containDeprecatedInfo() const
 {
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
 
@@ -55,8 +55,9 @@ bool WatchDog::Private::containDeprecatedInfo() const
                                                   iter != neighborsInfo.cend();
                                                 ++iter)
     {
-        // deadline to beconsidered as deprecated is 3000 ms
-        if ((currentTime - iter.value().lastUpdate) >= 3000)
+        // period between 2 update is about 3000 ms, therefore
+        // deadline to beconsidered as deprecated is 4000 ms
+        if ((currentTime - iter.value().lastUpdate) >= 4000)
         {
             return true;
         }
@@ -67,19 +68,19 @@ bool WatchDog::Private::containDeprecatedInfo() const
 
 
 
-WatchDog::WatchDog()
+Watchdog::Watchdog()
     : QObject(nullptr),
       d(new Private())
 {
     setObjectName(QLatin1String("Watchdog"));
 }
 
-WatchDog::~WatchDog()
+Watchdog::~Watchdog()
 {
     delete d;
 }
 
-void WatchDog::receivePong(bool newApp)
+void Watchdog::receivePong(bool newApp)
 {
     // NOTE: all base applications have to send a PONG to NET after its initialization, in order to register,
     // All Site has to be notified in order to synchronize the increasing of number of apps before checking some termination conditions like Snapshot and Mutex
@@ -94,7 +95,7 @@ void WatchDog::receivePong(bool newApp)
     ++d->temporaryNbApp;
 }
 
-void WatchDog::broadcastInfo()
+void Watchdog::broadcastInfo()
 {
     ACLMessage  message(ACLMessage::UPDATE_ACTIVE);
     QJsonObject contents;
@@ -104,16 +105,16 @@ void WatchDog::broadcastInfo()
     emit signalSendInfo(message);
 }
 
-void WatchDog::requestInfo()
+void Watchdog::requestInfo()
 {
     ACLMessage message(ACLMessage::PING);
     emit signalSendInfo(message);
 
-    // deadline for responses is 3000 ms
-    QTimer::singleShot(3000, this, SLOT(eliminateDeprecatedInfo()));
+    // deadline for responses is 2000 ms
+    QTimer::singleShot(2000, this, SLOT(eliminateDeprecatedInfo()));
 }
 
-void WatchDog::slotUpdateNbApp()
+void Watchdog::slotUpdateNbApp()
 {
     if (d->containDeprecatedInfo())
     {
@@ -130,7 +131,7 @@ void WatchDog::slotUpdateNbApp()
 
     d->temporaryNbApp = 0;
 
-    // broadcast Info to all watchdogs
+    // broadcast Info to all Watchdogs
     broadcastInfo();
 
     emit signalPingLocalApps();
@@ -139,7 +140,7 @@ void WatchDog::slotUpdateNbApp()
     QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
 }
 
-void WatchDog::eliminateDeprecatedInfo()
+void Watchdog::eliminateDeprecatedInfo()
 {
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
 
@@ -149,8 +150,8 @@ void WatchDog::eliminateDeprecatedInfo()
 
     while (iter != d->neighborsInfo.end())
     {
-        // deadline to beconsidered as deprecated is 3000 ms
-        if ((currentTime - iter.value().lastUpdate) >= 3000)
+        // deadline to beconsidered as deprecated is 4000 ms
+        if ((currentTime - iter.value().lastUpdate) >= 4000)
         {
             containDeprecated = true;
 
@@ -168,7 +169,7 @@ void WatchDog::eliminateDeprecatedInfo()
     }
 }
 
-void WatchDog::receiveNetworkInfo(const ACLMessage& info)
+void Watchdog::receiveNetworkInfo(const ACLMessage& info)
 {
     QString neighborID = info.getSender();
 

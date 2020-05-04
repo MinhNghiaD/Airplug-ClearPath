@@ -5,6 +5,10 @@
 #include <QPair>
 #include <QTimer>
 
+// libapg include
+
+#include "watchdog.h"
+
 namespace AirPlug
 {
 

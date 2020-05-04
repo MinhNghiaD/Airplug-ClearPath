@@ -22,13 +22,13 @@
 namespace AirPlug
 {
 
-class WatchDog : public QObject
+class Watchdog : public QObject
 {
     Q_OBJECT
 public:
 
-    WatchDog();
-    ~WatchDog();
+    Watchdog();
+    ~Watchdog();
 
     void receivePong(bool newApp);
     void receiveNetworkInfo(const ACLMessage& info);
