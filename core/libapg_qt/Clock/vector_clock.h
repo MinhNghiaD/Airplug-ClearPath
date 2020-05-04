@@ -92,6 +92,12 @@ public:
      */
     QStringList siteLists() const;
 
+    /**
+     * @brief sum : use as a alternative solution for Lamport clock, if a -> b => sum(a) < sum(b), if a || b => we can organize a and b by an order uniform
+     * @return
+     */
+    int sum() const;
+
 private:
 
     class Private;

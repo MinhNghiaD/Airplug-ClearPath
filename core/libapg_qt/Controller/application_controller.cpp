@@ -42,7 +42,7 @@ void ApplicationController::init(const QCoreApplication& app)
     m_communication->subscribeAir(m_optionParser.source);
 
     connect(m_communication, SIGNAL(signalMessageReceived(Header,Message)),
-            this,            SLOT(slotReceiveMessage(Header,Message)));
+            this,            SLOT(slotReceiveMessage(Header,Message)), Qt::DirectConnection);
 
     if (m_optionParser.remote)
     {

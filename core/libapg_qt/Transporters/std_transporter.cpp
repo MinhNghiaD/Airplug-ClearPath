@@ -6,7 +6,6 @@
 
 //Qt include
 #include <QSocketNotifier>
-#include <QThread>
 #include <QDebug>
 
 namespace AirPlug

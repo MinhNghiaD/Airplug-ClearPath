@@ -166,7 +166,6 @@ void BasController::slotReceiveMessage(Header header, Message message)
             break;
 
         case ACLMessage::ACCEPT_MUTEX:
-            qDebug() << siteID() << "enter race condition";
             d->mutex->lock();
 
             break;
@@ -248,7 +247,7 @@ void BasController::slotEnterCriticalSection()
     QJsonObject contents;
 
     ++d->nbSequence;
-    d->sharedMessage += QString::number(d->nbSequence);
+    d->sharedMessage = QLatin1String("current sequence = ") + QString::number(d->nbSequence);
 
     contents[QLatin1String("payload")] =  d->sharedMessage;
     contents[QLatin1String("nseq")]    =  d->nbSequence;

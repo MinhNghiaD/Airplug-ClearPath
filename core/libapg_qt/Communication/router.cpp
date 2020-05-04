@@ -187,8 +187,8 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
         }
 
 
-        int nbApprove = nbOfApp() - 1;
-        //int nbApprove = 3;                  // TODO test fix nb
+        //int nbApprove = nbOfApp() - 1;
+        int nbApprove = 3;                  // TODO test fix nb
         if (nbApprove <= 0)
         {
             // give permission to app
@@ -368,7 +368,7 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     setObjectName(QLatin1String("Router"));
 
     connect(d->communicationMngr, SIGNAL(signalMessageReceived(Header, Message)),
-            this,                 SLOT(slotReceiveMessage(Header, Message)));
+            this,                 SLOT(slotReceiveMessage(Header, Message)), Qt::DirectConnection);
 
     // health check neighbors periodically
     QTimer::singleShot(30000, this, SLOT(slotRefreshActiveNeighbor()));
@@ -508,9 +508,6 @@ void Router::slotHeathCheck()
 
     // activate timeout timer of 4s
     QTimer::singleShot(4000, this, SLOT(slotPingTimeOut()));
-
-    // recheck after 20s
-    QTimer::singleShot(20000, this, SLOT(slotHeathCheck()));
 }
 
 void Router::slotPingTimeOut()
@@ -537,6 +534,8 @@ void Router::slotPingTimeOut()
     message.setContent(contents);
 
     d->communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+
+    slotHeathCheck();
 }
 
 
@@ -558,7 +557,7 @@ void Router::slotRefreshActiveNeighbor()
     d->activeNeighBors.clear();
 
     // reactivate timer
-    QTimer::singleShot(30000, this, SLOT(slotRefreshActiveNeighbor()));
+    QTimer::singleShot(10000, this, SLOT(slotRefreshActiveNeighbor()));
 }
 
 }

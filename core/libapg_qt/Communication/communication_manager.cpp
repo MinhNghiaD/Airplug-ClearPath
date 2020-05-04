@@ -201,7 +201,7 @@ void CommunicationManager::send(const Message& message,
 
         QString package = header.generateHeader(d->headerMode) + message.getMessage();
 
-        // IMPORTANT NOTE minimum interval between messages is 30ms to avoid signal loss in Qt
+        // TODO: multiple data is put to pipe at the same time ==> only 1 signal emit and 1 message is handled
         QThread::msleep(30);
         d->protocols[protocol]->send(package);
 

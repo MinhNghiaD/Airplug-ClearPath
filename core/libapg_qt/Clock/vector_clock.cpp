@@ -141,10 +141,10 @@ QJsonObject VectorClock::convertToJson() const
                                              iter != d->localClock.cend();
                                              ++iter)
     {
-            QJsonObject localClock;
-            localClock[iter.key()] = iter.value();
+        QJsonObject localClock;
+        localClock[iter.key()] = iter.value();
 
-            clock.append(localClock);
+        clock.append(localClock);
     }
 
     json["clock"] = clock;
@@ -170,6 +170,20 @@ int VectorClock::getValue(const QString& siteID) const
 QStringList VectorClock::siteLists() const
 {
     return d->localClock.keys();
+}
+
+int VectorClock::sum() const
+{
+    int sum = 0;
+
+    for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
+                                             iter != d->localClock.cend();
+                                             ++iter)
+    {
+        sum += iter.value();
+    }
+
+    return sum;
 }
 
 }
