@@ -49,9 +49,29 @@ WatchDog::~WatchDog()
     delete d;
 }
 
-void WatchDog::receivePong()
+void WatchDog::receivePong(bool newApp)
 {
+    // NOTE: all base applications have to send a PONG to NET after its initialization, in order to register,
+    // All Site has to be notified in order to synchronize the increasing of number of apps before checking some termination conditions like Snapshot and Mutex
+    if (newApp)
+    {
+        ++d->nbLocalApp;
+
+        emit signalNbAppChanged(d->nbApps());
+        broadcastInfo();
+    }
+
     ++d->temporaryNbApp;
+}
+
+void WatchDog::broadcastInfo()
+{
+    ACLMessage  message(ACLMessage::UPDATE_ACTIVE);
+    QJsonObject contents;
+    contents[QLatin1String("nbApp")] = d->nbApps();
+    message.setContent(contents);
+
+    emit signalSendInfo(message);
 }
 
 void WatchDog::slotUpdateNbApp()
@@ -65,13 +85,8 @@ void WatchDog::slotUpdateNbApp()
 
     d->temporaryNbApp = 0;
 
-    // broadcast Info to all the watchdog
-    ACLMessage  message(ACLMessage::UPDATE_ACTIVE);
-    QJsonObject contents;
-    contents[QLatin1String("nbApp")] = d->nbApps();
-    message.setContent(contents);
-
-    emit signalSendInfo(message);
+    // broadcast Info to all watchdogs
+    broadcastInfo();
 
     emit signalPingLocalApps();
 

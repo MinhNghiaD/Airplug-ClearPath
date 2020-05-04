@@ -27,17 +27,22 @@ public:
     WatchDog();
     ~WatchDog();
 
-    void receivePong();
+    void receivePong(bool newApp);
+
+private:
+
+    void broadcastInfo();
+
+private:
+
+    Q_SLOT void slotUpdateNbApp();
+
 
 public:
 
     Q_SIGNAL void signalNbAppChanged(int nbApp);
     Q_SIGNAL void signalPingLocalApps();
     Q_SIGNAL void signalSendInfo(const ACLMessage&);
-
-private:
-
-    Q_SLOT void slotUpdateNbApp();
 
 private:
 
