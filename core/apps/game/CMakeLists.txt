@@ -6,6 +6,7 @@ set(game_SRCS
     player.cpp
     world.cpp
     state.cpp
+    bas_controller.cpp
 )
 
 add_executable(game ${game_SRCS})

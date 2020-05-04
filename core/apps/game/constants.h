@@ -28,4 +28,6 @@
 
 #define FRAME_PERIOD_MS 50
 
+#define HANDSHAKE_TIMEOUT 500
+
 #endif // CONSTANTS_H

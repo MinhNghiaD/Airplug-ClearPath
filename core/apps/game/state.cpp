@@ -1,9 +1,7 @@
 #include "state.h"
 
-//Qt includes
+//qt includes
 //#include <QDebug>
-
-//using namespace AirPlug;
 
 namespace GameApplication
 {
@@ -16,6 +14,30 @@ State::State()
 State::~State()
 {
 
+}
+
+State& State::operator=(const State& s)
+{
+    left = s.left;
+    right = s.right;
+    up = s.up;
+    down = s.down;
+    x_speed = s.x_speed;
+    y_speed = s.y_speed;
+    x = s.x;
+    y = s.y;
+    frame = s.frame;
+    return *this;
+}
+
+bool State::operator==(const State& s)
+{
+    if(left == s.left && right == s.right && up == s.up && down == s.down
+       && x_speed == s.x_speed && y_speed == s.y_speed && x == s.x && y == s.y
+       && frame == s.frame)
+       return true;
+    else
+        return false;
 }
 
 QString State::toJsonString(void)

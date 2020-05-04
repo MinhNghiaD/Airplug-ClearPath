@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("game");
 
-    World world;
+    World world(app);
 
     return app.exec();
 }

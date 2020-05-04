@@ -12,29 +12,22 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-// Qt include
+//qt includes
 //#include <QObject>
 #include <QGraphicsRectItem>
 #include <QKeyEvent>
 
 //std includes
-#include <cmath>
+#include <memory>
 
-// Local include
+//local includes
 #include "state.h"
-#include "constants.h"
-
-//using namespace AirPlug;
 
 namespace GameApplication
 {
 
 class Player : public QGraphicsRectItem
 {
-    //Q_OBJECT
-private:
-    State state;
-
 public:
     Player();
     ~Player();
@@ -43,8 +36,14 @@ public:
     void keyReleaseEvent(QKeyEvent *event);
 
     State getState(void);
+    int getFrame();
     void setSpeed(int x_speed, int y_speed);
+    void setState(State _state);
     void incrementFrame(void);
+
+private:
+    class Private;
+    std::unique_ptr<Private> d;
 };
 
 }

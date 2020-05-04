@@ -12,31 +12,12 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-// Qt include
+//qt includes
 #include <QObject>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QBrush>
-#include <QTimer>
-#include <QLinearGradient>
-#include <QColor>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QJsonDocument>
+#include <QCoreApplication>
 
 //std includes
-#include <vector>
 #include <memory>
-#include <cmath>
-#include <random>
-#include <QList>
-
-// Local include
-#include "state.h"
-#include "player.h"
-#include "constants.h"
-
-//using namespace AirPlug;
 
 namespace GameApplication
 {
@@ -45,24 +26,17 @@ class World : public QObject
 {
     Q_OBJECT
 
-private:
-    QGraphicsScene scene;
-    QGraphicsView view;
-
-    Player main_player;
-    std::vector<std::shared_ptr<Player>> connected_player;
-
-    QTimer frame_timer;
-
-    void moveAndUpdatePlayer(Player &player);
-    void fixCollisions(Player &player);
-
-public slots:
+private slots:
     void frameTimeout(void);
+    void playerUpdate(int player_index, QString player_state);
 
 public:
-    World();
+    World(QCoreApplication &app);
     ~World();
+
+private:
+    class Private;
+    std::unique_ptr<Private> d;
 };
 
 }

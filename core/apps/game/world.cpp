@@ -1,17 +1,63 @@
 #include "world.h"
 
-//Qt includes
+//qt include
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QBrush>
+#include <QTimer>
+#include <QLinearGradient>
+#include <QColor>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonDocument>
 #include <QDebug>
 
-//using namespace AirPlug;
+//std includes
+#include <vector>
+#include <cmath>
+#include <random>
+#include <QList>
+
+//local include
+#include "state.h"
+#include "player.h"
+#include "constants.h"
+#include "bas_controller.h"
 
 namespace GameApplication
 {
 
-World::World() : view(&scene)
+class Q_DECL_HIDDEN World::Private
 {
+public:
+    Private(QCoreApplication &app) : view(&scene), bas_controller(app)
+    {
+
+    }
+    ~Private()
+    {
+
+    }
+
+    QGraphicsScene scene;
+    QGraphicsView view;
+
+    Player main_player;
+    std::vector<std::shared_ptr<Player>> connected_player;
+
+    QTimer frame_timer;
+
+    void moveAndUpdatePlayer(Player &player);
+    void fixCollisions(Player &player);
+
+    BasController bas_controller;
+};
+
+World::World(QCoreApplication &app) : d(std::make_unique<Private>(app))
+{
+    connect(&d->bas_controller, SIGNAL(updatePlayer(int, QString)), this, SLOT(playerUpdate(int, QString)));
     //initializing main_player
-    main_player.setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
+    d->main_player.setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
 
     QLinearGradient linear_grad(QPointF(0, 0), QPointF(PLAYER_SIZE, PLAYER_SIZE));
     linear_grad.setColorAt(0, Qt::red);
@@ -19,57 +65,52 @@ World::World() : view(&scene)
     linear_grad.setColorAt(0.5, Qt::green);
     linear_grad.setColorAt(0.65, Qt::cyan);
     linear_grad.setColorAt(1, Qt::blue);
-    main_player.setBrush(QBrush(linear_grad));
+    d->main_player.setBrush(QBrush(linear_grad));
 
-    main_player.setFlag(QGraphicsItem::ItemIsFocusable);
-    main_player.setFocus();
+    d->main_player.setFlag(QGraphicsItem::ItemIsFocusable);
+    d->main_player.setFocus();
 
-    scene.addItem(&main_player);
+    d->scene.addItem(&d->main_player);
 
-    scene.setSceneRect(0, 0, VIEW_WIDTH*2, VIEW_HEIGHT*2);
+    d->scene.setSceneRect(0, 0, VIEW_WIDTH*2, VIEW_HEIGHT*2);
 
     std::random_device seeder{};
     std::mt19937 twister{seeder()};
     std::uniform_int_distribution<> x_dis(0, VIEW_WIDTH-1-PLAYER_SIZE);
     std::uniform_int_distribution<> y_dis(0, VIEW_HEIGHT-1-PLAYER_SIZE);
 
-    main_player.setPos(x_dis(twister), y_dis(twister));
+    d->main_player.setPos(x_dis(twister), y_dis(twister));
 
     std::vector<QColor> color = {Qt::white,Qt::black,Qt::cyan,Qt::red,Qt::magenta,Qt::green,Qt::yellow,Qt::blue,Qt::gray};
     std::uniform_int_distribution<> color_dis(0, color.size()-1);
 
-    //TODO
-    //Establish the communication
-    //Receive other players data
+    d->bas_controller.establishConnections(d->main_player.getState().toJsonString());
 
-    int n_connected_players = 5;
+    // int n_connected_players = 5;
+    //
+    // for(int i=0; i<n_connected_players; i++)
+    // {
+    //     d->connected_player.push_back(std::make_shared<Player>());
+    //     d->connected_player[i]->setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
+    //     d->connected_player[i]->setBrush(QBrush(color[color_dis(twister)]));
+    //     d->scene.addItem(d->connected_player[i].get());
+    //
+    //     //to be changed
+    //     QList<QGraphicsItem*> colliding_items;
+    //     do
+    //     {
+    //         d->connected_player[i]->setPos(x_dis(twister), y_dis(twister));
+    //         colliding_items = d->connected_player[i]->collidingItems();
+    //     } while(colliding_items.size() != 0);
+    // }
 
-    for(int i=0; i<n_connected_players; i++)
-    {
-        connected_player.push_back(std::make_shared<Player>());
+    connect(&d->frame_timer, SIGNAL(timeout()), this, SLOT(frameTimeout()));
+    d->frame_timer.start(FRAME_PERIOD_MS);
 
-        connected_player[i]->setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
-
-        connected_player[i]->setBrush(QBrush(color[color_dis(twister)]));
-
-        scene.addItem(connected_player[i].get());
-
-        //to be changed
-        QList<QGraphicsItem*> colliding_items;
-        do
-        {
-            connected_player[i]->setPos(x_dis(twister), y_dis(twister));
-            colliding_items = connected_player[i]->collidingItems();
-        } while(colliding_items.size() != 0);
-    }
-
-    connect(&frame_timer, SIGNAL(timeout()), this, SLOT(frameTimeout()));
-    frame_timer.start(FRAME_PERIOD_MS);
-
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setFixedSize(VIEW_WIDTH, VIEW_HEIGHT);
-    view.show();
+    d->view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    d->view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    d->view.setFixedSize(VIEW_WIDTH, VIEW_HEIGHT);
+    d->view.show();
 }
 
 World::~World()
@@ -79,23 +120,55 @@ World::~World()
 
 void World::frameTimeout(void)
 {
-    //TODO
-    //update connected players
+    d->main_player.incrementFrame();
 
-    moveAndUpdatePlayer(main_player);
-    // for(auto it = connected_player.begin(); it != connected_player.end(); ++it)
-    //     moveAndUpdatePlayer(**it);
+    d->bas_controller.sendPlayerUpdate(d->main_player.getState().toJsonString());
 
-    fixCollisions(main_player);
-    for(auto it = connected_player.begin(); it != connected_player.end(); ++it)
-        fixCollisions(**it);
+    bool all_updated = false;
+    while(!all_updated)
+    {
+        all_updated = true;
+        for(auto it = d->connected_player.begin(); it != d->connected_player.end(); ++it)
+            if((*it)->getFrame() != d->main_player.getFrame())
+            {
+                all_updated = false;
+                break;
+            }
+    }
+
+    d->moveAndUpdatePlayer(d->main_player);
+    for(auto it = d->connected_player.begin(); it != d->connected_player.end(); ++it)
+        d->moveAndUpdatePlayer(**it);
+
+    d->fixCollisions(d->main_player);
+    for(auto it = d->connected_player.begin(); it != d->connected_player.end(); ++it)
+        d->fixCollisions(**it);
 }
 
-void World::moveAndUpdatePlayer(Player &player)
+void World::playerUpdate(int player_index, QString player_state)
+{
+    if(player_index == d->connected_player.size())
+    {
+        std::random_device seeder{};
+        std::mt19937 twister{seeder()};
+        std::vector<QColor> color = {Qt::white,Qt::black,Qt::cyan,Qt::red,Qt::magenta,Qt::green,Qt::yellow,Qt::blue,Qt::gray};
+        std::uniform_int_distribution<> color_dis(0, color.size()-1);
+
+        d->connected_player.push_back(std::make_shared<Player>());
+        d->connected_player[player_index]->setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
+        d->connected_player[player_index]->setBrush(QBrush(color[color_dis(twister)]));
+        d->scene.addItem(d->connected_player[player_index].get());
+    }
+
+    QJsonObject obj = QJsonDocument::fromJson(player_state.toUtf8()).object();
+    State new_state;
+    new_state.loadFromJson(obj);
+    d->connected_player[player_index]->setState(new_state);
+}
+
+void World::Private::moveAndUpdatePlayer(Player &player)
 {
     State state = player.getState();
-
-    //QJsonObject obj = QJsonDocument::fromJson(state.toJsonString().toUtf8()).object();
 
     //apply speed modifications from controls
     if(state.left == true)
@@ -150,10 +223,9 @@ void World::moveAndUpdatePlayer(Player &player)
     //write changes
     player.setSpeed(state.x_speed, state.y_speed);
     player.setPos(state.x + state.x_speed, state.y + state.y_speed);
-    player.incrementFrame();
 }
 
-void World::fixCollisions(Player &player)
+void World::Private::fixCollisions(Player &player)
 {
     //lazy fixing, might need to be improved
     QList<QGraphicsItem*> colliding_items = player.collidingItems();

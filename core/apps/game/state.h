@@ -12,19 +12,17 @@
 #ifndef STATE_H
 #define STATE_H
 
-// Qt include
+//qt includes
 #include <QString>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonDocument>
 
-//std include
+//std includes
 #include <string>
 
-// Local include
+//local includes
 #include "constants.h"
-
-//using namespace AirPlug;
 
 namespace GameApplication
 {
@@ -36,6 +34,9 @@ private:
 public:
     State();
     ~State();
+
+    State& operator=(const State& s);
+    bool operator==(const State& s);
 
     bool left = false;
     bool right = false;

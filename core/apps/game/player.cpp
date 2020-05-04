@@ -1,14 +1,33 @@
 #include "player.h"
 
-//Qt includes
+//qt includes
 //#include <QDebug>
 
-//using namespace AirPlug;
+//std includes
+#include <cmath>
+
+//local include
+#include "constants.h"
 
 namespace GameApplication
 {
 
-Player::Player()
+class Q_DECL_HIDDEN Player::Private
+{
+public:
+    Private()
+    {
+
+    }
+    ~Private()
+    {
+
+    }
+
+    State state;
+};
+
+Player::Player() : d(std::make_unique<Private>())
 {
 
 }
@@ -23,19 +42,19 @@ void Player::keyPressEvent(QKeyEvent *event)
     switch(event->key())
     {
         case Qt::Key_Left:
-        state.left = true;
+        d->state.left = true;
         break;
 
         case Qt::Key_Right:
-        state.right = true;
+        d->state.right = true;
         break;
 
         case Qt::Key_Up:
-        state.up = true;
+        d->state.up = true;
         break;
 
         case Qt::Key_Down:
-        state.down = true;
+        d->state.down = true;
         break;
 
         default:
@@ -48,19 +67,19 @@ void Player::keyReleaseEvent(QKeyEvent *event)
     switch(event->key())
     {
         case Qt::Key_Left:
-        state.left = false;
+        d->state.left = false;
         break;
 
         case Qt::Key_Right:
-        state.right = false;
+        d->state.right = false;
         break;
 
         case Qt::Key_Up:
-        state.up = false;
+        d->state.up = false;
         break;
 
         case Qt::Key_Down:
-        state.down = false;
+        d->state.down = false;
         break;
 
         default:
@@ -70,20 +89,30 @@ void Player::keyReleaseEvent(QKeyEvent *event)
 
 State Player::getState(void)
 {
-    state.x = x();
-    state.y = y();
-    return state;
+    d->state.x = x();
+    d->state.y = y();
+    return d->state;
+}
+
+int Player::getFrame(void)
+{
+    return d->state.frame;
 }
 
 void Player::setSpeed(int x_speed, int y_speed)
 {
-    state.x_speed = x_speed;
-    state.y_speed = y_speed;
+    d->state.x_speed = x_speed;
+    d->state.y_speed = y_speed;
+}
+
+void Player::setState(State _state)
+{
+    d->state = _state;
 }
 
 void Player::incrementFrame(void)
 {
-    state.frame++;
+    d->state.frame++;
 }
 
 }

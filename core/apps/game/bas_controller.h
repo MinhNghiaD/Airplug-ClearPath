@@ -12,15 +12,19 @@
 #ifndef BAS_CONTROLLER_H
 #define BAS_CONTROLLER_H
 
-// Qt include
+//qt include
 #include <QObject>
+#include <QCoreApplication>
 
-// Local include
+//std includes
+#include <memory>
+
+//local include
 #include "application_controller.h"
 
 using namespace AirPlug;
 
-namespace BasApplication
+namespace GameApplication
 {
 
 class BasController: public ApplicationController
@@ -28,38 +32,25 @@ class BasController: public ApplicationController
     Q_OBJECT
 public:
 
-    BasController(QObject* parent = nullptr);
+    BasController(QCoreApplication &app, QObject* parent = nullptr);
     ~BasController();
 
-    // Initialization of program
-    void init(const QCoreApplication& app) override;
-
-    void pause(bool b);
-
-    void setMessage(const QString& msg);
-
-public:
-
-    Q_SLOT void slotActivateTimer(int period);
-    Q_SLOT void slotDeactivateTimer();
-    Q_SLOT void slotPeriodChanged(int period);
-    Q_SLOT void slotSendMessage();
+    void establishConnections(QString mp_state);
+    void sendPlayerUpdate(QString mp_state);
 
 signals:
+    void updatePlayer(int player_index, QString player_state);
 
-    Q_SIGNAL void signalSequenceChange(int);
-
-    Q_SIGNAL void signalMessageReceived(Header, Message);
-
-private:
+private slots:
 
     // main notification handler
-    Q_SLOT void slotReceiveMessage(Header, Message) override;
+    void handshakeTimeout(void);
+    void slotReceiveMessage(Header, Message) override;
 
 private:
 
     class Private;
-    Private* d;
+    std::unique_ptr<Private> d;
 };
 
 }
