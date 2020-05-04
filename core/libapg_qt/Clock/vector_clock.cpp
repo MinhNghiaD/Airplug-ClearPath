@@ -186,4 +186,20 @@ int VectorClock::sum() const
     return sum;
 }
 
+bool VectorClock::isGeneralSmallerThan(const VectorClock& other)
+{
+    if (sum() < other.sum())
+    {
+        return true;
+    }
+    else if ( (sum()      == other.sum())        &&
+              (getSiteID() < other.getSiteID()) )
+    {
+        // in case of 2 clocks are independent  => compare siteID lexically
+        return true;
+    }
+
+    return false;
+}
+
 }

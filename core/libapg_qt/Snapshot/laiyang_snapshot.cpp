@@ -401,8 +401,7 @@ bool LaiYangSnapshot::processReadyMessage(const ACLMessage& message)
 
 void LaiYangSnapshot::requestSnapshot()
 {
-    d->status = RECORDED;
-
+    d->status        = RECORDED;
     d->nbWaitPrepost = d->msgCounter;
 
     // Chandy-Lamport marker
@@ -456,7 +455,7 @@ void LaiYangSnapshot::saveSnapshot() const
 
     out << "///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////\n";
 
-    out << " - States : \n";
+    out << " --------------------------------------------------------------------- States------------------------------------------------------------ : \n";
     for (QHash<QString, QJsonObject>::const_iterator iter  = d->states.cbegin();
                                                      iter != d->states.cend();
                                                      ++iter)
@@ -465,7 +464,7 @@ void LaiYangSnapshot::saveSnapshot() const
         out << QJsonDocument(iter.value()).toJson() << "\n";
     }
 
-    out << " - Prepost messages : \n";
+    out << " ----------------------------------------------------------------- Prepost messages ------------------------------------------------------------ : \n";
     for (QHash<QString, QVector<QJsonObject> >::const_iterator iter  = d->prepostMessages.cbegin();
                                                                iter != d->prepostMessages.cend();
                                                                ++iter)

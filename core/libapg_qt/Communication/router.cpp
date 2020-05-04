@@ -206,14 +206,18 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
 
             return;
         }
-        else
+        else if (! localMutexWaitingList.contains(timestamp->getSiteID()))
         {
-            localMutexWaitingList[timestamp->getSiteID()] = nbApprove;
+            localMutexWaitingList[timestamp->getSiteID()] = 0;
             //qDebug() << siteID << "add" << timestamp->getSiteID() << "to waiting list : " << localMutexWaitingList;
 
             // mark message ID
             request.setSender(siteID);
             request.setNbSequence(++nbSequence);
+        }
+        else
+        {
+            return;
         }
     }
 
@@ -228,11 +232,14 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
 
     QJsonArray::iterator iter = approvedApps.begin();
 
+    // TODO
+    int nbApproval = 3;
+
     while (iter != approvedApps.end())
     {
         if ( localMutexWaitingList.contains((*iter).toString()) )
         {
-            if (--localMutexWaitingList[(*iter).toString()] <= 0)
+            if (++localMutexWaitingList[(*iter).toString()] == nbApproval)
             {
                 // give permission to app
                 QJsonArray apps;
@@ -330,6 +337,7 @@ int Router::Private::nbOfApp() const
         totalNbApp += iter.value().second;
     }
 
+    //qDebug() << "total number of app = " << totalNbApp;
     return totalNbApp;
 }
 
@@ -347,6 +355,7 @@ int Router::Private::nbOfNeighbor() const
         }
     }
 
+    //qDebug() << "Total number of neighbors = " << nbNeighbor;
     return nbNeighbor;
 }
 

@@ -98,6 +98,13 @@ public:
      */
     int sum() const;
 
+    /**
+     * @brief isGeneralSmaller :  comparation in total order of clocks using Lamport method
+     * @param other
+     * @return
+     */
+    bool isGeneralSmallerThan(const VectorClock& other);
+
 private:
 
     class Private;

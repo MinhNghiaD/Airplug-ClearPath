@@ -33,30 +33,26 @@ public:
 
 bool RicartLock::Private::isLessPriority(const VectorClock& requesterClock) const
 {
-    if (clock == nullptr || (requesterClock.sum() < clock->sum()))
+    if (! clock)
     {
-        if (!clock)
-        {
-            qDebug() << ID << "Approve" << requesterClock.getSiteID() << "because not having request";
-        }
-        else
-        {
-            qDebug() << ID << "Approve" << requesterClock.getSiteID() << "because" << ID << "clock :" << clock->convertToJson() << " > " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
-        }
+         //qDebug() << ID << "Approve" << requesterClock.getSiteID() << "because not having request";
 
-        return true;
-    }
-    else if ( (requesterClock.sum()      == clock->sum())        &&
-              (requesterClock.getSiteID() < clock->getSiteID()) )
-    {
-        // in case of 2 clocks are independent  => compare appID lexically
-        qDebug() << ID << "add" << requesterClock.getSiteID() << "Approve, because" << ID << "clock :" << clock->convertToJson() << " > " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
-
-        return true;
+         return true;
     }
 
-    qDebug() << ID << "add" << requesterClock.getSiteID() << "to pending queue, because" << ID << "clock :" << clock->convertToJson() << " < " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
-    return false; 
+    if (clock->isGeneralSmallerThan(requesterClock))
+    {
+/*
+        qDebug() << ID << "add" << requesterClock.getSiteID() << "to pending queue, because" << ID                         << "clock :" << clock->convertToJson()
+                                                                                    << " < " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
+*/
+        return false;
+    }
+/*
+    qDebug() << ID << "Approve" << requesterClock.getSiteID() << "because" << ID                         << "clock :" << clock->convertToJson()
+                                                                  << " > " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
+*/
+    return true;
 }
 
 RicartLock::RicartLock()
@@ -82,7 +78,7 @@ void RicartLock::trylock(const VectorClock& requesterClock)
     d->clock = new VectorClock(requesterClock);
     d->ID    = d->clock->getSiteID();
 
-    qDebug() << d->clock->getSiteID() << "request mutex with clock" << d->clock->convertToJson();
+    //qDebug() << d->clock->getSiteID() << "request mutex with clock" << d->clock->convertToJson();
 
     // broadcast request
 
@@ -120,13 +116,13 @@ void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
 
 void RicartLock::lock()
 {
-    qDebug() << d->clock->getSiteID() << "Enter race condition";
+    //qDebug() << d->clock->getSiteID() << "Enter race condition";
     emit signalEnterRaceCondition();
 }
 
 void RicartLock::unlock()
 {
-    qDebug() << d->clock->getSiteID() << "Out of race condition, liberate pending" << d->queue;
+    //qDebug() << d->clock->getSiteID() << "Out of race condition, liberate pending" << d->queue;
 
     if (! d->queue.isEmpty())
     {
