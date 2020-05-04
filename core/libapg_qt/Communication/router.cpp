@@ -20,7 +20,8 @@ public:
           nbSequence(0),
           nbApp(0),
           temporaryNbApp(0),
-          snapshot(nullptr)
+          snapshot(nullptr),
+          watchdog(nullptr)
     {
     }
 
@@ -58,6 +59,7 @@ public:
     int                   temporaryNbApp;
 
     LaiYangSnapshot*      snapshot;
+    Watchdog*             watchdog;
 
     // map external router with : - first, the most nbSequence received  - second, the nb of active applications hosted at each site
     QHash<QString, QPair<int, int> > neighborInfo;
@@ -375,13 +377,21 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
         qFatal("Router: Communication Manager is null");
     }
 
+    setObjectName(QLatin1String("Router"));
+
     d->communicationMngr = communication;
     d->siteID            = siteID;
-
-    setObjectName(QLatin1String("Router"));
+    d->watchdog          = new Watchdog(siteID);
 
     connect(d->communicationMngr, SIGNAL(signalMessageReceived(Header, Message)),
             this,                 SLOT(slotReceiveMessage(Header, Message)), Qt::DirectConnection);
+
+    connect(d->watchdog, &Watchdog::signalPingLocalApps,
+            this,        &Router::slotHeathCheck, Qt::DirectConnection);
+
+    connect(d->watchdog, &Watchdog::signalSendInfo,
+            this,        &Router::slotBroadcastMessage, Qt::DirectConnection);
+
 
     // health check neighbors periodically
     QTimer::singleShot(30000, this, SLOT(slotRefreshActiveNeighbor()));
@@ -405,7 +415,7 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
             this,        &Router::slotSendMarker, Qt::DirectConnection);
 
     connect(d->snapshot, &LaiYangSnapshot::signalSendSnapshotMessage,
-            this,        &Router::slotForwardSnapshotMessage, Qt::DirectConnection);
+            this,        &Router::slotBroadcastMessage, Qt::DirectConnection);
 
     return true;
 }
@@ -501,7 +511,7 @@ void Router::slotSendMarker(const Message& marker)
     d->communicationMngr->send(marker, QLatin1String("NET"), Header::allApp, Header::localHost);
 }
 
-void Router::slotForwardSnapshotMessage(ACLMessage& message)
+void Router::slotBroadcastMessage(ACLMessage& message)
 {
     // broadcast to all app in local site
     message.setSender(d->siteID);
@@ -513,14 +523,10 @@ void Router::slotForwardSnapshotMessage(ACLMessage& message)
 
 void Router::slotHeathCheck()
 {
-    d->temporaryNbApp = 0;
-
     ACLMessage ping(ACLMessage::PING);
 
+    // broadcast Ping to all Local base application
     d->communicationMngr->send(ping, QLatin1String("NET"), Header::allApp, Header::localHost);
-
-    // activate timeout timer of 4s
-    QTimer::singleShot(4000, this, SLOT(slotPingTimeOut()));
 }
 
 void Router::slotPingTimeOut()

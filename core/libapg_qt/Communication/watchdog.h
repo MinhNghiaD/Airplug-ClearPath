@@ -27,7 +27,7 @@ class Watchdog : public QObject
     Q_OBJECT
 public:
 
-    Watchdog();
+    Watchdog(const QString& siteID);
     ~Watchdog();
 
     void receivePong(bool newApp);
@@ -47,7 +47,7 @@ public:
 
     Q_SIGNAL void signalNbAppChanged(int nbApp);
     Q_SIGNAL void signalPingLocalApps();
-    Q_SIGNAL void signalSendInfo(const ACLMessage&);
+    Q_SIGNAL void signalSendInfo(ACLMessage&);
 
 private:
 

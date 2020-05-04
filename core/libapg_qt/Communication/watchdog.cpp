@@ -68,11 +68,12 @@ bool Watchdog::Private::containDeprecatedInfo() const
 
 
 
-Watchdog::Watchdog()
+Watchdog::Watchdog(const QString& siteID)
     : QObject(nullptr),
       d(new Private())
 {
     setObjectName(QLatin1String("Watchdog"));
+    d->localInfo = SiteInfo(siteID, 0);
 }
 
 Watchdog::~Watchdog()
