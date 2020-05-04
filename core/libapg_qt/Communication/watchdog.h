@@ -12,8 +12,11 @@
 #ifndef WATCHDOG_H
 #define WATCHDOG_H
 
+// Qt include
 #include <QObject>
+#include <QDateTime>
 
+// libapg include
 #include "aclmessage.h"
 
 namespace AirPlug
@@ -28,6 +31,7 @@ public:
     ~WatchDog();
 
     void receivePong(bool newApp);
+    void receiveNetworkInfo(const ACLMessage& info);
 
 private:
 
@@ -36,7 +40,6 @@ private:
 private:
 
     Q_SLOT void slotUpdateNbApp();
-
 
 public:
 
@@ -48,6 +51,37 @@ private:
 
     class Private;
     Private* d;
+};
+
+
+class SiteInfo
+{
+public:
+
+    SiteInfo()
+        : nbApp(0),
+          lastUpdate(QDateTime::currentMSecsSinceEpoch())
+    {
+    }
+
+    SiteInfo(const QString& siteID, int nbApp)
+        : siteID(siteID),
+          nbApp(nbApp),
+          lastUpdate(QDateTime::currentMSecsSinceEpoch())
+    {
+    }
+
+    void setNbApp(int nb)
+    {
+        nbApp      = nb;
+        lastUpdate = QDateTime::currentMSecsSinceEpoch();
+    }
+
+public:
+
+    QString siteID;
+    int     nbApp;
+    qint64  lastUpdate;
 };
 
 }

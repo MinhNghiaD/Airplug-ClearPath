@@ -2,6 +2,7 @@
 
 // Qt include
 #include <QTimer>
+#include <QHash>
 
 namespace AirPlug
 {
@@ -11,8 +12,7 @@ class Q_DECL_HIDDEN WatchDog::Private
 public:
 
     Private()
-        : nbLocalApp(0),
-          temporaryNbApp(0)
+        : temporaryNbApp(0)
     {
     }
 
@@ -26,15 +26,25 @@ public:
 
 public:
 
-    int nbLocalApp;
+    SiteInfo localInfo;
     int temporaryNbApp;
+
+    QHash<QString, SiteInfo> neighborsInfo;
 
 };
 
 int WatchDog::Private::nbApps() const
 {
-    // TODO count all nb of apps
-    return nbLocalApp;
+    int totalNb = localInfo.nbApp;
+
+    for (QHash<QString, SiteInfo>::const_iterator iter  = neighborsInfo.cbegin();
+                                                  iter != neighborsInfo.cend();
+                                                ++iter)
+    {
+        totalNb += iter.value().nbApp;
+    }
+
+    return totalNb;
 }
 
 WatchDog::WatchDog()
@@ -55,7 +65,7 @@ void WatchDog::receivePong(bool newApp)
     // All Site has to be notified in order to synchronize the increasing of number of apps before checking some termination conditions like Snapshot and Mutex
     if (newApp)
     {
-        ++d->nbLocalApp;
+        ++(d->localInfo.nbApp);
 
         emit signalNbAppChanged(d->nbApps());
         broadcastInfo();
@@ -76,9 +86,9 @@ void WatchDog::broadcastInfo()
 
 void WatchDog::slotUpdateNbApp()
 {
-    if (d->temporaryNbApp != d->nbLocalApp)
+    if (d->temporaryNbApp != d->localInfo.nbApp)
     {
-        d->nbLocalApp = d->temporaryNbApp;
+        d->localInfo.nbApp = d->temporaryNbApp;
 
         emit signalNbAppChanged(d->nbApps());
     }
@@ -92,6 +102,22 @@ void WatchDog::slotUpdateNbApp()
 
     // reactivate timeout timer of 3s
     QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
+}
+
+void WatchDog::receiveNetworkInfo(const ACLMessage& info)
+{
+    QString neighborID = info.getSender();
+
+    if (!(d->neighborsInfo.contains(neighborID)))
+    {
+         d->neighborsInfo[neighborID] = SiteInfo(neighborID, info.getContent()[QLatin1String("nbApp")].toInt());
+    }
+    else
+    {
+        d->neighborsInfo[neighborID].setNbApp(info.getContent()[QLatin1String("nbApp")].toInt());
+    }
+
+    emit signalNbAppChanged(d->nbApps());
 }
 
 }
