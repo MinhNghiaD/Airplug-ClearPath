@@ -23,6 +23,7 @@ public:
 public:
 
     int nbApps() const;
+    bool containDeprecatedInfo() const;
 
 public:
 
@@ -30,7 +31,6 @@ public:
     int temporaryNbApp;
 
     QHash<QString, SiteInfo> neighborsInfo;
-
 };
 
 int WatchDog::Private::nbApps() const
@@ -46,6 +46,26 @@ int WatchDog::Private::nbApps() const
 
     return totalNb;
 }
+
+bool WatchDog::Private::containDeprecatedInfo() const
+{
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+
+    for (QHash<QString, SiteInfo>::const_iterator iter  = neighborsInfo.cbegin();
+                                                  iter != neighborsInfo.cend();
+                                                ++iter)
+    {
+        // deadline to beconsidered as deprecated is 3000 ms
+        if ((currentTime - iter.value().lastUpdate) >= 3000)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 
 WatchDog::WatchDog()
     : QObject(nullptr),
@@ -84,8 +104,23 @@ void WatchDog::broadcastInfo()
     emit signalSendInfo(message);
 }
 
+void WatchDog::requestInfo()
+{
+    ACLMessage message(ACLMessage::PING);
+    emit signalSendInfo(message);
+
+    // deadline for responses is 3000 ms
+    QTimer::singleShot(3000, this, SLOT(eliminateDeprecatedInfo()));
+}
+
 void WatchDog::slotUpdateNbApp()
 {
+    if (d->containDeprecatedInfo())
+    {
+        // Ping all Node in the network to check if they are alive
+        requestInfo();
+    }
+
     if (d->temporaryNbApp != d->localInfo.nbApp)
     {
         d->localInfo.nbApp = d->temporaryNbApp;
@@ -104,6 +139,35 @@ void WatchDog::slotUpdateNbApp()
     QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
 }
 
+void WatchDog::eliminateDeprecatedInfo()
+{
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+
+    bool containDeprecated = false;
+
+    QHash<QString, SiteInfo>::iterator iter  = d->neighborsInfo.begin();
+
+    while (iter != d->neighborsInfo.end())
+    {
+        // deadline to beconsidered as deprecated is 3000 ms
+        if ((currentTime - iter.value().lastUpdate) >= 3000)
+        {
+            containDeprecated = true;
+
+            d->neighborsInfo.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+
+    if (containDeprecated)
+    {
+        emit signalNbAppChanged(d->nbApps());
+    }
+}
+
 void WatchDog::receiveNetworkInfo(const ACLMessage& info)
 {
     QString neighborID = info.getSender();
@@ -114,10 +178,18 @@ void WatchDog::receiveNetworkInfo(const ACLMessage& info)
     }
     else
     {
-        d->neighborsInfo[neighborID].setNbApp(info.getContent()[QLatin1String("nbApp")].toInt());
+        int nbApp = info.getContent()[QLatin1String("nbApp")].toInt();
+
+        if (d->neighborsInfo[neighborID].nbApp == nbApp)
+        {
+            return;
+        }
+
+        d->neighborsInfo[neighborID].setNbApp(nbApp);
     }
 
     emit signalNbAppChanged(d->nbApps());
 }
+
 
 }

@@ -36,10 +36,12 @@ public:
 private:
 
     void broadcastInfo();
+    void requestInfo();
 
 private:
 
     Q_SLOT void slotUpdateNbApp();
+    Q_SLOT void eliminateDeprecatedInfo();
 
 public:
 
