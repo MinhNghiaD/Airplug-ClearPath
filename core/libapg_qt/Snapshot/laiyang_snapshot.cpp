@@ -276,8 +276,6 @@ bool LaiYangSnapshot::processStateMessage(ACLMessage& message, bool fromLocal)
     QJsonObject state   = timestamp->convertToJson();
     QJsonObject content = message.getContent();
 
-    qDebug() << "receive snapshot message from" << timestamp->getSiteID() << content;
-
     if (d->initiator)
     {
         if (content.contains(QLatin1String("msgCounter")))

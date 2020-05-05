@@ -150,7 +150,6 @@ void Watchdog::slotUpdateNbApp()
 
     emit signalPingLocalApps(ping);
 
-
     // reactivate timeout timer of 3s
     QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
 */
