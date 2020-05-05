@@ -133,7 +133,7 @@ void Watchdog::slotUpdateNbApp()
 
     if (d->temporaryNbApp != d->localInfo.nbApp)
     {
-        qDebug() << d->localInfo.siteID << "nb of local app change, from" << d->localInfo.nbApp << "to" << d->temporaryNbApp;
+        //qDebug() << d->localInfo.siteID << "nb of local app change, from" << d->localInfo.nbApp << "to" << d->temporaryNbApp;
         d->localInfo.nbApp = d->temporaryNbApp;
 
         emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
@@ -172,7 +172,7 @@ void Watchdog::eliminateDeprecatedInfo()
         {
             containDeprecated = true;
 
-            qDebug() << d->localInfo.siteID << "eliminate deprecated info : " << iter.key();
+            //qDebug() << d->localInfo.siteID << "eliminate deprecated info : " << iter.key();
 
             iter = d->neighborsInfo.erase(iter);
         }
@@ -184,7 +184,7 @@ void Watchdog::eliminateDeprecatedInfo()
 
     if (containDeprecated)
     {
-        qDebug() << d->localInfo.siteID << "remove deprecated, total nb app rests" << d->nbApps();
+        //qDebug() << d->localInfo.siteID << "remove deprecated, total nb app rests" << d->nbApps();
         emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
     }
 }
@@ -193,7 +193,7 @@ void Watchdog::receiveNetworkInfo(const ACLMessage& info)
 {
     QString neighborID = info.getSender();
 
-    qDebug() << d->localInfo.siteID << "receive network infor from" << neighborID << "with nb App" << info.getContent();
+    //qDebug() << d->localInfo.siteID << "receive network infor from" << neighborID << "with nb App" << info.getContent();
 
     if (!(d->neighborsInfo.contains(neighborID)))
     {
@@ -220,7 +220,7 @@ void Watchdog::receiveNetworkInfo(const ACLMessage& info)
         }
     }
 
-    qDebug() << d->localInfo.siteID << "nb of total app change, new value" << d->nbApps();
+    //qDebug() << d->localInfo.siteID << "nb of total app change, new value" << d->nbApps();
 
     emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
 }

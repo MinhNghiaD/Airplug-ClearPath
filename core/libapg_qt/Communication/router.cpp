@@ -2,7 +2,6 @@
 
 // Qt includes
 #include <QDebug>
-#include <QPair>
 #include <QTimer>
 
 // libapg include
@@ -59,8 +58,8 @@ public:
     LaiYangSnapshot*      snapshot;
     Watchdog*             watchdog;
 
-    // map external router with : - first, the most nbSequence received  - second, the nb of active applications hosted at each site
-    QHash<QString, QPair<int, int> > neighborInfo;
+    // map external router with : - the most recent nbSequence received
+    QHash<QString, int> recentSequences;
     QVector<QString>                 activeNeighBors;
 
     // each NET will keep track of its applications request
@@ -218,11 +217,8 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
         if (!timestamp)
         {
             qWarning() << "receiveMutexRequest: local clock is null";
-
             return;
         }
-
-        qDebug() << siteID << "pending mutex for " << timestamp->getSiteID() << "nb App" << nbApp;
 
         if ((nbApp - 1) <= 0)
         {
@@ -244,7 +240,6 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
         else if (! localMutexWaitingList.contains(timestamp->getSiteID()))
         {
             localMutexWaitingList[timestamp->getSiteID()] = nbApp - 1;
-            qDebug() << siteID << "add" << timestamp->getSiteID() << "to waiting list : " << localMutexWaitingList;
 
             // mark message ID
             request.setSender(siteID);
@@ -254,11 +249,42 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
         {
             return;
         }
-    }
 
-    // forward to all Apps
-    communicationMngr->send(request, QLatin1String("NET"), Header::allApp,       Header::localHost);
-    communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
+        communicationMngr->send(request, QLatin1String("NET"), Header::allApp, Header::localHost);
+
+        // Mark Snapshot marker because the request always comes before before the message
+
+        if (snapshot)
+        {
+            QJsonObject contents = request.getContent();
+            snapshot->colorMessage(contents);
+            request.setContent(contents);
+        }
+
+        communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
+    }
+    else
+    {
+        communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
+
+        if (snapshot)
+        {
+            QJsonObject contents = request.getContent();
+
+            if (snapshot->getColor(contents))
+            {
+                // detected prepost message
+                ACLMessage prepost = snapshot->encodePrepostMessage(request);
+                prepost.setSender(siteID);
+                prepost.setNbSequence(++nbSequence);
+                forwardPrepost(prepost);
+            }
+
+            request.setContent(contents);
+        }
+
+        communicationMngr->send(request, QLatin1String("NET"), Header::allApp, Header::localHost);
+    }
 }
 
 void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
@@ -285,7 +311,7 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
                 localMutexWaitingList.remove((*iter).toString());
             }
 
-            qDebug() << siteID << "waiting list" << localMutexWaitingList;
+            //qDebug() << siteID << "waiting list" << localMutexWaitingList;
             iter = approvedApps.erase(iter);
         }
         else
@@ -342,7 +368,7 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
         return true;
     }
 
-    if ( neighborInfo.contains(sender) && (neighborInfo[sender].first >= sequence) )
+    if ( recentSequences.contains(sender) && (recentSequences[sender] >= sequence) )
     {
         // Here we suppose the channels are FIFO
         // therefore for each router, by keeing the sequence number of each site, we can identify old repeated message
@@ -351,7 +377,7 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
     }
 
     // Update recent sequence
-    neighborInfo[sender].first = sequence;
+    recentSequences[sender] = sequence;
 
     return false;
 }
@@ -423,15 +449,7 @@ void Router::slotReceiveMessage(Header header, Message message)
         {
             return;
         }
-/*
-        // active neighbor : TODO  check this
-        QString neighborID = aclMessage.getSender();
 
-        if(! d->activeNeighBors.contains(neighborID))
-        {
-            d->activeNeighBors.append(neighborID);
-        }
-*/
         switch (aclMessage.getPerformative())
         {
             case ACLMessage::INFORM_STATE:
