@@ -26,8 +26,6 @@ public:
 public:
 
     VectorClock* clock;
-    QString      ID;                // TODO Remove this after debug
-    // List of appID waiting for this Mutex
     QStringList  queue;
 };
 
@@ -35,7 +33,7 @@ bool RicartLock::Private::isLessPriority(const VectorClock& requesterClock) cons
 {
     if (! clock)
     {
-         //qDebug() << ID << "Approve" << requesterClock.getSiteID() << "because not having request";
+         //qDebug() << "Approve" << requesterClock.getSiteID() << "because not having request";
 
          return true;
     }
@@ -43,14 +41,14 @@ bool RicartLock::Private::isLessPriority(const VectorClock& requesterClock) cons
     if (clock->isGeneralSmallerThan(requesterClock))
     {
 /*
-        qDebug() << ID << "add" << requesterClock.getSiteID() << "to pending queue, because" << ID                         << "clock :" << clock->convertToJson()
-                                                                                    << " < " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
+        qDebug() << clock->getSiteID() << "add" << requesterClock.getSiteID() << "to pending queue, because" << clock->getSiteID()         << "clock :" << clock->convertToJson()
+                                                                                                    << " < " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
 */
         return false;
     }
 /*
-    qDebug() << ID << "Approve" << requesterClock.getSiteID() << "because" << ID                         << "clock :" << clock->convertToJson()
-                                                                  << " > " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
+    qDebug() << clock->getSiteID() << "Approve" << requesterClock.getSiteID() << "because" << clock->getSiteID()         << "clock :" << clock->convertToJson()
+                                                                                  << " > " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
 */
     return true;
 }
@@ -76,19 +74,15 @@ void RicartLock::trylock(const VectorClock& requesterClock)
     }
 
     d->clock = new VectorClock(requesterClock);
-    d->ID    = d->clock->getSiteID();
 
     //qDebug() << d->clock->getSiteID() << "request mutex with clock" << d->clock->convertToJson();
 
     // broadcast request
-
     ACLMessage message(ACLMessage::REQUEST_MUTEX);
 
     message.setTimeStamp(*(d->clock));
 
     emit signalResponse(message);
-
-    //qDebug() << requesterClock.getSiteID() << "try lock";
 }
 
 void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
@@ -138,8 +132,6 @@ void RicartLock::unlock()
 
         emit signalResponse(approval);
     }
-
-    //qDebug() << d->clock->getSiteID() << "Out of race condition";
 
     delete d->clock;
 

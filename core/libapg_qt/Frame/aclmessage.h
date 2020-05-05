@@ -51,7 +51,6 @@ public:
         PREPOST_MESSAGE,
         SNAPSHOT_RECOVER,
         READY_SNAPSHOT,
-        //UPDATE_ACTIVE,
         REQUEST_MUTEX,
         ACCEPT_MUTEX,
     };

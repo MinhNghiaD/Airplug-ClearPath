@@ -33,17 +33,16 @@ VectorClock::VectorClock(const QString& siteID)
 VectorClock::VectorClock(const QString& siteID, const QHash<QString, int>& vector)
     : d(new Private())
 {
-    d->siteID = siteID;
-
+    d->siteID     = siteID;
     d->localClock = vector;
+
     d->localClock.detach();
 }
 
 VectorClock::VectorClock(const QJsonObject& json)
     : d(new Private())
 {
-    d->siteID = json[QLatin1String("siteID")].toString();
-
+    d->siteID        = json[QLatin1String("siteID")].toString();
     QJsonArray clock = json[QLatin1String("clock")].toArray();
 
     for (int i = 0; i < clock.size(); ++i)
@@ -58,8 +57,8 @@ VectorClock::VectorClock(const VectorClock& other)
     : d(new Private())
 {
     d->siteID     = other.d->siteID;
-
     d->localClock = other.d->localClock;
+
     d->localClock.detach();
 }
 
@@ -71,8 +70,8 @@ VectorClock::~VectorClock()
 VectorClock VectorClock::operator= (const VectorClock& other)
 {
     d->siteID     = other.d->siteID;
-
     d->localClock = other.d->localClock;
+
     d->localClock.detach();
 }
 
@@ -100,7 +99,7 @@ void VectorClock::updateClock(const VectorClock& other)
     // update other clocks
     for (QHash<QString, int>::const_iterator iter  = other.d->localClock.cbegin();
                                              iter != other.d->localClock.cend();
-                                             ++iter)
+                                           ++iter)
     {
         if (d->siteID != iter.key())
         {
@@ -117,7 +116,7 @@ bool VectorClock::operator < (const VectorClock& other) const
 {
     for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
                                              iter != d->localClock.cend();
-                                             ++iter)
+                                           ++iter)
     {
         if ( (! other.d->localClock.contains(iter.key()) && iter.value() != 0) ||
              (iter.value() > other.d->localClock[iter.key()]) )
@@ -139,7 +138,7 @@ QJsonObject VectorClock::convertToJson() const
 
     for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
                                              iter != d->localClock.cend();
-                                             ++iter)
+                                           ++iter)
     {
         QJsonObject localClock;
         localClock[iter.key()] = iter.value();
@@ -178,7 +177,7 @@ int VectorClock::sum() const
 
     for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
                                              iter != d->localClock.cend();
-                                             ++iter)
+                                           ++iter)
     {
         sum += iter.value();
     }
