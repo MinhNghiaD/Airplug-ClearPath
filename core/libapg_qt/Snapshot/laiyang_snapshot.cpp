@@ -2,6 +2,7 @@
 
 // Qt includes
 #include <QFile>
+#include <QDateTime>
 #include <QDebug>
 
 // libapg include
@@ -447,7 +448,8 @@ void LaiYangSnapshot::saveSnapshot() const
 
     QTextStream out(&file);
 
-    out << "///////////////////////////////////////////////////////////////////// Snapshot /////////////////////////////////////////////////////////////\n";
+    out << "//////////////////////////////////////////////////////////////////// Snapshot at " << QDateTime::currentDateTime().toLocalTime().toString(QLatin1String("dd.MM.yyyy"))
+        <<"////////////////////////////////////////////////////////////////////////\n";
 
     out << " --------------------------------------------------------------------- States------------------------------------------------------------ : \n";
     for (QHash<QString, QJsonObject>::const_iterator iter  = d->states.cbegin();
