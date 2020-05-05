@@ -18,9 +18,7 @@ public:
         : timer(nullptr),
           nbSequence(0)
     {
-        // TODO: get default message ffrom QSettings
         sharedMessage = QLatin1String("~");
-
         mutex         = new RicartLock();
     }
 
@@ -34,7 +32,7 @@ public:
 
     QTimer*               timer;
 
-    // sharedMessage and nbSequence are shared variables => sync sharedMessage = concatenate of nbSequence
+    // sharedMessage is shared variables, clients will cumulate  the nb of sequence, if the mutex is working, sum(nbSequences) = sharedMessage
     QString               sharedMessage;
     int                   nbSequence;
 
@@ -95,7 +93,7 @@ void BasController::setMessage(const QString& msg)
 {
     //d->sharedMessage = msg;
 
-    ++(*m_clock);
+    //++(*m_clock);
 }
 
 void BasController::slotActivateTimer(int period)
@@ -202,10 +200,10 @@ void BasController::slotReceiveMessage(Header header, Message message)
             QJsonObject contents = aclMessage->getContent();
 
             d->sharedMessage = contents[QLatin1String("payload")].toString();
-            d->nbSequence    = contents[QLatin1String("nseq")].toInt();
+            //d->nbSequence    = contents[QLatin1String("nseq")].toInt();
 
             emit signalMessageReceived(header, message);
-            emit signalSequenceChange(d->nbSequence);
+            //emit signalSequenceChange(d->nbSequence);
 
             break;
     }
@@ -218,11 +216,11 @@ QJsonObject BasController::captureLocalState() const
     QJsonObject applicationState;
 
     applicationState[QLatin1String("sharedMessage")] = d->sharedMessage;
-    applicationState[QLatin1String("nbSequence")] = d->nbSequence;
+    applicationState[QLatin1String("nbSequence")]    = d->nbSequence;
 
     QJsonObject localState;
-    localState[QLatin1String("options")] = m_optionParser.convertToJson();
-    localState[QLatin1String("state")]   = applicationState;
+    localState[QLatin1String("options")]             = m_optionParser.convertToJson();
+    localState[QLatin1String("state")]               = applicationState;
 
     return localState;
 }
@@ -267,7 +265,7 @@ void BasController::slotEnterCriticalSection()
     QJsonObject contents;
 
     ++d->nbSequence;
-    d->sharedMessage = QLatin1String("current sequence = ") + QString::number(d->nbSequence);
+    d->sharedMessage = QString::number(d->sharedMessage.toInt() + 1);
 
     contents[QLatin1String("payload")] =  d->sharedMessage;
     contents[QLatin1String("nseq")]    =  d->nbSequence;

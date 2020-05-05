@@ -92,6 +92,7 @@ bool LaiYangSnapshot::Private::validateState(const QJsonObject& state) const
         if ( (newClock.getValue(siteID)        < currentClock.getValue(siteID))         ||
              (newClock.getValue(currentSiteID) > currentClock.getValue(currentSiteID)) )
         {
+            qDebug() << "incoherent snapshot" << "new clock" << newClock.convertToJson() << "clock recorded" << currentClock.convertToJson();
             return false;
         }
     }

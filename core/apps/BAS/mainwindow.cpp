@@ -101,10 +101,9 @@ void MainWindow::slotShowReceivedMessage(Header header, Message message)
 {
     if (m_controller->isStarted())
     {
-
-        QString content = header.what() + " > " + message.getContents()[QLatin1String("content")];
-
-        //qDebug() << "MainWindow::slotShowReceivedMessage" << content;
+        ACLMessage* aclMessage = static_cast<ACLMessage*>(&message);
+        QString sequence       = aclMessage->getContent()[QLatin1String("payload")].toString();
+        QString content        = aclMessage->getSender()+ " > Current sequence : " + sequence;
 
         ui->messageReceived->setText(content);
     }
