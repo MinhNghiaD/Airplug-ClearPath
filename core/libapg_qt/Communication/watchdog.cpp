@@ -89,13 +89,13 @@ void Watchdog::receivePong(bool newApp)
 {
     // NOTE: all base applications have to send a PONG to NET after its initialization, in order to register,
     // All Site has to be notified in order to synchronize the increasing of number of apps before checking some termination conditions like Snapshot and Mutex
-    // Since the channels are FIFO, therefore this information will be update at all sites before any message exchange
+    // Since the channels are FIFO, therefore this information will be update at all sites before any message exchange   
     if (newApp)
     {
-        ++(d->localInfo.nbApp);
+        //++(d->localInfo.nbApp);
         qDebug() << d->localInfo.siteID << "new app enter";
-        emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
-        broadcastInfo();
+        //emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
+        //broadcastInfo();
     }
 
     ++d->temporaryNbApp;
@@ -144,12 +144,16 @@ void Watchdog::slotUpdateNbApp()
     // broadcast Info to all Watchdogs
     broadcastInfo();
 
+    // TODO: polling doesn't scale, find another method that does not flood the network
+/*
     ACLMessage ping(ACLMessage::PING);
 
     emit signalPingLocalApps(ping);
 
+
     // reactivate timeout timer of 3s
     QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
+*/
 }
 
 void Watchdog::eliminateDeprecatedInfo()
