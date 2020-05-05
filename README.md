@@ -10,6 +10,11 @@ To configure project ======> ./boostrap.sh
 Go to ./build
 Enter command "make"
 
+
+Application is build in ./build/core/apps
+The scripts for network construction is in ./build/core/apps/network_scripts
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 - ACLMessage formats : {
