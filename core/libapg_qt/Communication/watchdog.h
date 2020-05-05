@@ -45,7 +45,7 @@ private:
 
 public:
 
-    Q_SIGNAL void signalNbAppChanged(int nbApp);
+    Q_SIGNAL void signalNetworkChanged(int nbSite, int nbApp);
     Q_SIGNAL void signalPingLocalApps(ACLMessage&);
     Q_SIGNAL void signalSendInfo(ACLMessage&);
 

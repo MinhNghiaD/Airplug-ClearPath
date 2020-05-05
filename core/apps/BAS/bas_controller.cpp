@@ -173,7 +173,20 @@ void BasController::slotReceiveMessage(Header header, Message message)
             break;
 
         case ACLMessage::ACCEPT_MUTEX:
-            d->mutex->lock();
+            qDebug() << "receive accept mutex" << aclMessage->getContent();
+
+            if (aclMessage->getContent()[QLatin1String("apps")].toArray().contains(m_clock->getSiteID()))
+            {
+                d->mutex->lock();
+            }
+
+            break;
+
+        case ACLMessage::REFUSE_MUTEX:
+            if (aclMessage->getContent()[QLatin1String("apps")].toArray().contains(m_clock->getSiteID()))
+            {
+                d->mutex->restart();
+            }
 
             break;
 

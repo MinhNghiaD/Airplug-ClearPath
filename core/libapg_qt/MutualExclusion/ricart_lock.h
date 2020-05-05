@@ -44,6 +44,8 @@ public:
      */
     void unlock();
 
+    void restart();
+
     void receiveExternalRequest(const VectorClock& requesterClock);
 
 public:

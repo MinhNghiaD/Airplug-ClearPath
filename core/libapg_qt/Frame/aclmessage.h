@@ -53,6 +53,7 @@ public:
         READY_SNAPSHOT,
         REQUEST_MUTEX,
         ACCEPT_MUTEX,
+        REFUSE_MUTEX,
     };
 
 public:

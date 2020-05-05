@@ -18,8 +18,7 @@ public:
     Private()
         : communicationMngr(nullptr),
           nbSequence(0),
-          //nbApp(0),
-          //temporaryNbApp(0),
+          nbApp(0),
           snapshot(nullptr),
           watchdog(nullptr)
     {
@@ -42,14 +41,11 @@ public:
     void forwardPing   (const ACLMessage& message);
     void forwardPong   (const ACLMessage& message, bool fromLocal);
 
-
     void receiveMutexRequest (ACLMessage& request, bool fromLocal);
     void receiveMutexApproval(ACLMessage& request, bool fromLocal);
+    void refuseAllPendingRequest();
 
     bool isOldMessage  (const ACLMessage& messsage);
-
-    int  nbOfApp()      const;
-    int  nbOfNeighbor() const;
 
 public:
 
@@ -58,6 +54,7 @@ public:
     // using siteID and sequence nb to identify old message
     QString               siteID;
     int                   nbSequence;
+    int                   nbApp;
 
     LaiYangSnapshot*      snapshot;
     Watchdog*             watchdog;
@@ -221,10 +218,9 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
             return;
         }
 
+        qDebug() << siteID << "pending mutex for " << timestamp->getSiteID() << "nb App" << nbApp;
 
-        //int nbApprove = nbOfApp() - 1;
-        int nbApprove = 3;                  // TODO test fix nb
-        if (nbApprove <= 0)
+        if ((nbApp - 1) <= 0)
         {
             // give permission to app
             request.setPerformative(ACLMessage::ACCEPT_MUTEX);
@@ -243,8 +239,8 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
         }
         else if (! localMutexWaitingList.contains(timestamp->getSiteID()))
         {
-            localMutexWaitingList[timestamp->getSiteID()] = 0;
-            //qDebug() << siteID << "add" << timestamp->getSiteID() << "to waiting list : " << localMutexWaitingList;
+            localMutexWaitingList[timestamp->getSiteID()] = nbApp - 1;
+            qDebug() << siteID << "add" << timestamp->getSiteID() << "to waiting list : " << localMutexWaitingList;
 
             // mark message ID
             request.setSender(siteID);
@@ -266,14 +262,11 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
     QJsonArray           approvedApps = approval.getContent()[QLatin1String("apps")].toArray();
     QJsonArray::iterator iter         = approvedApps.begin();
 
-    // TODO
-    int nbApproval = 3;
-
     while (iter != approvedApps.end())
     {
         if ( localMutexWaitingList.contains((*iter).toString()) )
         {
-            if (++localMutexWaitingList[(*iter).toString()] == nbApproval)
+            if (--localMutexWaitingList[(*iter).toString()] == 0)
             {
                 // give permission to app
                 QJsonArray apps;
@@ -288,7 +281,7 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
                 localMutexWaitingList.remove((*iter).toString());
             }
 
-            //qDebug() << siteID << "waiting list" << localMutexWaitingList;
+            qDebug() << siteID << "waiting list" << localMutexWaitingList;
             iter = approvedApps.erase(iter);
         }
         else
@@ -319,6 +312,20 @@ void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
     communicationMngr->send(approval, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
 }
 
+void Router::Private::refuseAllPendingRequest()
+{
+    ACLMessage refuse(ACLMessage::REFUSE_MUTEX);
+    QJsonArray apps = QJsonArray::fromStringList(localMutexWaitingList.keys());
+
+    QJsonObject content;
+    content[QLatin1String("apps")] = apps;
+
+    refuse.setContent(content);
+
+    communicationMngr->send(refuse, QLatin1String("NET"), Header::allApp, Header::localHost);
+
+    localMutexWaitingList.clear();
+}
 
 bool Router::Private::isOldMessage(const ACLMessage& messsage)
 {
@@ -343,37 +350,6 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
     neighborInfo[sender].first = sequence;
 
     return false;
-}
-
-int Router::Private::nbOfApp() const
-{
-    int totalNbApp = 0;
-
-    for (QHash<QString, QPair<int, int> >::const_iterator iter  = neighborInfo.cbegin();
-                                                          iter != neighborInfo.cend();
-                                                          ++iter)
-    {
-        totalNbApp += iter.value().second;
-    }
-
-    return totalNbApp;
-}
-
-int Router::Private::nbOfNeighbor() const
-{
-    int nbNeighbor = 0;
-
-    for (QHash<QString, QPair<int, int> >::const_iterator iter  = neighborInfo.cbegin();
-                                                          iter != neighborInfo.cend();
-                                                          ++iter)
-    {
-        if (iter.value().second > 0)
-        {
-            ++nbNeighbor;
-        }
-    }
-
-    return nbNeighbor;
 }
 
 /*------------------------------------------------------------ Router main functions ----------------------------------------------------------------------------------------*/
@@ -402,6 +378,9 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
 
     connect(d->watchdog, &Watchdog::signalSendInfo,
             this,        &Router::slotBroadcastNetwork, Qt::DirectConnection);
+
+    connect(d->watchdog, &Watchdog::signalNetworkChanged,
+            this,        &Router::slotUpdateNbApps, Qt::DirectConnection);
 }
 
 Router::~Router()
@@ -527,6 +506,21 @@ void Router::slotBroadcastNetwork(ACLMessage& message)
     message.setNbSequence(++d->nbSequence);
 
     d->communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
+void Router::slotUpdateNbApps(int nbSites, int nbApp)
+{
+    if (nbApp != d->nbApp)
+    {
+        qDebug() << d->siteID << "network changed => restart all mutex";
+        // In case the network structure changed, it should restart the process of mutex in order to avoid deadlock
+        d->refuseAllPendingRequest();
+    }
+
+    d->nbApp = nbApp;
+
+    d->snapshot->setNbOfApp(nbApp);
+    d->snapshot->setNbOfNeighbor(nbSites - 1);
 }
 
 }

@@ -45,6 +45,8 @@ public:
 
     Q_SLOT void slotBroadcastNetwork(ACLMessage& message);
 
+    Q_SLOT void slotUpdateNbApps(int nbSites, int nbApp);
+
 private:
 
     class Private;

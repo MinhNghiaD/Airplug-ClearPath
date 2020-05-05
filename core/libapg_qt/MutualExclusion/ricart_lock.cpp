@@ -139,4 +139,14 @@ void RicartLock::unlock()
     d->queue.clear();
 }
 
+void RicartLock::restart()
+{
+    qDebug() << d->clock->getSiteID() << "is refuse mutex";
+
+    delete d->clock;
+
+    d->clock = nullptr;
+    d->queue.clear();
+}
+
 }

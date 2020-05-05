@@ -67,6 +67,7 @@ bool Watchdog::Private::containDeprecatedInfo() const
     return false;
 }
 
+/* ----------------------------------------------------------------------- Watchdog main functions --------------------------------------------------------------------------------------*/
 
 
 Watchdog::Watchdog(const QString& siteID)
@@ -88,11 +89,12 @@ void Watchdog::receivePong(bool newApp)
 {
     // NOTE: all base applications have to send a PONG to NET after its initialization, in order to register,
     // All Site has to be notified in order to synchronize the increasing of number of apps before checking some termination conditions like Snapshot and Mutex
+    // Since the channels are FIFO, therefore this information will be update at all sites before any message exchange
     if (newApp)
     {
         ++(d->localInfo.nbApp);
-
-        emit signalNbAppChanged(d->nbApps());
+        qDebug() << d->localInfo.siteID << "new app enter";
+        emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
         broadcastInfo();
     }
 
@@ -122,6 +124,7 @@ void Watchdog::requestInfo()
 
 void Watchdog::slotUpdateNbApp()
 {
+    // TODO: stablize this functionality, a delayed pong can cause the problem, can vector clock help???s
     if (d->containDeprecatedInfo())
     {
         // Ping all Node in the network to check if they are alive
@@ -130,9 +133,10 @@ void Watchdog::slotUpdateNbApp()
 
     if (d->temporaryNbApp != d->localInfo.nbApp)
     {
+        qDebug() << d->localInfo.siteID << "nb of local app change, from" << d->localInfo.nbApp << "to" << d->temporaryNbApp;
         d->localInfo.nbApp = d->temporaryNbApp;
 
-        emit signalNbAppChanged(d->nbApps());
+        emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
     }
 
     d->temporaryNbApp = 0;
@@ -151,7 +155,6 @@ void Watchdog::slotUpdateNbApp()
 void Watchdog::eliminateDeprecatedInfo()
 {
     qint64 currentTime     = QDateTime::currentMSecsSinceEpoch();
-
     bool containDeprecated = false;
 
     QHash<QString, SiteInfo>::iterator iter = d->neighborsInfo.begin();
@@ -160,7 +163,7 @@ void Watchdog::eliminateDeprecatedInfo()
     {
         // deadline to beconsidered as deprecated is 4000 ms
         // NOTE : the period since a site went down until it is eliminated is minimum (2000 + 4000) ms
-        // However it will not hurt the performance of other control algorithms that are waiting for response, thank to the help of the notification signalNbAppChanged
+        // However it will not hurt the performance of other control algorithms that are waiting for response, thank to the help of the notification signalNetworkChanged
         if ((currentTime - iter.value().lastUpdate) >= 4000)
         {
             containDeprecated = true;
@@ -177,7 +180,8 @@ void Watchdog::eliminateDeprecatedInfo()
 
     if (containDeprecated)
     {
-        emit signalNbAppChanged(d->nbApps());
+        qDebug() << d->localInfo.siteID << "remove deprecated, total nb app rests" << d->nbApps();
+        emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
     }
 }
 
@@ -185,9 +189,16 @@ void Watchdog::receiveNetworkInfo(const ACLMessage& info)
 {
     QString neighborID = info.getSender();
 
+    qDebug() << d->localInfo.siteID << "receive network infor from" << neighborID << "with nb App" << info.getContent();
+
     if (!(d->neighborsInfo.contains(neighborID)))
     {
          d->neighborsInfo[neighborID] = SiteInfo(neighborID, info.getContent()[QLatin1String("nbApp")].toInt());
+
+         if (d->neighborsInfo[neighborID].nbApp == 0)
+         {
+             return;
+         }
     }
     else
     {
@@ -199,11 +210,15 @@ void Watchdog::receiveNetworkInfo(const ACLMessage& info)
 
             return;
         }
-
-        d->neighborsInfo[neighborID].setNbApp(nbApp);
+        else
+        {
+            d->neighborsInfo[neighborID].setNbApp(nbApp);
+        }
     }
 
-    emit signalNbAppChanged(d->nbApps());
+    qDebug() << d->localInfo.siteID << "nb of total app change, new value" << d->nbApps();
+
+    emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
 }
 
 
