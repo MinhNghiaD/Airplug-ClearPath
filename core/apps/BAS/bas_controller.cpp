@@ -59,9 +59,6 @@ void BasController::init(const QCoreApplication& app)
 {
     ApplicationController::init(app);
 
-    // All Bas will subscribe to local NET
-    m_communication->subscribeLocalHost(QLatin1String("NET"));
-
     if (m_optionParser.autoSend && m_optionParser.delay > 0)
     {
         slotActivateTimer(m_optionParser.delay);
@@ -72,6 +69,16 @@ void BasController::init(const QCoreApplication& app)
 
     connect(d->mutex, &RicartLock::signalEnterRaceCondition,
             this, &BasController::slotEnterCriticalSection, Qt::DirectConnection);
+
+    // All Bas will subscribe to local NET
+    m_communication->subscribeLocalHost(QLatin1String("NET"));
+
+    ACLMessage pong(ACLMessage::PONG);
+    QJsonObject content;
+    content[QLatin1String("isNew")] = true;
+    pong.setContent(content);
+
+    sendMessage(pong, QString(), QString(), QString());
 }
 
 void BasController::pause(bool b)

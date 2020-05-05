@@ -32,10 +32,10 @@ public:
 
     void receivePong(bool newApp);
     void receiveNetworkInfo(const ACLMessage& info);
+    void broadcastInfo();
 
 private:
 
-    void broadcastInfo();
     void requestInfo();
 
 private:
@@ -46,7 +46,7 @@ private:
 public:
 
     Q_SIGNAL void signalNbAppChanged(int nbApp);
-    Q_SIGNAL void signalPingLocalApps();
+    Q_SIGNAL void signalPingLocalApps(ACLMessage&);
     Q_SIGNAL void signalSendInfo(ACLMessage&);
 
 private:

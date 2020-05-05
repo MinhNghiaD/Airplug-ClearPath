@@ -3,6 +3,7 @@
 // Qt include
 #include <QTimer>
 #include <QHash>
+#include <QDebug>
 
 namespace AirPlug
 {
@@ -22,7 +23,7 @@ public:
 
 public:
 
-    int nbApps() const;
+    int  nbApps() const;
     bool containDeprecatedInfo() const;
 
 public:
@@ -59,6 +60,7 @@ bool Watchdog::Private::containDeprecatedInfo() const
         // deadline to beconsidered as deprecated is 4000 ms
         if ((currentTime - iter.value().lastUpdate) >= 4000)
         {
+            qDebug() << "Contain depricated info : " << iter.key();
             return true;
         }
     }
@@ -74,6 +76,8 @@ Watchdog::Watchdog(const QString& siteID)
 {
     setObjectName(QLatin1String("Watchdog"));
     d->localInfo = SiteInfo(siteID, 0);
+
+    QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
 }
 
 Watchdog::~Watchdog()
@@ -93,14 +97,17 @@ void Watchdog::receivePong(bool newApp)
         broadcastInfo();
     }
 
+    qDebug() << d->localInfo.siteID << "receive a local Pong";
+
     ++d->temporaryNbApp;
 }
 
 void Watchdog::broadcastInfo()
 {
-    ACLMessage  message(ACLMessage::UPDATE_ACTIVE);
+    ACLMessage  message(ACLMessage::PONG);
     QJsonObject contents;
-    contents[QLatin1String("nbApp")] = d->nbApps();
+
+    contents[QLatin1String("nbApp")] = d->localInfo.nbApp;
     message.setContent(contents);
 
     emit signalSendInfo(message);
@@ -109,6 +116,7 @@ void Watchdog::broadcastInfo()
 void Watchdog::requestInfo()
 {
     ACLMessage message(ACLMessage::PING);
+
     emit signalSendInfo(message);
 
     // deadline for responses is 2000 ms
@@ -132,10 +140,14 @@ void Watchdog::slotUpdateNbApp()
 
     d->temporaryNbApp = 0;
 
+    qDebug() << d->localInfo.siteID << "have" << d->localInfo.nbApp << "app, total app in network" << d->nbApps();
+
     // broadcast Info to all Watchdogs
     broadcastInfo();
 
-    emit signalPingLocalApps();
+    ACLMessage ping(ACLMessage::PING);
+
+    emit signalPingLocalApps(ping);
 
     // reactivate timeout timer of 3s
     QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
@@ -143,11 +155,11 @@ void Watchdog::slotUpdateNbApp()
 
 void Watchdog::eliminateDeprecatedInfo()
 {
-    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 currentTime     = QDateTime::currentMSecsSinceEpoch();
 
     bool containDeprecated = false;
 
-    QHash<QString, SiteInfo>::iterator iter  = d->neighborsInfo.begin();
+    QHash<QString, SiteInfo>::iterator iter = d->neighborsInfo.begin();
 
     while (iter != d->neighborsInfo.end())
     {
@@ -156,7 +168,9 @@ void Watchdog::eliminateDeprecatedInfo()
         {
             containDeprecated = true;
 
-            d->neighborsInfo.erase(iter);
+            qDebug() << d->localInfo.siteID << "eliminate deprecated info : " << iter.key();
+
+            iter = d->neighborsInfo.erase(iter);
         }
         else
         {
@@ -184,11 +198,16 @@ void Watchdog::receiveNetworkInfo(const ACLMessage& info)
 
         if (d->neighborsInfo[neighborID].nbApp == nbApp)
         {
+            qDebug() << d->localInfo.siteID << "receive network info from" << neighborID << ", nothing to change";
+            d->neighborsInfo[neighborID].lastUpdate = QDateTime::currentMSecsSinceEpoch();
+
             return;
         }
 
         d->neighborsInfo[neighborID].setNbApp(nbApp);
     }
+
+    qDebug() << d->localInfo.siteID << "receive network info from" << neighborID << ", nb app = " << d->nbApps();
 
     emit signalNbAppChanged(d->nbApps());
 }

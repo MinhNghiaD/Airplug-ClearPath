@@ -38,22 +38,12 @@ public:
     Q_SLOT void slotReceiveMessage(Header, Message);
 
     /**
-      * @brief slotSendMarker : broadcast marker to local applications to take snapshot
+      * @brief slotBroadcastLocal : broadcast marker to local applications to take snapshot
       * @param marker
       */
-    Q_SLOT void slotSendMarker(const Message& marker);
+    Q_SLOT void slotBroadcastLocal(const Message& marker);
 
-    Q_SLOT void slotBroadcastMessage(ACLMessage& message);
-
-    /**
-      * @brief slotHealthCheck : broadcast PING message to local applications
-      */
-    Q_SLOT void slotHeathCheck();
-
-private:
-
-    Q_SLOT void slotPingTimeOut();
-    Q_SLOT void slotRefreshActiveNeighbor();
+    Q_SLOT void slotBroadcastNetwork(ACLMessage& message);
 
 private:
 

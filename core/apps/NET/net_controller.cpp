@@ -57,9 +57,6 @@ void NetController::init(const QCoreApplication &app)
     d->snapshot = new LaiYangSnapshot();
 
     d->router->addSnapshot(d->snapshot);
-
-    // start healthcheck routine
-    d->router->slotHeathCheck();
 }
 
 void NetController::takeSnapshot() const

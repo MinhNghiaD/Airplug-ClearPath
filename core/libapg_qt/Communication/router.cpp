@@ -18,8 +18,8 @@ public:
     Private()
         : communicationMngr(nullptr),
           nbSequence(0),
-          nbApp(0),
-          temporaryNbApp(0),
+          //nbApp(0),
+          //temporaryNbApp(0),
           snapshot(nullptr),
           watchdog(nullptr)
     {
@@ -27,6 +27,7 @@ public:
 
     ~Private()
     {
+        delete watchdog;
     }
 
 public:
@@ -34,17 +35,19 @@ public:
     void forwardAppToNet(Header& header, ACLMessage& message);
     void forwardNetToApp(Header& header, ACLMessage& message);
 
-    void forwardStateMessage(ACLMessage& message, bool fromLocal);
+    void forwardStateMessage (ACLMessage& message, bool fromLocal);
     void forwardPrepost(const ACLMessage& message);
     void forwardRecover(const ACLMessage& message);
-    void forwardReady(const ACLMessage& message);
+    void forwardReady  (const ACLMessage& message);
+    void forwardPing   (const ACLMessage& message);
+    void forwardPong   (const ACLMessage& message, bool fromLocal);
 
-    void receiveMutexRequest(ACLMessage& request, bool fromLocal);
+
+    void receiveMutexRequest (ACLMessage& request, bool fromLocal);
     void receiveMutexApproval(ACLMessage& request, bool fromLocal);
 
-    bool isOldMessage(const ACLMessage& messsage);
+    bool isOldMessage  (const ACLMessage& messsage);
 
-    void updateActiveNeighbor(const ACLMessage& messsage);
     int  nbOfApp() const;
     int  nbOfNeighbor() const;
 
@@ -55,8 +58,8 @@ public:
     // using siteID and sequence nb to identify old message
     QString               siteID;
     int                   nbSequence;
-    int                   nbApp;
-    int                   temporaryNbApp;
+    //int                   nbApp;
+    //int                   temporaryNbApp;
 
     LaiYangSnapshot*      snapshot;
     Watchdog*             watchdog;
@@ -174,6 +177,37 @@ void Router::Private::forwardReady(const ACLMessage& message)
         return;
     }
 
+    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
+void Router::Private::forwardPing(const ACLMessage& message)
+{
+    watchdog->broadcastInfo();
+
+    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
+void Router::Private::forwardPong(const ACLMessage& message, bool fromLocal)
+{
+    if (fromLocal)
+    {
+        bool        isNewApp = false;
+        QJsonObject content  = message.getContent();
+
+        if (content.contains(QLatin1String("isNew")))
+        {
+            isNewApp = content[QLatin1String("isNew")].toBool();
+        }
+
+        watchdog->receivePong(false);
+
+        return;
+    }
+
+    // Receive pong from network => update network info to watchdog
+    watchdog->receiveNetworkInfo(message);
+
+    // forward
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
@@ -317,24 +351,9 @@ bool Router::Private::isOldMessage(const ACLMessage& messsage)
     return false;
 }
 
-void Router::Private::updateActiveNeighbor(const ACLMessage& messsage)
-{
-    neighborInfo[messsage.getSender()].second = (messsage.getContent()[QLatin1String("nbApp")].toInt());
-
-    if (snapshot)
-    {
-        snapshot->setNbOfApp(nbOfApp());
-        snapshot->setNbOfNeighbor(nbOfNeighbor());
-    }
-
-    // forward
-    communicationMngr->send(messsage, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
-}
-
-
 int Router::Private::nbOfApp() const
 {
-    int totalNbApp = nbApp;
+    int totalNbApp = 0;
 
     for (QHash<QString, QPair<int, int> >::const_iterator iter  = neighborInfo.cbegin();
                                                           iter != neighborInfo.cend();
@@ -387,14 +406,10 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
             this,                 SLOT(slotReceiveMessage(Header, Message)), Qt::DirectConnection);
 
     connect(d->watchdog, &Watchdog::signalPingLocalApps,
-            this,        &Router::slotHeathCheck, Qt::DirectConnection);
+            this,        &Router::slotBroadcastLocal, Qt::DirectConnection);
 
     connect(d->watchdog, &Watchdog::signalSendInfo,
-            this,        &Router::slotBroadcastMessage, Qt::DirectConnection);
-
-
-    // health check neighbors periodically
-    QTimer::singleShot(30000, this, SLOT(slotRefreshActiveNeighbor()));
+            this,        &Router::slotBroadcastNetwork, Qt::DirectConnection);
 }
 
 Router::~Router()
@@ -412,10 +427,10 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
     d->snapshot = snapshot;
 
     connect(d->snapshot, &LaiYangSnapshot::signalRequestSnapshot,
-            this,        &Router::slotSendMarker, Qt::DirectConnection);
+            this,        &Router::slotBroadcastLocal, Qt::DirectConnection);
 
     connect(d->snapshot, &LaiYangSnapshot::signalSendSnapshotMessage,
-            this,        &Router::slotBroadcastMessage, Qt::DirectConnection);
+            this,        &Router::slotBroadcastNetwork, Qt::DirectConnection);
 
     return true;
 }
@@ -433,7 +448,7 @@ void Router::slotReceiveMessage(Header header, Message message)
         {
             return;
         }
-
+/*
         // active neighbor : TODO  check this
         QString neighborID = aclMessage.getSender();
 
@@ -441,7 +456,7 @@ void Router::slotReceiveMessage(Header header, Message message)
         {
             d->activeNeighBors.append(neighborID);
         }
-
+*/
         switch (aclMessage.getPerformative())
         {
             case ACLMessage::INFORM_STATE:
@@ -460,8 +475,12 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->forwardReady(aclMessage);
                 break;
 
-            case ACLMessage::UPDATE_ACTIVE:
-                d->updateActiveNeighbor(aclMessage);
+            case ACLMessage::PING:
+                d->forwardPing(aclMessage);
+                break;
+
+            case ACLMessage::PONG:
+                d->forwardPong(aclMessage, false);
                 break;
 
             case ACLMessage::REQUEST_MUTEX:
@@ -487,7 +506,7 @@ void Router::slotReceiveMessage(Header header, Message message)
                 break;
 
             case ACLMessage::PONG:
-                ++(d->temporaryNbApp);
+                d->forwardPong(aclMessage, true);
                 break;
 
             case ACLMessage::REQUEST_MUTEX:
@@ -505,78 +524,18 @@ void Router::slotReceiveMessage(Header header, Message message)
     }
 }
 
-void Router::slotSendMarker(const Message& marker)
+void Router::slotBroadcastLocal(const Message& marker)
 {
-    // broadcast to all app in local site
     d->communicationMngr->send(marker, QLatin1String("NET"), Header::allApp, Header::localHost);
 }
 
-void Router::slotBroadcastMessage(ACLMessage& message)
+void Router::slotBroadcastNetwork(ACLMessage& message)
 {
     // broadcast to all app in local site
     message.setSender(d->siteID);
     message.setNbSequence(++d->nbSequence);
 
     d->communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
-}
-
-
-void Router::slotHeathCheck()
-{
-    ACLMessage ping(ACLMessage::PING);
-
-    // broadcast Ping to all Local base application
-    d->communicationMngr->send(ping, QLatin1String("NET"), Header::allApp, Header::localHost);
-}
-
-void Router::slotPingTimeOut()
-{
-    // update nb of active application
-    d->nbApp = d->temporaryNbApp;
-
-    if (d->snapshot)
-    {
-        d->snapshot->setNbOfApp(d->nbOfApp());
-        d->snapshot->setNbOfNeighbor(d->nbOfNeighbor());
-    }
-
-    // broadcast local nb of app to other sites
-    // mark message ID
-    ACLMessage message(ACLMessage::UPDATE_ACTIVE);
-
-    message.setSender(d->siteID);
-    message.setNbSequence(++d->nbSequence);
-
-    QJsonObject contents;
-
-    contents[QLatin1String("nbApp")] = d->nbApp;
-    message.setContent(contents);
-
-    d->communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
-
-    slotHeathCheck();
-}
-
-
-void Router::slotRefreshActiveNeighbor()
-{
-    QStringList allNeighBor = d->neighborInfo.keys();
-
-    for (QStringList::const_iterator iter  = allNeighBor.cbegin();
-                                     iter != allNeighBor.cend();
-                                     ++iter)
-    {
-        // every neighbor that doesn't have any activity withit 30s is considered as inactive
-        if (! d->activeNeighBors.contains(*iter))
-        {
-            d->neighborInfo[*iter].second = 0;
-        }
-    }
-
-    d->activeNeighBors.clear();
-
-    // reactivate timer
-    QTimer::singleShot(10000, this, SLOT(slotRefreshActiveNeighbor()));
 }
 
 }
