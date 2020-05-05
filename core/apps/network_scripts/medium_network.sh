@@ -46,25 +46,25 @@ mkfifo in13 out13
 mkfifo in14 out14
 
 echo "init applications"
-$APPDIR/BAS/bas --whatwho --auto --autosend --dest=NET --ident=bas1 < in1 > out1 &
-$APPDIR/NET/net --whatwho --ident=net1 < in2 > out2 &
+$APPDIR/BAS/bas -geometry -450+0 --whatwho --auto --autosend --dest=NET --ident=bas1 < in1 > out1 &
+$APPDIR/NET/net -geometry -0+0 --whatwho --ident=net1 < in2 > out2 &
 
-$APPDIR/BAS/bas --whatwho --auto --autosend --dest=NET --ident=bas2 < in3 > out3 &
+$APPDIR/BAS/bas -geometry -900+0 --whatwho --auto --autosend --dest=NET --ident=bas2 < in3 > out3 &
 $APPDIR/NET/net --whatwho --ident=net2 --nogui < in4 > out4 &
 
-$APPDIR/BAS/bas --whatwho --auto --autosend --dest=NET --ident=bas3 < in5 > out5 &
+$APPDIR/BAS/bas -geometry -1350+0 --whatwho --auto --autosend --dest=NET --ident=bas3 < in5 > out5 &
 $APPDIR/NET/net --whatwho --ident=net3 --nogui < in6 > out6 &
 
-$APPDIR/BAS/bas --whatwho --auto --autosend --dest=NET --ident=bas4 < in7 > out7 &
+$APPDIR/BAS/bas -geometry -0+350 --whatwho --auto --autosend --dest=NET --ident=bas4 < in7 > out7 &
 $APPDIR/NET/net --whatwho --ident=net4 --nogui < in8 > out8 &
 
-$APPDIR/BAS/bas --whatwho --auto --autosend --dest=NET --ident=bas5 < in9 > out9 &
+$APPDIR/BAS/bas -geometry -450+350 --whatwho --auto --autosend --dest=NET --ident=bas5 < in9 > out9 &
 $APPDIR/NET/net --whatwho --ident=net5 --nogui < in10 > out10 &
 
-$APPDIR/BAS/bas --whatwho --auto --autosend --dest=NET --ident=bas6 < in11 > out11 &
-$APPDIR/NET/net --whatwho --ident=net6 --nogui < in12 > out12 &
+$APPDIR/BAS/bas -geometry -900+350 --whatwho --auto --autosend --dest=NET --ident=bas6 < in11 > out11 &
+$APPDIR/NET/net -geometry -1350+350 --whatwho --ident=net6 --nogui < in12 > out12 &
 
-$APPDIR/BAS/bas --whatwho --auto --autosend --dest=NET --ident=bas7 < in13 > out13 &
+$APPDIR/BAS/bas -geometry -0+700 --whatwho --auto --autosend --dest=NET --ident=bas7 < in13 > out13 &
 $APPDIR/NET/net --whatwho --ident=net7 --nogui < in14 > out14 &
 
 # wait for the link creations

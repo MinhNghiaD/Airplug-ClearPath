@@ -33,23 +33,14 @@ bool RicartLock::Private::isLessPriority(const VectorClock& requesterClock) cons
 {
     if (! clock)
     {
-         //qDebug() << "Approve" << requesterClock.getSiteID() << "because not having request";
-
          return true;
     }
 
     if (clock->isGeneralSmallerThan(requesterClock))
     {
-/*
-        qDebug() << clock->getSiteID() << "add" << requesterClock.getSiteID() << "to pending queue, because" << clock->getSiteID()         << "clock :" << clock->convertToJson()
-                                                                                                    << " < " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
-*/
         return false;
     }
-/*
-    qDebug() << clock->getSiteID() << "Approve" << requesterClock.getSiteID() << "because" << clock->getSiteID()         << "clock :" << clock->convertToJson()
-                                                                                  << " > " << requesterClock.getSiteID() << "clock :" << requesterClock.convertToJson();
-*/
+
     return true;
 }
 
@@ -110,13 +101,13 @@ void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
 
 void RicartLock::lock()
 {
-    //qDebug() << d->clock->getSiteID() << "Enter race condition";
+    qDebug() << d->clock->getSiteID() << "Enter critical section";
     emit signalEnterRaceCondition();
 }
 
 void RicartLock::unlock()
 {
-    //qDebug() << d->clock->getSiteID() << "Out of race condition, liberate pending" << d->queue;
+    qDebug() << d->clock->getSiteID() << "Out of race condition, liberate pending applications: " << d->queue;
 
     if (! d->queue.isEmpty())
     {
@@ -141,8 +132,6 @@ void RicartLock::unlock()
 
 void RicartLock::restart()
 {
-    qDebug() << d->clock->getSiteID() << "is refuse mutex";
-
     delete d->clock;
 
     d->clock = nullptr;
