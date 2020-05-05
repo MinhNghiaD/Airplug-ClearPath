@@ -70,6 +70,9 @@ public:
 
 void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 {
+    // Broadcast to all other applications in same site first
+    communicationMngr->send(message, QLatin1String("NET"), Header::allApp, Header::localHost);
+
     // mark message ID
     message.setSender(siteID);
     message.setNbSequence(++nbSequence);
@@ -85,6 +88,7 @@ void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 
     message.setContent(contents);
 
+    // forward to network
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 

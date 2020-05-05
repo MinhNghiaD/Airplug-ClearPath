@@ -194,6 +194,12 @@ void BasController::slotReceiveMessage(Header header, Message message)
             // read sender's clock
             if (senderClock)
             {
+                if (senderClock->getSiteID() == m_clock->getSiteID())
+                {
+                    // avoid round back
+                    return;
+                }
+
                 m_clock->updateClock(*senderClock);
             }
 
