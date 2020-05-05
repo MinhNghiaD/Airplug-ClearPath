@@ -44,8 +44,9 @@ public:
      *              }
      * }
      */
-    bool collectState(const QJsonObject& state);
+    bool collectState (const QJsonObject& state);
     bool verifyPrepost(const QJsonObject& content, const QString& sender) const;
+
     bool allStateColltected()  const;
     bool allPrepostCollected() const;
     int  nbCollectedPrepost()  const;
@@ -60,10 +61,7 @@ public:
     int    nbNeighbor;
     int    nbReadyNeighbor;
 
-    // System state will be encoded in Json object
-    QHash<QString, QJsonObject> states;
-
-    // Map of sender and its prepost messages
+    QHash<QString, QJsonObject>           states;
     QHash<QString, QVector<QJsonObject> > prepostMessages;
 };
 
@@ -106,7 +104,6 @@ bool LaiYangSnapshot::Private::collectState(const QJsonObject& state)
     if (validateState(state))
     {           
         QString siteID = state[QLatin1String("siteID")].toString();
-
         states[siteID] = state;
 
         return true;
@@ -172,7 +169,7 @@ int LaiYangSnapshot::Private::nbCollectedPrepost() const
 
     for (QHash<QString, QVector<QJsonObject> >::const_iterator iter  = prepostMessages.cbegin();
                                                                iter != prepostMessages.cend();
-                                                               ++iter)
+                                                             ++iter)
     {
         nbPrepost += iter.value().size();
     }
@@ -275,7 +272,6 @@ bool LaiYangSnapshot::processStateMessage(ACLMessage& message, bool fromLocal)
     }
 
     QJsonObject state   = timestamp->convertToJson();
-
     QJsonObject content = message.getContent();
 
     if (d->initiator)
@@ -331,9 +327,8 @@ bool LaiYangSnapshot::processPrePostMessage(const ACLMessage& message)
     if (d->initiator)
     {
         QJsonObject originalMessage = message.getContent();
-
-        QString sender = originalMessage[QLatin1String("sender")].toString();
-        QString receiver = message.getSender();
+        QString     receiver        = message.getSender();
+        QString     sender          = originalMessage[QLatin1String("sender")].toString();
 
         originalMessage[QLatin1String("receiver")] = receiver;
 
@@ -423,9 +418,8 @@ void LaiYangSnapshot::finishSnapshot()
         saveSnapshot();
     }
 
-    d->status    = READY;
-    d->initiator = false;
-
+    d->status        = READY;
+    d->initiator     = false;
     d->nbWaitPrepost = 0;
 
     d->states.clear();
@@ -440,7 +434,6 @@ void LaiYangSnapshot::setNbOfApp(int nbApp)
 void LaiYangSnapshot::setNbOfNeighbor(int nbNeighbor)
 {
     d->nbNeighbor = nbNeighbor;
-
 }
 
 void LaiYangSnapshot::saveSnapshot() const

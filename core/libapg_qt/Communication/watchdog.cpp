@@ -60,7 +60,6 @@ bool Watchdog::Private::containDeprecatedInfo() const
         // deadline to beconsidered as deprecated is 4000 ms
         if ((currentTime - iter.value().lastUpdate) >= 4000)
         {
-            qDebug() << "Contain depricated info : " << iter.key();
             return true;
         }
     }
@@ -96,8 +95,6 @@ void Watchdog::receivePong(bool newApp)
         emit signalNbAppChanged(d->nbApps());
         broadcastInfo();
     }
-
-    qDebug() << d->localInfo.siteID << "receive a local Pong";
 
     ++d->temporaryNbApp;
 }
@@ -140,8 +137,6 @@ void Watchdog::slotUpdateNbApp()
 
     d->temporaryNbApp = 0;
 
-    qDebug() << d->localInfo.siteID << "have" << d->localInfo.nbApp << "app, total app in network" << d->nbApps();
-
     // broadcast Info to all Watchdogs
     broadcastInfo();
 
@@ -164,6 +159,8 @@ void Watchdog::eliminateDeprecatedInfo()
     while (iter != d->neighborsInfo.end())
     {
         // deadline to beconsidered as deprecated is 4000 ms
+        // NOTE : the period since a site went down until it is eliminated is minimum (2000 + 4000) ms
+        // However it will not hurt the performance of other control algorithms that are waiting for response, thank to the help of the notification signalNbAppChanged
         if ((currentTime - iter.value().lastUpdate) >= 4000)
         {
             containDeprecated = true;
@@ -198,7 +195,6 @@ void Watchdog::receiveNetworkInfo(const ACLMessage& info)
 
         if (d->neighborsInfo[neighborID].nbApp == nbApp)
         {
-            qDebug() << d->localInfo.siteID << "receive network info from" << neighborID << ", nothing to change";
             d->neighborsInfo[neighborID].lastUpdate = QDateTime::currentMSecsSinceEpoch();
 
             return;
@@ -206,8 +202,6 @@ void Watchdog::receiveNetworkInfo(const ACLMessage& info)
 
         d->neighborsInfo[neighborID].setNbApp(nbApp);
     }
-
-    qDebug() << d->localInfo.siteID << "receive network info from" << neighborID << ", nb app = " << d->nbApps();
 
     emit signalNbAppChanged(d->nbApps());
 }

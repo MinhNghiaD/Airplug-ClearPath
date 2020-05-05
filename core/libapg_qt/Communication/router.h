@@ -39,9 +39,9 @@ public:
 
     /**
       * @brief slotBroadcastLocal : broadcast marker to local applications to take snapshot
-      * @param marker
+      * @param message
       */
-    Q_SLOT void slotBroadcastLocal(const Message& marker);
+    Q_SLOT void slotBroadcastLocal(const Message& message);
 
     Q_SLOT void slotBroadcastNetwork(ACLMessage& message);
 

@@ -48,7 +48,7 @@ public:
 
     bool isOldMessage  (const ACLMessage& messsage);
 
-    int  nbOfApp() const;
+    int  nbOfApp()      const;
     int  nbOfNeighbor() const;
 
 public:
@@ -58,8 +58,6 @@ public:
     // using siteID and sequence nb to identify old message
     QString               siteID;
     int                   nbSequence;
-    //int                   nbApp;
-    //int                   temporaryNbApp;
 
     LaiYangSnapshot*      snapshot;
     Watchdog*             watchdog;
@@ -80,10 +78,7 @@ void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
     message.setNbSequence(++nbSequence);
 
     // TODO: mark receiver for routing
-
-    QJsonObject contents = message.getContent();
-
-    // set App name
+    QJsonObject contents           = message.getContent();
     contents[QLatin1String("app")] = header.what();
 
     if (snapshot)
@@ -109,8 +104,8 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     }
 
     QJsonObject contents = message.getContent();
+    QString     app      = contents[QLatin1String("app")].toString();
 
-    QString app = contents[QLatin1String("app")].toString();
     contents.remove(QLatin1String("app"));
 
     if (snapshot)
@@ -204,7 +199,7 @@ void Router::Private::forwardPong(const ACLMessage& message, bool fromLocal)
         return;
     }
 
-    // Receive pong from network => update network info to watchdog
+    // Receive pong from network => update network info for watchdog
     watchdog->receiveNetworkInfo(message);
 
     // forward
@@ -262,15 +257,14 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
     }
 
     // forward to all Apps
-    communicationMngr->send(request, QLatin1String("NET"), Header::allApp, Header::localHost);
+    communicationMngr->send(request, QLatin1String("NET"), Header::allApp,       Header::localHost);
     communicationMngr->send(request, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);
 }
 
 void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
 {    
-    QJsonArray approvedApps = approval.getContent()[QLatin1String("apps")].toArray();
-
-    QJsonArray::iterator iter = approvedApps.begin();
+    QJsonArray           approvedApps = approval.getContent()[QLatin1String("apps")].toArray();
+    QJsonArray::iterator iter         = approvedApps.begin();
 
     // TODO
     int nbApproval = 3;
@@ -362,7 +356,6 @@ int Router::Private::nbOfApp() const
         totalNbApp += iter.value().second;
     }
 
-    //qDebug() << "total number of app = " << totalNbApp;
     return totalNbApp;
 }
 
@@ -380,7 +373,6 @@ int Router::Private::nbOfNeighbor() const
         }
     }
 
-    //qDebug() << "Total number of neighbors = " << nbNeighbor;
     return nbNeighbor;
 }
 
@@ -524,14 +516,13 @@ void Router::slotReceiveMessage(Header header, Message message)
     }
 }
 
-void Router::slotBroadcastLocal(const Message& marker)
+void Router::slotBroadcastLocal(const Message& message)
 {
-    d->communicationMngr->send(marker, QLatin1String("NET"), Header::allApp, Header::localHost);
+    d->communicationMngr->send(message, QLatin1String("NET"), Header::allApp, Header::localHost);
 }
 
 void Router::slotBroadcastNetwork(ACLMessage& message)
 {
-    // broadcast to all app in local site
     message.setSender(d->siteID);
     message.setNbSequence(++d->nbSequence);
 
