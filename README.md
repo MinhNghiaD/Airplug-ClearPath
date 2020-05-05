@@ -7,11 +7,11 @@ Project dependencies:
   - CMake version >= 3.1.0
 
 To configure project ======> ./boostrap.sh
-Go to ./build
-Enter command "make"
+                             Go to ./build
+                             Compile source code with command "make"
 
 
-Application is build in ./build/core/apps
+Applications are built in ./build/core/apps
 The scripts for network construction is in ./build/core/apps/network_scripts
 
 
