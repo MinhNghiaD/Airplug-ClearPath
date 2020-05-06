@@ -48,6 +48,8 @@ public:
 
     void receiveExternalRequest(const VectorClock& requesterClock);
 
+    QJsonArray getPendingQueue() const;
+
 public:
 
     Q_SIGNAL void signalResponse(const ACLMessage& request);

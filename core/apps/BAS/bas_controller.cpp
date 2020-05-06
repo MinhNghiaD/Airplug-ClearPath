@@ -223,6 +223,7 @@ QJsonObject BasController::captureLocalState() const
 
     applicationState[QLatin1String("sharedMessage")] = d->sharedMessage;
     applicationState[QLatin1String("nbSequence")]    = d->nbSequence;
+    applicationState[QLatin1String("mutexQueue")]    = d->mutex->getPendingQueue();
 
     QJsonObject localState;
     localState[QLatin1String("options")]             = m_optionParser.convertToJson();

@@ -448,7 +448,7 @@ void LaiYangSnapshot::saveSnapshot() const
 
     QTextStream out(&file);
 
-    out << "//////////////////////////////////////////////////////////////////// Snapshot at " << QDateTime::currentDateTime().toLocalTime().toString(QLatin1String("dd.MM.yyyy"))
+    out << "//////////////////////////////////////////////////////////////////// Snapshot at " << QDateTime::currentDateTime().toLocalTime().toString(QLatin1String("h:m:s ap"))
         <<"////////////////////////////////////////////////////////////////////////\n";
 
     out << " --------------------------------------------------------------------- States------------------------------------------------------------ : \n";

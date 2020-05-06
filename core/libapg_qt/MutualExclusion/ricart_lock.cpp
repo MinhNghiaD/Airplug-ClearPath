@@ -107,17 +107,15 @@ void RicartLock::lock()
 
 void RicartLock::unlock()
 {
-    qDebug() << d->clock->getSiteID() << "Out of race condition, liberate pending applications: " << d->queue;
+    qDebug() << d->clock->getSiteID() << "Out of critical section, liberates pending applications: " << d->queue;
 
     if (! d->queue.isEmpty())
     {
         // give permission to all pending apps
         ACLMessage approval(ACLMessage::ACCEPT_MUTEX);
 
-        QJsonArray apps = QJsonArray::fromStringList(d->queue);
-
         QJsonObject content;
-        content[QLatin1String("apps")] = apps;
+        content[QLatin1String("apps")] = getPendingQueue();
 
         approval.setContent(content);
 
@@ -138,4 +136,8 @@ void RicartLock::restart()
     d->queue.clear();
 }
 
+QJsonArray RicartLock::getPendingQueue() const
+{
+    return QJsonArray::fromStringList(d->queue);
+}
 }
