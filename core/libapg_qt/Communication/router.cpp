@@ -59,11 +59,11 @@ public:
     Watchdog*             watchdog;
 
     // map external router with : - the most recent nbSequence received
-    QHash<QString, int> recentSequences;
-    QVector<QString>                 activeNeighBors;
+    QHash<QString, int>   recentSequences;
+    QVector<QString>      activeNeighBors;
 
     // each NET will keep track of its applications request
-    QHash<QString, int>            localMutexWaitingList;
+    QHash<QString, int>   localMutexWaitingList;
 };
 
 
@@ -534,7 +534,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
 {
     if (nbApp != d->nbApp)
     {
-        qDebug() << d->siteID << "network changed => restart all mutex";
+        qDebug() << d->siteID << ": network changed => restart all mutex";
         // In case the network structure changed, it should restart the process of mutex in order to avoid deadlock
         d->refuseAllPendingRequest();
     }

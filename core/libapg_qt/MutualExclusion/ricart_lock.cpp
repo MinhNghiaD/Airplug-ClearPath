@@ -140,4 +140,5 @@ QJsonArray RicartLock::getPendingQueue() const
 {
     return QJsonArray::fromStringList(d->queue);
 }
+
 }

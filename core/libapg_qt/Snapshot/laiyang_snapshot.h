@@ -127,7 +127,7 @@ public:
 
 public:
 
-    // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
+    // NOTE: these signals have to be connected by Qt::DirectConnection to invoke the slot immediately
     Q_SIGNAL void signalRequestSnapshot(const Message& marker);           // send to BAS
     Q_SIGNAL void signalSendSnapshotMessage(ACLMessage& message);         // send to NET
 
