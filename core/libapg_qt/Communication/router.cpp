@@ -60,7 +60,6 @@ public:
 
     // map external router with : - the most recent nbSequence received
     QHash<QString, int>   recentSequences;
-    QVector<QString>      activeNeighBors;
 
     // each NET will keep track of its applications request
     QHash<QString, int>   localMutexWaitingList;
