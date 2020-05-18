@@ -1,2 +1,3 @@
 /build/
 CMakeLists.txt.user
+/core/apps/network_scripts/*.txt

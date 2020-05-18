@@ -28,7 +28,11 @@ int main(int argc, char *argv[])
 
     qDebug() << "message 1:" << message.getMessage();
 
-    ACLMessage aclMessage2(message.getMessage());
+    Message casted(message);
+
+    qDebug() << "casted message" << casted.getMessage();
+
+    ACLMessage aclMessage2(*(static_cast<ACLMessage*>(&casted)));
 
     VectorClock* timestamp = aclMessage2.getTimeStamp();
 
@@ -49,6 +53,19 @@ int main(int argc, char *argv[])
 
     qDebug() << "performative :" <<  aclMessage2.getPerformative();
 
-    ACLMessage message3(aclMessage2);
+    ACLMessage& message2Reference = aclMessage2;
+
+    ACLMessage message3 = message2Reference;
+
+    QJsonObject newContent;
+    newContent["value"] = 5;
+
+    message2Reference.setContent(newContent);
+    qDebug() << "reference message 2" << message2Reference.getMessage();
     qDebug() << "message 3 : " << message3.getMessage();
+
+    Message message4(message3);
+    qDebug() << "message 4 : " << message4.getMessage();
+
+    qDebug() << "json message 3" << QJsonDocument(message3.toJsonObject()).toJson(QJsonDocument::Compact);
 }

@@ -3,6 +3,8 @@
 
 set(net_SRCS
     net_controller.cpp
+    mainwindow.ui
+    mainwindow.cpp
     main.cpp
 )
 

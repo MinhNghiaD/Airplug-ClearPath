@@ -19,6 +19,7 @@ OptionParser::OptionParser()
       remote(false),
       verbose(0),
       delay(0),
+      remotePort(0),
       headerMode(Header::HeaderMode::What)
 {
 }

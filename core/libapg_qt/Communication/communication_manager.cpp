@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QMap>
 #include <QStringList>
+#include <QThread>
 
 // Local includes
 #include "std_transporter.h"
@@ -19,10 +20,10 @@ class Q_DECL_HIDDEN CommunicationManager::Private
 public:
 
     Private()
-        : safeMode(false),
-          what(QCoreApplication::applicationName().toUpper()),
+        : what(QCoreApplication::applicationName().toUpper()),
           who(what),
-          where(Header::airHost)
+          where(Header::airHost),
+          safeMode(false)
     {
     }
 
@@ -34,25 +35,23 @@ public:
 
 public:
 
-    bool validAppName(const QString& name) const;
-    bool validZone(const QString& zone) const;
+    bool validAppName  (const QString& name)   const;
+    bool validZone     (const QString& zone)   const;
 
     bool isAlphaNumeric(const QString& string) const;
 
 public:
 
     Header::HeaderMode headerMode;
+    QString            what;
+    QString            who;
+    QString            where;
+    bool               safeMode;
 
-    bool safeMode;
-
-    // Map ProtocolType with Protocol
-    QMap<int, MessageTransporter*> protocols;
     // Map who and wheres
-    QMap<QString, QStringList> subscriptions;
+    QMap<QString, QStringList>     subscriptions;
+    QMap<int, MessageTransporter*> protocols;
 
-    QString what;
-    QString who;
-    QString where;
 };
 
 
@@ -104,11 +103,11 @@ bool CommunicationManager::Private::isAlphaNumeric(const QString& string) const
 
 /* ----------------------------------------------------------------------------------------------------------------*/
 
-CommunicationManager::CommunicationManager(const QString& what,
-                                           const QString& who,
-                                           const QString& where,
+CommunicationManager::CommunicationManager(const QString&     what,
+                                           const QString&     who,
+                                           const QString&     where,
                                            Header::HeaderMode mode,
-                                           QObject* parent)
+                                           QObject*           parent)
     : QObject(parent),
       d(new Private())
 {
@@ -116,19 +115,17 @@ CommunicationManager::CommunicationManager(const QString& what,
 
     d->headerMode = mode;
 
-    // default source
+    // default information
     if (!what.isEmpty())
     {
         d->what = what;
     }
 
-    // default desitination
     if (!who.isEmpty())
     {
         d->who = who;
     }
 
-    // default area
     if (!where.isEmpty())
     {
         d->where = where;
@@ -143,24 +140,21 @@ CommunicationManager::~CommunicationManager()
 void CommunicationManager::addStdTransporter()
 {
     MessageTransporter* transporter        = new StdTransporter(this);
-
     d->protocols[ProtocolType::StandardIO] = transporter;
 
     connect(transporter, &MessageTransporter::signalMessageReceived,
-            this,        &CommunicationManager::slotReceiveMessage);
+            this,        &CommunicationManager::slotReceiveMessage, Qt::DirectConnection);
 
 }
 
-void CommunicationManager::addUdpTransporter(const QString& host,
-                                            int port,
-                                            MessageTransporter::UdpType type)
+void CommunicationManager::addUdpTransporter(const QString& host, int port,
+                                             MessageTransporter::UdpType type)
 {
     MessageTransporter* transporter = new UdpTransporter(host, port, type, this);
-
     d->protocols[ProtocolType::UDP] = transporter;
 
     connect(transporter, &MessageTransporter::signalMessageReceived,
-            this,        &CommunicationManager::slotReceiveMessage);
+            this,        &CommunicationManager::slotReceiveMessage, Qt::DirectConnection);
 }
 
 void CommunicationManager::setHeaderMode(Header::HeaderMode mode)
@@ -196,10 +190,11 @@ void CommunicationManager::send(const Message& message,
     {
         // TODO: print verbose self.app().debug("sending {} in mode {}".format(text, self.header_mode), 5)
 
-        Header header = fillSendingHeader(what, who, where);
-
+        Header header   = fillSendingHeader(what, who, where);
         QString package = header.generateHeader(d->headerMode) + message.getMessage();
 
+        // TODO: multiple data is put to pipe at the same time ==> only 1 signal emit and 1 message is handled
+        QThread::msleep(30);
         d->protocols[protocol]->send(package);
 
         if (save)
@@ -272,7 +267,7 @@ void CommunicationManager::slotReceiveMessage(const QString& data)
     }
     else
     {
-        qWarning() << "Message is not belong to this host ----> drop message: " << data;
+        //qWarning() << d->what << ": Message is not belong to this host ----> drop message: " << data;
     }
 }
 
@@ -282,8 +277,6 @@ bool CommunicationManager::subscribe(const QString& who, QString where)
     // TODO print verbose: self.app().vrb("APP.com.subscribe({},{})".format(who, where),6)
     if (d->headerMode == Header::HeaderMode::What)
     {
-        qWarning() << "No subscriptions in what mode";
-
         return true;
     }
 
@@ -316,6 +309,7 @@ bool CommunicationManager::subscribeLocalHost(const QString& who)
 {
     return subscribe(who, Header::localHost);
 }
+
 bool CommunicationManager::subscribeAir(const QString& who)
 {
     return subscribe(who, Header::airHost);
@@ -330,8 +324,6 @@ void CommunicationManager::unsubscribe(const QString& who, QString where)
 {
     if (d->headerMode == Header::HeaderMode::What)
     {
-        qWarning() << "No subscriptions in what mode";
-
         return;
     }
 
@@ -497,7 +489,7 @@ bool CommunicationManager::filterMessage(const QString& what, const QString& who
         safeMessage = true;
         // TODO: print verbose vrb("Every message is accepted in what mode",6)
     }
-    else if (who == QCoreApplication::applicationName().toUpper())
+    else if (who == d->what)
     {
         if (isSubscribed(what, where))
         {
@@ -511,7 +503,7 @@ bool CommunicationManager::filterMessage(const QString& what, const QString& who
             // TODO print verbose self.app().vrb("Message designed for this app from a local app",6)
         }
     }
-    else if (who == Header::allHost && isSubscribed(what, where))
+    else if (who == Header::allApp && isSubscribed(what, where))
     {
         safeMessage = true;
         // TODO print verbose ("Message designed for all apps from a subscribed app",6)

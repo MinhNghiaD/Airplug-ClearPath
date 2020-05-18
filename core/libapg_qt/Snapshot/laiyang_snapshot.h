@@ -29,11 +29,17 @@ class LaiYangSnapshot : public QObject
     Q_OBJECT
 public:
 
-    enum ForwardPort
+    /**
+     * @brief The Status enum : current status of snapshot
+     * The goal of the algorithm is to maintain, at every point in time, there should be at most 2 status exist in the system
+     * Snapshot algorithm operates in the transition READY -> RECORDED
+     * Wave algorithm operates in the transition RECORDED -> RECOVERING ->READY
+     */
+    enum Status
     {
-        BAS = 0,        // forward to Basic application
-        NET,            // forward to the network
-        DROP,           // drop the message
+        READY = 0,
+        RECORDED,
+        RECOVERING,
     };
 
 public:
@@ -44,23 +50,86 @@ public:
 public:
 
     /**
+     * @brief setNbOfApp : update total nb of application
+     * @param nbApp
+     */
+    void setNbOfApp(int nbApp);
+
+    /**
+     * @brief setNbOfNeighbor : update nb of neighbor
+     * @param nbNeighbor
+     */
+    void setNbOfNeighbor(int nbNeighbor);
+
+    /**
      * @brief init snapshot action, this method is called only one time by initiator
      */
     void init();
 
     /**
-     * @brief processMessage : process a new message before forwarding it
+     * @brief colorMessage: append additional color field to the message from Base application before sending them
+     * @param messageContent
+     * @param nbReceivers
+     *
+     * (broadcast => nbReceivers = 0)
+     */
+    void colorMessage(QJsonObject& messageContent, int nbReceivers = 0);
+
+    /**
+     * @brief getColor : get color of incomming message
+     * @param messageContent
+     * @return
+     *      - true if prepost message detected
+     *      - false if not
+     */
+    bool getColor(QJsonObject& messageContent);
+
+    /**
+     * @brief processStateMessage : action taken when receive an ACL message with performative INFORM_STATE
      * @param message
-     * @param fromLocal
+     * @param isLocal
      * @return
      */
-    ForwardPort processMessage(ACLMessage* message, bool fromLocal);
+    bool processStateMessage(ACLMessage& message, bool fromLocal);
+
+    /**
+     * @brief processPrePostMessage : action taken when receive an ACL Message with performative PREPOST_MESSAGE
+     * @param message
+     * @return
+     */
+    bool processPrePostMessage(const ACLMessage& message);
+
+    /**
+     * @brief encodePrepostMessage : encode a prepost message to send to initiator
+     * @param message
+     * @return
+     */
+    ACLMessage encodePrepostMessage(const ACLMessage& message);
+
+    /**
+     * @brief finishSnapshot : terminate snapshot procedure and refresh it
+     */
+    void finishSnapshot();
+
+    /**
+     * @brief processRecoveringMessage : action taken when receive a message inform a site is recovering after snapshot
+     * @param message
+     * @return
+     */
+    bool processRecoveringMessage(const ACLMessage& message);
+
+    /**
+     * @brief processReadyMessage : action taken when receive a message inform initiator ready for snapshot
+     * @param message
+     * @return
+     */
+    bool processReadyMessage(const ACLMessage& message);
 
 public:
 
-    // NOTE: these signals have to be connect by Qt::DirectConnection to invoke the slot immediately
-    Q_SIGNAL void signalRequestSnapshot(const Message* marker);         // send to BAS
-    Q_SIGNAL void signalForwardPrePost(const Message* prepost);         // send to NET
+    // NOTE: these signals have to be connected by Qt::DirectConnection to invoke the slot immediately
+    Q_SIGNAL void signalRequestSnapshot(const Message& marker);           // send to BAS
+    Q_SIGNAL void signalSendSnapshotMessage(ACLMessage& message);         // send to NET
 
 private:
 
@@ -71,64 +140,10 @@ private:
     void requestSnapshot();
 
     /**
-     * @brief colorMessage: append additional color field to the message from Base application before sending them
-     * @param message
-     */
-    void colorMessage(ACLMessage* message);
+      * @brief saveSnapshot : save snapshot to file
+      */
+    void saveSnapshot() const;
 
-    /**
-     * @brief getColor : get color of incomming message
-     * @param message
-     * @return
-     */
-    QString getColor(ACLMessage* message) const;
-
-    /**
-     * @brief processStateMessage : action taken when receive an ACL message with performative INFORM_STATE
-     * @param message
-     * @param isLocal
-     * @return
-     */
-    ForwardPort processStateMessage(const ACLMessage* message, bool fromLocal);
-
-    /**
-     * @brief processPrePostMessage : action taken when receive an ACL Message with performative PREPOST_MESSAGE
-     * @param message
-     */
-    void processPrePostMessage(const ACLMessage* message);
-
-
-    /**
-     * @brief collectState: collect a local state
-     * @param state
-     *
-     * A State object should have the form of :
-     * {
-     *     siteID : Uuid
-     *     clock  : vector clock
-     *     state  : {
-     *                  options: application option
-     *                  local varable : jsonObject
-     *              }
-     * }
-     *
-     */
-    void collectState(const QJsonObject& state);
-
-    /**
-     * @brief validateState :  verify if a state is valide to record
-     * @param state
-     * @return
-     */
-    bool validateState(const QJsonObject& state);
-
-    /**
-     * @brief collectPrePostMessage : collect prepost message
-     * @param message
-     */
-    void collectPrePostMessage(const QJsonObject& prepostMessage);
-
-    //TODO: implement condition of termination after implementing wave
 private:
 
     class Private;

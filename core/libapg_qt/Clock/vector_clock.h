@@ -27,11 +27,9 @@ class VectorClock
 {
 public:
 
-    VectorClock(const QString& siteID);
-    VectorClock(const QString& siteID, const QHash<QString, int>& vector);
-
+    VectorClock(const QString&     siteID);
+    VectorClock(const QString&     siteID, const QHash<QString, int>& vector);
     VectorClock(const QJsonObject& json);
-
     VectorClock(const VectorClock& other);
 
     ~VectorClock();
@@ -63,7 +61,7 @@ public:
      * @param other
      * @return
      */
-    bool operator < (const VectorClock& other);
+    bool operator < (const VectorClock& other) const;
 
 public:
 
@@ -85,6 +83,25 @@ public:
      * @return
      */
     int getValue(const QString& siteID) const;
+
+    /**
+     * @brief siteLists : return the list of siteIDs noted in the clock
+     * @return
+     */
+    QStringList siteLists() const;
+
+    /**
+     * @brief sum : use as a alternative solution for Lamport clock, if a -> b => sum(a) < sum(b), if a || b => we can organize a and b by an order uniform
+     * @return
+     */
+    int sum() const;
+
+    /**
+     * @brief isGeneralSmaller :  comparation in total order of clocks using Lamport method
+     * @param other
+     * @return
+     */
+    bool isGeneralSmallerThan(const VectorClock& other);
 
 private:
 

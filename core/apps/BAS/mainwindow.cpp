@@ -24,6 +24,15 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
     connect(m_controller, SIGNAL(signalSequenceChange(int)),
             this,         SLOT(slotUpdateSequence(int)));
 
+    if (!m_controller->siteID().isEmpty())
+    {
+        setWindowTitle(m_controller->siteID());
+    }
+    else
+    {
+        setWindowTitle(QString("BAS %1").arg(QCoreApplication::applicationPid()));
+    }
+
     int period = controller->getPeriod();
 
     ui->frequencySpinBox->setSingleStep(500);
@@ -92,9 +101,9 @@ void MainWindow::slotShowReceivedMessage(Header header, Message message)
 {
     if (m_controller->isStarted())
     {
-        QString content = header.generateHeader(m_controller->headerMode()) + " > " + message.getMessage();
-
-        qDebug() << "MainWindow::slotShowReceivedMessage" << content;
+        ACLMessage* aclMessage = static_cast<ACLMessage*>(&message);
+        QString sequence       = aclMessage->getContent()[QLatin1String("payload")].toString();
+        QString content        = aclMessage->getSender()+ " > Current sequence : " + sequence;
 
         ui->messageReceived->setText(content);
     }
@@ -142,4 +151,3 @@ void MainWindow::on_startButton_clicked()
 }
 
 }
-

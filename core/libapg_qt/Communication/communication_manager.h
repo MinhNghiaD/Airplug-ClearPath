@@ -35,17 +35,16 @@ public:
 
 public:
 
-    CommunicationManager(const QString& what     = QString(),
-                         const QString& who      = QString(),
-                         const QString& where    = QString(),
-                         Header::HeaderMode mode = Header::HeaderMode::What,
-                         QObject* parent         = nullptr);
+    CommunicationManager(const QString&     what   = QString(),
+                         const QString&     who    = QString(),
+                         const QString&     where  = QString(),
+                         Header::HeaderMode mode   = Header::HeaderMode::What,
+                         QObject*           parent = nullptr);
 
     ~CommunicationManager();
 
     void addStdTransporter();
-    void addUdpTransporter(const QString& host,
-                           int port,
+    void addUdpTransporter(const QString& host, int port,
                            MessageTransporter::UdpType type = MessageTransporter::UdpType::UniCast);
 
     void setHeaderMode(Header::HeaderMode mode);
@@ -59,15 +58,15 @@ public:
               ProtocolType   protocol = ProtocolType::StandardIO,
               bool           save     = true);
 
-    bool subscribe(const QString& who, QString where = QString());
+    bool subscribe         (const QString& who, QString where = QString());
     bool subscribeLocalHost(const QString& who);
-    bool subscribeAir(const QString& who);
-    bool subscribeAll(const QString& who);
+    bool subscribeAir      (const QString& who);
+    bool subscribeAll      (const QString& who);
 
-    void unsubscribe(const QString& who, QString where);
+    void unsubscribe         (const QString& who, QString where);
     void unsubscribeLocalHost(const QString& who);
-    void unsubscribeAir(const QString& who);
-    void unsubscribeAll(const QString& who);
+    void unsubscribeAir      (const QString& who);
+    void unsubscribeAll      (const QString& who);
 
     bool isSubscribed(const QString& who, QString where) const;
 
@@ -87,7 +86,7 @@ private:
 
 public:
 
-    Q_SIGNAL void signalMessageReceived(Header header, Message message);
+    Q_SIGNAL void signalMessageReceived(const Header& header, const Message& message);
 
 private:
 

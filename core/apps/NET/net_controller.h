@@ -32,6 +32,10 @@ public:
     NetController(QObject* parent = nullptr);
     ~NetController();
 
+    void init(const QCoreApplication &app) override;
+
+    void takeSnapshot() const;
+
 private:
 
     // main notification handler

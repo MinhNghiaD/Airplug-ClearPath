@@ -42,11 +42,18 @@ public:
         REFUSE,
         CONFIRM,
         UNKNOWN,
+        PING,
+        PONG,
 
         // custom Distributed perfomative
         REQUEST_SNAPSHOT,
         INFORM_STATE,
         PREPOST_MESSAGE,
+        SNAPSHOT_RECOVER,
+        READY_SNAPSHOT,
+        REQUEST_MUTEX,
+        ACCEPT_MUTEX,
+        REFUSE_MUTEX,
     };
 
 public:
@@ -62,9 +69,17 @@ public:
     void setContent(const QJsonObject& content);
     void setTimeStamp(const VectorClock& clock);
 
+    // siteID of sender's NET
+    void setSender(const QString& siteID);
+    void setNbSequence(int nbSequence);
+
     Performative getPerformative() const;
     VectorClock* getTimeStamp()    const;
     QJsonObject  getContent()      const;
+    QString      getSender()       const;
+    int          getNbSequence()   const;
+
+    QJsonObject  toJsonObject()    const;
 };
 
 }

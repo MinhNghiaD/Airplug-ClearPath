@@ -11,7 +11,7 @@ namespace AirPlug
 ApplicationController::ApplicationController(const QString& appName, QObject* parent)
     : QObject(parent),
       m_communication(nullptr),
-      m_clock(new VectorClock(generatedSiteID()))
+      m_clock(nullptr)
 {
     setObjectName(appName);
 }
@@ -26,10 +26,12 @@ void ApplicationController::init(const QCoreApplication& app)
 {
     // parse application options
     m_optionParser.parseOptions(app);
-    m_optionParser.showOption();
+
+    // NOTE: For debug only
+    //m_optionParser.showOption();
 
     // setup transport layer
-    m_communication = new CommunicationManager(m_optionParser.ident,
+    m_communication = new CommunicationManager(QString(),
                                                m_optionParser.destination,
                                                Header::airHost,
                                                m_optionParser.headerMode,
@@ -40,7 +42,7 @@ void ApplicationController::init(const QCoreApplication& app)
     m_communication->subscribeAir(m_optionParser.source);
 
     connect(m_communication, SIGNAL(signalMessageReceived(Header,Message)),
-            this,            SLOT(slotReceiveMessage(Header,Message)));
+            this,            SLOT(slotReceiveMessage(Header,Message)), Qt::DirectConnection);
 
     if (m_optionParser.remote)
     {
@@ -52,6 +54,15 @@ void ApplicationController::init(const QCoreApplication& app)
     {
         m_communication->addStdTransporter();
     }
+
+    QString siteID = m_optionParser.ident;
+
+    if (siteID.isEmpty())
+    {
+        siteID = generatedSiteID();
+    }
+
+    m_clock = new VectorClock(siteID);
 }
 
 void ApplicationController::sendMessage(const Message& message, const QString& what, const QString& who, const QString& where)
@@ -97,6 +108,16 @@ bool ApplicationController::isAuto() const
 Header::HeaderMode ApplicationController::headerMode() const
 {
     return m_optionParser.headerMode;
+}
+
+QString ApplicationController::siteID() const
+{
+    if (m_clock)
+    {
+        return m_clock->getSiteID();
+    }
+
+    return QString();
 }
 
 QString ApplicationController::generatedSiteID()

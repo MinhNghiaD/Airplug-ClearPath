@@ -33,17 +33,16 @@ VectorClock::VectorClock(const QString& siteID)
 VectorClock::VectorClock(const QString& siteID, const QHash<QString, int>& vector)
     : d(new Private())
 {
-    d->siteID = siteID;
-
+    d->siteID     = siteID;
     d->localClock = vector;
+
     d->localClock.detach();
 }
 
 VectorClock::VectorClock(const QJsonObject& json)
     : d(new Private())
 {
-    d->siteID = json[QLatin1String("siteID")].toString();
-
+    d->siteID        = json[QLatin1String("siteID")].toString();
     QJsonArray clock = json[QLatin1String("clock")].toArray();
 
     for (int i = 0; i < clock.size(); ++i)
@@ -58,8 +57,8 @@ VectorClock::VectorClock(const VectorClock& other)
     : d(new Private())
 {
     d->siteID     = other.d->siteID;
-
     d->localClock = other.d->localClock;
+
     d->localClock.detach();
 }
 
@@ -71,8 +70,8 @@ VectorClock::~VectorClock()
 VectorClock VectorClock::operator= (const VectorClock& other)
 {
     d->siteID     = other.d->siteID;
-
     d->localClock = other.d->localClock;
+
     d->localClock.detach();
 }
 
@@ -100,7 +99,7 @@ void VectorClock::updateClock(const VectorClock& other)
     // update other clocks
     for (QHash<QString, int>::const_iterator iter  = other.d->localClock.cbegin();
                                              iter != other.d->localClock.cend();
-                                             ++iter)
+                                           ++iter)
     {
         if (d->siteID != iter.key())
         {
@@ -113,11 +112,11 @@ void VectorClock::updateClock(const VectorClock& other)
     }
 }
 
-bool VectorClock::operator < (const VectorClock& other)
+bool VectorClock::operator < (const VectorClock& other) const
 {
     for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
                                              iter != d->localClock.cend();
-                                             ++iter)
+                                           ++iter)
     {
         if ( (! other.d->localClock.contains(iter.key()) && iter.value() != 0) ||
              (iter.value() > other.d->localClock[iter.key()]) )
@@ -139,12 +138,12 @@ QJsonObject VectorClock::convertToJson() const
 
     for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
                                              iter != d->localClock.cend();
-                                             ++iter)
+                                           ++iter)
     {
-            QJsonObject localClock;
-            localClock[iter.key()] = iter.value();
+        QJsonObject localClock;
+        localClock[iter.key()] = iter.value();
 
-            clock.append(localClock);
+        clock.append(localClock);
     }
 
     json["clock"] = clock;
@@ -165,6 +164,41 @@ int VectorClock::getValue(const QString& siteID) const
     }
 
     return 0;
+}
+
+QStringList VectorClock::siteLists() const
+{
+    return d->localClock.keys();
+}
+
+int VectorClock::sum() const
+{
+    int sum = 0;
+
+    for (QHash<QString, int>::const_iterator iter  = d->localClock.cbegin();
+                                             iter != d->localClock.cend();
+                                           ++iter)
+    {
+        sum += iter.value();
+    }
+
+    return sum;
+}
+
+bool VectorClock::isGeneralSmallerThan(const VectorClock& other)
+{
+    if (sum() < other.sum())
+    {
+        return true;
+    }
+    else if ( (sum()      == other.sum())        &&
+              (getSiteID() < other.getSiteID()) )
+    {
+        // in case of 2 clocks are independent  => compare siteID lexically
+        return true;
+    }
+
+    return false;
 }
 
 }

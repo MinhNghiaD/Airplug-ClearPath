@@ -37,8 +37,6 @@ int main(int argc, char *argv[])
         qDebug() << "------------------------- Start with GUI -------------------------------";
 
         mainWindow = new MainWindow(&controller);
-        mainWindow->setWindowTitle(QString("BAS %1").arg(QCoreApplication::applicationPid()));
-
 
         mainWindow->show();
     }
