@@ -26,17 +26,20 @@ class World : public QObject
 {
     Q_OBJECT
 
-private slots:
-    void frameTimeout(void);
-    void playerUpdate(int player_index, QString player_state);
-
 public:
+
     World(QCoreApplication &app);
     ~World();
 
+private Q_SLOTS:
+
+    void frameTimeout(void);
+    void playerUpdate(int playerIndex, QString payerState);
+
 private:
+
     class Private;
-    std::unique_ptr<Private> d;
+    Private* d;
 };
 
 }

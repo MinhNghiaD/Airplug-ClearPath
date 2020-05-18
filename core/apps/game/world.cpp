@@ -30,14 +30,20 @@ namespace GameApplication
 class Q_DECL_HIDDEN World::Private
 {
 public:
-    Private(QCoreApplication &app) : view(&scene), bas_controller(app)
+    Private(QCoreApplication &app)
+        : view(&scene),
+          bas_controller(app)
     {
-
     }
+
     ~Private()
     {
-
     }
+
+public:
+
+    void moveAndUpdatePlayer(Player &player);
+    void fixCollisions(Player &player);
 
     QGraphicsScene scene;
     QGraphicsView view;
@@ -46,32 +52,30 @@ public:
     std::vector<std::shared_ptr<Player>> connected_player;
 
     QTimer frame_timer;
-
-    void moveAndUpdatePlayer(Player &player);
-    void fixCollisions(Player &player);
-
     BasController bas_controller;
 };
 
-World::World(QCoreApplication &app) : d(std::make_unique<Private>(app))
+World::World(QCoreApplication &app)
+    : d(new Private(app))
 {
-    connect(&d->bas_controller, SIGNAL(updatePlayer(int, QString)), this, SLOT(playerUpdate(int, QString)));
+    connect(&(d->bas_controller), SIGNAL(updatePlayer(int, QString)),
+            this,               SLOT(playerUpdate(int, QString)));
+
     //initializing main_player
     d->main_player.setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
 
-    QLinearGradient linear_grad(QPointF(0, 0), QPointF(PLAYER_SIZE, PLAYER_SIZE));
-    linear_grad.setColorAt(0, Qt::red);
-    linear_grad.setColorAt(0.35, Qt::yellow);
-    linear_grad.setColorAt(0.5, Qt::green);
-    linear_grad.setColorAt(0.65, Qt::cyan);
-    linear_grad.setColorAt(1, Qt::blue);
-    d->main_player.setBrush(QBrush(linear_grad));
+    QLinearGradient linearGrad(QPointF(0, 0), QPointF(PLAYER_SIZE, PLAYER_SIZE));
+    linearGrad.setColorAt(0,    Qt::red);
+    linearGrad.setColorAt(0.35, Qt::yellow);
+    linearGrad.setColorAt(0.5,  Qt::green);
+    linearGrad.setColorAt(0.65, Qt::cyan);
+    linearGrad.setColorAt(1,    Qt::blue);
 
+    d->main_player.setBrush(QBrush(linearGrad));
     d->main_player.setFlag(QGraphicsItem::ItemIsFocusable);
     d->main_player.setFocus();
 
     d->scene.addItem(&d->main_player);
-
     d->scene.setSceneRect(0, 0, VIEW_WIDTH*2, VIEW_HEIGHT*2);
 
     std::random_device seeder{};
@@ -115,7 +119,7 @@ World::World(QCoreApplication &app) : d(std::make_unique<Private>(app))
 
 World::~World()
 {
-
+    delete d;
 }
 
 void World::frameTimeout(void)
@@ -128,12 +132,17 @@ void World::frameTimeout(void)
     while(!all_updated)
     {
         all_updated = true;
-        for(auto it = d->connected_player.begin(); it != d->connected_player.end(); ++it)
+
+        for(auto it = d->connected_player.begin();
+                 it != d->connected_player.end();
+               ++it)
+        {
             if((*it)->getFrame() != d->main_player.getFrame())
             {
                 all_updated = false;
                 break;
             }
+        }
     }
 
     d->moveAndUpdatePlayer(d->main_player);
@@ -172,20 +181,32 @@ void World::Private::moveAndUpdatePlayer(Player &player)
 
     //apply speed modifications from controls
     if(state.left == true)
+    {
         state.x_speed -= X_CONTROL_ACCELERATION;
+    }
     else if(state.right == true)
+    {
         state.x_speed += X_CONTROL_ACCELERATION;
+    }
 
     if(abs(state.x_speed) > X_SPEED_LIMIT)
+    {
         state.x_speed = (state.x_speed > 0) ? X_SPEED_LIMIT : -1*X_SPEED_LIMIT;
+    }
 
     if(state.up == true)
+    {
         state.y_speed -= Y_CONTROL_ACCELERATION;
+    }
     else if(state.down == true)
+    {
         state.y_speed += Y_CONTROL_ACCELERATION;
+    }
 
     if(abs(state.y_speed) > Y_SPEED_LIMIT)
+    {
         state.y_speed = (state.y_speed >= 0) ? Y_SPEED_LIMIT : -1*Y_SPEED_LIMIT;
+    }
 
     //apply speed reduction from friction
     if(state.left == false && state.right == false && state.x_speed != 0)
@@ -194,29 +215,39 @@ void World::Private::moveAndUpdatePlayer(Player &player)
         {
             state.x_speed -= X_FRICTION;
             if(state.x_speed < 0)
+            {
                 state.x_speed = 0;
+            }
         }
         else
         {
             state.x_speed += X_FRICTION;
             if(state.x_speed > 0)
+            {
                 state.x_speed = 0;
+            }
         }
     }
 
-    if(state.up == false && state.down == false && state.y_speed != 0)
+    if(state.up      == false &&
+       state.down    == false &&
+       state.y_speed != 0)
     {
         if(state.y_speed > 0)
         {
             state.y_speed -= Y_FRICTION;
             if(state.y_speed < 0)
+            {
                 state.y_speed = 0;
+            }
         }
         else
         {
             state.y_speed += Y_FRICTION;
             if(state.y_speed > 0)
+            {
                 state.y_speed = 0;
+            }
         }
     }
 
@@ -227,14 +258,16 @@ void World::Private::moveAndUpdatePlayer(Player &player)
 
 void World::Private::fixCollisions(Player &player)
 {
-    //lazy fixing, might need to be improved
+    //TODO lazy fixing, might need to be improved
     QList<QGraphicsItem*> colliding_items = player.collidingItems();
     bool collided = false;
+
     while(colliding_items.size() != 0)
     {
         collided = true;
         auto col = static_cast<Player*>(colliding_items[0]);
         State p_state = player.getState();
+
         if(p_state.x_speed > 0)
         {
             if(p_state.y_speed > 0)
@@ -284,11 +317,15 @@ void World::Private::fixCollisions(Player &player)
                 col->setPos(col->x(), col->y()-1);
             }
         }
+
         col->setSpeed(0,0);
         colliding_items = player.collidingItems();
     }
+
     if(collided)
+    {
         player.setSpeed(0,0);
+    }
 }
 
 }
