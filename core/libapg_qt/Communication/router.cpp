@@ -7,6 +7,7 @@
 // libapg include
 
 #include "watchdog.h"
+#include "election_manager.h"
 
 namespace AirPlug
 {
@@ -19,13 +20,15 @@ public:
           nbSequence(0),
           nbApp(0),
           snapshot(nullptr),
-          watchdog(nullptr)
+          watchdog(nullptr),
+          electionMng(nullptr)
     {
     }
 
     ~Private()
     {
         delete watchdog;
+        delete electionMng;
     }
 
 public:
@@ -40,6 +43,7 @@ public:
     void forwardPing   (const ACLMessage& message);
     void forwardPong   (const ACLMessage& message, bool fromLocal);
 
+    void receiveElectionMsg  (ACLMessage& message);
     void receiveMutexRequest (ACLMessage& request, bool fromLocal);
     void receiveMutexApproval(ACLMessage& request, bool fromLocal);
     void refuseAllPendingRequest();
@@ -57,6 +61,8 @@ public:
 
     LaiYangSnapshot*      snapshot;
     Watchdog*             watchdog;
+
+    ElectionManager*      electionMng;
 
     // map external router with : - the most recent nbSequence received
     QHash<QString, int>   recentSequences;
@@ -202,6 +208,43 @@ void Router::Private::forwardPong(const ACLMessage& message, bool fromLocal)
     watchdog->receiveNetworkInfo(message);
 
     // forward
+    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+}
+
+
+void Router::Private::receiveElectionMsg (ACLMessage& message)
+{
+    if (electionMng)
+    {
+        // TODO ELECTION 11: process Election messages
+        switch (message.getPerformative())
+        {
+        case ACLMessage::ELECTION:
+
+            break;
+
+        case ACLMessage::FINISH_ELECTION:
+
+            break;
+
+        case ACLMessage::ACK_ELECTION:
+            if (message.getReceiver() == siteID)
+            {
+                electionMng->processElectionAck(message);
+
+                return;
+            }
+
+            break;
+
+        default:
+            qWarning() << "Unknown performative";
+
+            break;
+        }
+    }
+
+    // Forward to other NETs
     communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
@@ -398,6 +441,7 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     d->communicationMngr = communication;
     d->siteID            = siteID;
     d->watchdog          = new Watchdog(siteID);
+    d->electionMng       = new ElectionManager(siteID);
 
     connect(d->communicationMngr, SIGNAL(signalMessageReceived(Header, Message)),
             this,                 SLOT(slotReceiveMessage(Header, Message)), Qt::DirectConnection);
@@ -410,6 +454,9 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
 
     connect(d->watchdog, &Watchdog::signalNetworkChanged,
             this,        &Router::slotUpdateNbApps, Qt::DirectConnection);
+
+    // TODO ELECTION 10: connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
+
 }
 
 Router::~Router()
@@ -483,6 +530,19 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->receiveMutexApproval(aclMessage, false);
                 break;
 
+            // TODO ELECTION 13 call Private::receiveElectionMsg to process election message
+            case ACLMessage::ELECTION:
+
+                break;
+
+            case ACLMessage::ACK_ELECTION:
+
+                break;
+
+            case ACLMessage::FINISH_ELECTION:
+
+                break;
+
             default:
                 d->forwardNetToApp(header, aclMessage);
                 break;
@@ -542,6 +602,9 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
 
     d->snapshot->setNbOfApp(nbApp);
     d->snapshot->setNbOfNeighbor(nbSites - 1);
+
+    // TODO ELECTION 9 : update nbApp to electionMng when receive network update
+
 }
 
 }

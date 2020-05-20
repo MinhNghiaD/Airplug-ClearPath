@@ -66,7 +66,7 @@ void ElectionManager::requestElection(ElectionReason reason)
     }
 }
 
-void ElectionManager::slotReceiveElectionRequest(ACLMessage& request)
+void ElectionManager::processElectionRequest(ACLMessage& request)
 {
     QJsonObject content = request.getContent();
     // TODO ELECTION 3: process request message and update ongoing elections
@@ -86,7 +86,7 @@ void ElectionManager::slotReceiveElectionRequest(ACLMessage& request)
     emit signalSendElectionMessage(request);
 }
 
-void ElectionManager::slotReceiveElectionAck(ACLMessage& ackMessage)
+void ElectionManager::processElectionAck(ACLMessage& ackMessage)
 {
     QJsonObject content = ackMessage.getContent();
     // TODO ELECTION 5: get candidate of ack message and update info about ongoing elections
@@ -118,12 +118,17 @@ void ElectionManager::finishElection(ElectionReason reason)
 }
 
 
-void ElectionManager::slotReceiveFinishElection(ACLMessage& finishMessage)
+void ElectionManager::processFinishElection(ACLMessage& finishMessage)
 {
     QJsonObject content = finishMessage.getContent();
     // TODO ELECTION 8: get reason of finish election in order to remove from ongoing list
 
     //d->ongoingElections.remove(reason);
+}
+
+void ElectionManager::setNbOfApp(int nbApp)
+{
+    d->nbApp = nbApp;
 }
 
 }

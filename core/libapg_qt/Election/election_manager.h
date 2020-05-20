@@ -38,21 +38,24 @@ public:
     explicit ElectionManager(const QString& siteID);
     ~ElectionManager();
 
+public:
     // take request from local
     void requestElection(ElectionReason reason);
 
     void finishElection(ElectionReason reason);
 
-public:
+    void setNbOfApp(int nbApp);
+
+
 
     // receive request from network
-    Q_SLOT void slotReceiveElectionRequest(ACLMessage& request);
+    void processElectionRequest(ACLMessage& request);
 
     // receive ack message from network
-    Q_SLOT void slotReceiveElectionAck(ACLMessage& ackMessage);
+    void processElectionAck(ACLMessage& ackMessage);
 
     // receive finish message from network
-    Q_SLOT void slotReceiveFinishElection(ACLMessage& finishMessage);
+    void processFinishElection(ACLMessage& finishMessage);
 
 
 public:
