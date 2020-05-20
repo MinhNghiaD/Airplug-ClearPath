@@ -27,7 +27,7 @@ class Watchdog : public QObject
     Q_OBJECT
 public:
 
-    Watchdog(const QString& siteID);
+    explicit Watchdog(const QString& siteID);
     ~Watchdog();
 
     void receivePong(bool newApp);

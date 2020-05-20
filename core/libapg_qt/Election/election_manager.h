@@ -65,22 +65,41 @@ public:
     ~ElectionManager();
 
 public:
-    // take request from local
+
+    /**
+     * @brief requestElection: take request from hosted site
+     * @param reason
+     */
     void requestElection(ElectionReason reason);
 
+    /**
+     * @brief finishElection: finish election informed by hosted site
+     * @param reason
+     */
     void finishElection(ElectionReason reason);
 
-    void setNbOfApp(int nbApp);
+    /**
+     * @brief setNbOfNeighbor :  set number of site in the network
+     * @param nbNeighbor
+     */
+    void setNbOfNeighbor(int nbNeighbor);
 
-
-
-    // receive request from network
+    /**
+     * @brief processElectionRequest: process an election request received from network
+     * @param request
+     */
     void processElectionRequest(ACLMessage& request);
 
-    // receive ack message from network
+    /**
+     * @brief processElectionAck: process an election ack message received from network
+     * @param ackMessage
+     */
     void processElectionAck(ACLMessage& ackMessage);
 
-    // receive finish message from network
+    /**
+     * @brief processFinishElection: receive finish message from network
+     * @param finishMessage
+     */
     void processFinishElection(ACLMessage& finishMessage);
 
 
@@ -114,7 +133,6 @@ public:
 
     int nbFor;
     int nbAgains;
-
     int nbWaitedResponses;
 };
 

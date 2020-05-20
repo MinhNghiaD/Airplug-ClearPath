@@ -20,7 +20,7 @@ public:
 public:
 
     QString siteID;
-    int     nbApp;
+    int     nbNeighbor;
 
     // Map ongoing election with the siteID of current potential elected candidate
     QHash<ElectionReason, Election> ongoingElections;
@@ -49,7 +49,7 @@ void ElectionManager::requestElection(ElectionReason reason)
     else
     {
         // TODO ELECTION 1: if not already in an election => save election to the list of ongoing election
-        // nbWaitedResponses is set to the nbofApp -1
+        // nbWaitedResponses is set to the nbNeighbor
 
 
 
@@ -128,9 +128,9 @@ void ElectionManager::processFinishElection(ACLMessage& finishMessage)
     //d->ongoingElections.remove(reason);
 }
 
-void ElectionManager::setNbOfApp(int nbApp)
+void ElectionManager::setNbOfNeighbor(int nbNeighbor)
 {
-    d->nbApp = nbApp;
+    d->nbNeighbor = nbNeighbor;
 }
 
 }

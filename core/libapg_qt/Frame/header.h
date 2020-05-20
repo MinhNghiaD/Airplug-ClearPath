@@ -39,9 +39,9 @@ public:
 public:
 
     // Default constructor
-    Header(const QString& what,
-           const QString& who,
-           const QString& where);
+    explicit Header(const QString& what,
+                    const QString& who,
+                    const QString& where);
 
     // Copy constructor
     Header(const Header& otherheader);

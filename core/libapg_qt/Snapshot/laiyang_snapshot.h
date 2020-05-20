@@ -44,7 +44,7 @@ public:
 
 public:
 
-    LaiYangSnapshot();
+    explicit LaiYangSnapshot();
     ~LaiYangSnapshot();
 
 public:

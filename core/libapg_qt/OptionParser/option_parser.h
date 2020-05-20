@@ -29,7 +29,7 @@ public:
 
     // default constructor
     OptionParser();
-    OptionParser(const QCoreApplication& app);
+    explicit OptionParser(const QCoreApplication& app);
 
     /**
      * @brief parseOptions: parse option from application

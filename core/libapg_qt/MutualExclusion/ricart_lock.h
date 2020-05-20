@@ -27,7 +27,7 @@ class RicartLock : public QObject
     Q_OBJECT
 public:
 
-    RicartLock();
+    explicit RicartLock();
     ~RicartLock();
 
 public:

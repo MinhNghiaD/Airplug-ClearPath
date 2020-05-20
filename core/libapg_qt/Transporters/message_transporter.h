@@ -32,7 +32,7 @@ public:
 
 public:
 
-    MessageTransporter(QObject* parent = nullptr);
+    explicit MessageTransporter(QObject* parent = nullptr);
     ~MessageTransporter();
 
     virtual void send(const QString& message) = 0;

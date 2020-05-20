@@ -35,11 +35,11 @@ public:
 
 public:
 
-    CommunicationManager(const QString&     what   = QString(),
-                         const QString&     who    = QString(),
-                         const QString&     where  = QString(),
-                         Header::HeaderMode mode   = Header::HeaderMode::What,
-                         QObject*           parent = nullptr);
+    explicit CommunicationManager(const QString&     what   = QString(),
+                                  const QString&     who    = QString(),
+                                  const QString&     where  = QString(),
+                                  Header::HeaderMode mode   = Header::HeaderMode::What,
+                                  QObject*           parent = nullptr);
 
     ~CommunicationManager();
 

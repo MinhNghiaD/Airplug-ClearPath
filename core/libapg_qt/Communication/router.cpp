@@ -604,7 +604,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
     d->snapshot->setNbOfApp(nbApp);
     d->snapshot->setNbOfNeighbor(nbSites - 1);
 
-    // TODO ELECTION 9 : update nbApp to electionMng when receive network update
+    // TODO ELECTION 9 : update nbNeighbor to electionMng when receive network update
 
 }
 

@@ -23,7 +23,7 @@ class StdTransporter : public MessageTransporter
 
 public:
 
-    StdTransporter(QObject* parent = nullptr);
+    explicit StdTransporter(QObject* parent = nullptr);
     ~StdTransporter();
 
     void send(const QString& message) override;

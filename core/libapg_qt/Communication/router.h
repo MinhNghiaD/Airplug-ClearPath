@@ -26,7 +26,7 @@ class Router : public QObject
     Q_OBJECT
 public:
 
-    Router(CommunicationManager* communication, const QString& siteID);
+    explicit Router(CommunicationManager* communication, const QString& siteID);
     ~Router();
 
     bool addSnapshot(LaiYangSnapshot* snapshot);

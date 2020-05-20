@@ -25,7 +25,7 @@ class Message
 {
 public:
 
-    Message(const QString& message = QString());
+    explicit Message(const QString& message = QString());
 
     Message(const QHash<QString, QString>& contents);
 
