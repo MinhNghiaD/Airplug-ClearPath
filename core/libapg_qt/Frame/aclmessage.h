@@ -56,6 +56,7 @@ public:
         REFUSE_MUTEX,
         ELECTION,
         ACK_ELECTION,
+        FINISH_ELECTION,
     };
 
 public:

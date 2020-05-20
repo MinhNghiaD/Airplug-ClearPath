@@ -8,36 +8,45 @@ namespace GameApplication
 
 State::State()
 {
-
 }
 
 State::~State()
 {
-
 }
 
 State& State::operator=(const State& s)
 {
-    left = s.left;
-    right = s.right;
-    up = s.up;
-    down = s.down;
+    left    = s.left;
+    right   = s.right;
+    up      = s.up;
+    down    = s.down;
     x_speed = s.x_speed;
     y_speed = s.y_speed;
-    x = s.x;
-    y = s.y;
-    frame = s.frame;
+    x       = s.x;
+    y       = s.y;
+    frame   = s.frame;
+
     return *this;
 }
 
 bool State::operator==(const State& s)
 {
-    if(left == s.left && right == s.right && up == s.up && down == s.down
-       && x_speed == s.x_speed && y_speed == s.y_speed && x == s.x && y == s.y
-       && frame == s.frame)
-       return true;
+    if(left     == s.left &&
+       right    == s.right &&
+       up       == s.up &&
+       down     == s.down &&
+       x_speed  == s.x_speed &&
+       y_speed  == s.y_speed &&
+       x        == s.x &&
+       y        == s.y &&
+       frame    == s.frame)
+    {
+        return true;
+    }
     else
+    {
         return false;
+    }
 }
 
 QString State::toJsonString(void)
@@ -62,6 +71,7 @@ QString State::toJsonString(void)
     str += ",\"frame\":";
     str += std::to_string(frame);
     str += "}";
+
     return QString(str.c_str());
 }
 
