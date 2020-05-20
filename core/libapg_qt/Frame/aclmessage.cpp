@@ -38,6 +38,11 @@ void ACLMessage::setSender(const QString& siteID)
     addContent(QLatin1String("sender"), siteID);
 }
 
+void ACLMessage::setReceiver(const QString& siteID)
+{
+    addContent(QLatin1String("receiver"), siteID);
+}
+
 void ACLMessage::setNbSequence(int nbSequence)
 {
     addContent(QLatin1String("nbSequence"), QString::number(nbSequence));
@@ -70,6 +75,11 @@ QJsonObject ACLMessage::getContent() const
 QString ACLMessage::getSender() const
 {
     return getContents()[QLatin1String("sender")];
+}
+
+QString ACLMessage::getReceiver() const
+{
+    return getContents()[QLatin1String("receiver")];
 }
 
 int ACLMessage::getNbSequence() const

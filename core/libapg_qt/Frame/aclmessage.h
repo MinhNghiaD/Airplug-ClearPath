@@ -54,6 +54,8 @@ public:
         REQUEST_MUTEX,
         ACCEPT_MUTEX,
         REFUSE_MUTEX,
+        ELECTION,
+        ACK_ELECTION,
     };
 
 public:
@@ -71,12 +73,14 @@ public:
 
     // siteID of sender's NET
     void setSender(const QString& siteID);
+    void setReceiver(const QString& siteID);
     void setNbSequence(int nbSequence);
 
     Performative getPerformative() const;
     VectorClock* getTimeStamp()    const;
     QJsonObject  getContent()      const;
     QString      getSender()       const;
+    QString      getReceiver()     const;
     int          getNbSequence()   const;
 
     QJsonObject  toJsonObject()    const;
