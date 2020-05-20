@@ -97,7 +97,9 @@ void ElectionManager::processElectionAck(ACLMessage& ackMessage)
 
     if (false)
     {
-        emit signalWinElection();
+        ElectionReason reason;
+
+        emit signalWinElection(reason);
     }
 }
 

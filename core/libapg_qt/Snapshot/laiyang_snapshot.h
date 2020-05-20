@@ -62,7 +62,12 @@ public:
     void setNbOfNeighbor(int nbNeighbor);
 
     /**
-     * @brief init snapshot action, this method is called only one time by initiator
+     * @brief callElection: call for election to init snapshot
+     */
+    void callElection();
+
+    /**
+     * @brief init snapshot action, this method is called after election process
      */
     void init();
 
@@ -130,6 +135,9 @@ public:
     // NOTE: these signals have to be connected by Qt::DirectConnection to invoke the slot immediately
     Q_SIGNAL void signalRequestSnapshot(const Message& marker);           // send to BAS
     Q_SIGNAL void signalSendSnapshotMessage(ACLMessage& message);         // send to NET
+
+    Q_SIGNAL void signalRequestElection();
+    Q_SIGNAL void signalFinishElection();
 
 private:
 

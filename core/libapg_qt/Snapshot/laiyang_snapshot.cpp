@@ -194,6 +194,11 @@ LaiYangSnapshot::~LaiYangSnapshot()
     delete d;
 }
 
+void LaiYangSnapshot::callElection()
+{
+    // TODO ELECTION 14: send signal signalRequestElection() to router to start election for init snapshot
+}
+
 void LaiYangSnapshot::init()
 {
     if (d->status == READY)
@@ -416,6 +421,9 @@ void LaiYangSnapshot::finishSnapshot()
         ACLMessage inform(ACLMessage::READY_SNAPSHOT);
 
         emit signalSendSnapshotMessage(inform);
+
+        // Inform election for snapshot has finish
+        emit signalFinishElection();
 
         saveSnapshot();
     }

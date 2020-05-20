@@ -7,7 +7,6 @@
 // libapg include
 
 #include "watchdog.h"
-#include "election_manager.h"
 
 namespace AirPlug
 {
@@ -457,6 +456,8 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
 
     // TODO ELECTION 10: connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
 
+    // TODO ELECTION 18: connect signals of ElectionManager and LaiYangSnapshot with slot defined at TODO 15 16 17
+
 }
 
 Router::~Router()
@@ -605,6 +606,37 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
 
     // TODO ELECTION 9 : update nbApp to electionMng when receive network update
 
+}
+
+void Router::slotRequestElection()
+{
+    // TODO ELECTION 15: find who is sender and request Election to electionMng with correspondant reason
+    if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
+    {
+
+    }
+}
+
+void Router::slotWinElection(ElectionManager::ElectionReason reason)
+{
+    // TODO ELECTION 16: win election => approve action
+    switch (reason)
+    {
+    case ElectionManager::ElectionReason::Snapshot:
+
+        break;
+    default:
+        break;
+    }
+}
+
+void Router::slotFinishElection()
+{
+    // TODO ELECTION 17: inform electionMng that the election is finished
+    if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
+    {
+
+    }
 }
 
 }

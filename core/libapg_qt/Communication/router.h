@@ -16,6 +16,7 @@
 #include "aclmessage.h"
 #include "communication_manager.h"
 #include "laiyang_snapshot.h"
+#include "election_manager.h"
 
 namespace AirPlug
 {
@@ -47,6 +48,11 @@ public:
 
     Q_SLOT void slotUpdateNbApps(int nbSites, int nbApp);
 
+    Q_SLOT void slotRequestElection();
+
+    Q_SLOT void slotWinElection(ElectionManager::ElectionReason reason);
+
+    Q_SLOT void slotFinishElection();
 private:
 
     class Private;
