@@ -105,18 +105,16 @@ void ElectionManager::processElectionAck(ACLMessage& ackMessage)
 
 void ElectionManager::finishElection(ElectionReason reason)
 {
+    if (d->siteID == d->ongoingElections[reason].candidate)
+    {
+        // only winner can broadcast finish election message
+        ACLMessage inform(ACLMessage::FINISH_ELECTION);
+
+        // Broadcast election message
+        emit signalSendElectionMessage(inform);
+    }
+
     d->ongoingElections.remove(reason);
-
-    ACLMessage inform(ACLMessage::FINISH_ELECTION);
-
-    QJsonObject content;
-    // TODO ELECTION 7: broadcast finish election message with ElectionReason to all site
-
-
-    inform.setContent(content);
-
-    // Broadcast election message
-    emit signalSendElectionMessage(inform);
 }
 
 
