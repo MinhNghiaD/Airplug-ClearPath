@@ -30,8 +30,8 @@ public:
 
 private Q_SLOTS:
 
-    void frameTimeout(void);
-    void playerUpdate(int playerIndex, QString payerState);
+    void slotFrameTimeout(void);
+    void slotPlayerUpdate(int playerIndex, QString payerState);
 
 private:
 

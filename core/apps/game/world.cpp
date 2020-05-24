@@ -31,8 +31,7 @@ class Q_DECL_HIDDEN World::Private
 {
 public:
     Private(QCoreApplication &app)
-        : view(&scene),
-          bas_controller(app)
+        : view(&scene)
     {
     }
 
@@ -52,15 +51,11 @@ public:
     std::vector<std::shared_ptr<Player>> connected_player;
 
     QTimer frame_timer;
-    BasController bas_controller;
 };
 
 World::World(QCoreApplication &app)
     : d(new Private(app))
 {
-    connect(&(d->bas_controller), SIGNAL(updatePlayer(int, QString)),
-            this,               SLOT(playerUpdate(int, QString)));
-
     //initializing main_player
     d->main_player.setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
 
@@ -88,8 +83,6 @@ World::World(QCoreApplication &app)
     std::vector<QColor> color = {Qt::white,Qt::black,Qt::cyan,Qt::red,Qt::magenta,Qt::green,Qt::yellow,Qt::blue,Qt::gray};
     std::uniform_int_distribution<> color_dis(0, color.size()-1);
 
-    d->bas_controller.establishConnections(d->main_player.getState().toJsonString());
-
     // int n_connected_players = 5;
     //
     // for(int i=0; i<n_connected_players; i++)
@@ -108,7 +101,7 @@ World::World(QCoreApplication &app)
     //     } while(colliding_items.size() != 0);
     // }
 
-    connect(&d->frame_timer, SIGNAL(timeout()), this, SLOT(frameTimeout()));
+    connect(&d->frame_timer, SIGNAL(timeout()), this, SLOT(slotFrameTimeout()));
     d->frame_timer.start(FRAME_PERIOD_MS);
 
     d->view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -122,11 +115,9 @@ World::~World()
     delete d;
 }
 
-void World::frameTimeout(void)
+void World::slotFrameTimeout(void)
 {
     d->main_player.incrementFrame();
-
-    d->bas_controller.sendPlayerUpdate(d->main_player.getState().toJsonString());
 
     bool all_updated = false;
     while(!all_updated)
@@ -154,7 +145,7 @@ void World::frameTimeout(void)
         d->fixCollisions(**it);
 }
 
-void World::playerUpdate(int player_index, QString player_state)
+void World::slotPlayerUpdate(int player_index, QString player_state)
 {
     if(player_index == d->connected_player.size())
     {
