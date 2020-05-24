@@ -17,9 +17,6 @@
 #include <QGraphicsRectItem>
 #include <QKeyEvent>
 
-//std includes
-#include <memory>
-
 //local includes
 #include "state.h"
 
@@ -36,14 +33,14 @@ public:
     void keyReleaseEvent(QKeyEvent *event);
 
     State getState(void);
-    int getFrame();
-    void setSpeed(int x_speed, int y_speed);
-    void setState(State _state);
-    void incrementFrame(void);
+    int   getFrame();
+    void  setSpeed(int xSpeed, int ySpeed);
+    void  setState(const State& state);
+    void  incrementFrame(void);
 
 private:
     class Private;
-    std::unique_ptr<Private> d;
+    Private* d;
 };
 
 }

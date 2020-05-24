@@ -16,9 +16,6 @@
 #include <QObject>
 #include <QCoreApplication>
 
-//std includes
-#include <memory>
-
 namespace GameApplication
 {
 

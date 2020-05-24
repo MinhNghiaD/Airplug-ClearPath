@@ -182,78 +182,78 @@ void World::Private::moveAndUpdatePlayer(Player &player)
     //apply speed modifications from controls
     if(state.left == true)
     {
-        state.x_speed -= X_CONTROL_ACCELERATION;
+        state.xSpeed -= X_CONTROL_ACCELERATION;
     }
     else if(state.right == true)
     {
-        state.x_speed += X_CONTROL_ACCELERATION;
+        state.xSpeed += X_CONTROL_ACCELERATION;
     }
 
-    if(abs(state.x_speed) > X_SPEED_LIMIT)
+    if(abs(state.xSpeed) > X_SPEED_LIMIT)
     {
-        state.x_speed = (state.x_speed > 0) ? X_SPEED_LIMIT : -1*X_SPEED_LIMIT;
+        state.xSpeed = (state.xSpeed > 0) ? X_SPEED_LIMIT : -1*X_SPEED_LIMIT;
     }
 
     if(state.up == true)
     {
-        state.y_speed -= Y_CONTROL_ACCELERATION;
+        state.ySpeed -= Y_CONTROL_ACCELERATION;
     }
     else if(state.down == true)
     {
-        state.y_speed += Y_CONTROL_ACCELERATION;
+        state.ySpeed += Y_CONTROL_ACCELERATION;
     }
 
-    if(abs(state.y_speed) > Y_SPEED_LIMIT)
+    if(abs(state.ySpeed) > Y_SPEED_LIMIT)
     {
-        state.y_speed = (state.y_speed >= 0) ? Y_SPEED_LIMIT : -1*Y_SPEED_LIMIT;
+        state.ySpeed = (state.ySpeed >= 0) ? Y_SPEED_LIMIT : -1*Y_SPEED_LIMIT;
     }
 
     //apply speed reduction from friction
-    if(state.left == false && state.right == false && state.x_speed != 0)
+    if(state.left == false && state.right == false && state.xSpeed != 0)
     {
-        if(state.x_speed > 0)
+        if(state.xSpeed > 0)
         {
-            state.x_speed -= X_FRICTION;
-            if(state.x_speed < 0)
+            state.xSpeed -= X_FRICTION;
+            if(state.xSpeed < 0)
             {
-                state.x_speed = 0;
+                state.xSpeed = 0;
             }
         }
         else
         {
-            state.x_speed += X_FRICTION;
-            if(state.x_speed > 0)
+            state.xSpeed += X_FRICTION;
+            if(state.xSpeed > 0)
             {
-                state.x_speed = 0;
+                state.xSpeed = 0;
             }
         }
     }
 
     if(state.up      == false &&
        state.down    == false &&
-       state.y_speed != 0)
+       state.ySpeed != 0)
     {
-        if(state.y_speed > 0)
+        if(state.ySpeed > 0)
         {
-            state.y_speed -= Y_FRICTION;
-            if(state.y_speed < 0)
+            state.ySpeed -= Y_FRICTION;
+            if(state.ySpeed < 0)
             {
-                state.y_speed = 0;
+                state.ySpeed = 0;
             }
         }
         else
         {
-            state.y_speed += Y_FRICTION;
-            if(state.y_speed > 0)
+            state.ySpeed += Y_FRICTION;
+            if(state.ySpeed > 0)
             {
-                state.y_speed = 0;
+                state.ySpeed = 0;
             }
         }
     }
 
     //write changes
-    player.setSpeed(state.x_speed, state.y_speed);
-    player.setPos(state.x + state.x_speed, state.y + state.y_speed);
+    player.setSpeed(state.xSpeed, state.ySpeed);
+    player.setPos(state.x + state.xSpeed, state.y + state.ySpeed);
 }
 
 void World::Private::fixCollisions(Player &player)
@@ -268,14 +268,14 @@ void World::Private::fixCollisions(Player &player)
         auto col = static_cast<Player*>(colliding_items[0]);
         State p_state = player.getState();
 
-        if(p_state.x_speed > 0)
+        if(p_state.xSpeed > 0)
         {
-            if(p_state.y_speed > 0)
+            if(p_state.ySpeed > 0)
             {
                 player.setPos(player.x()-1, player.y()-1);
                 col->setPos(col->x()+1, col->y()+1);
             }
-            else if(p_state.y_speed < 0)
+            else if(p_state.ySpeed < 0)
             {
                 player.setPos(player.x()-1, player.y()+1);
                 col->setPos(col->x()+1, col->y()-1);
@@ -286,14 +286,14 @@ void World::Private::fixCollisions(Player &player)
                 col->setPos(col->x()+1, col->y());
             }
         }
-        else if(p_state.x_speed < 0)
+        else if(p_state.xSpeed < 0)
         {
-            if(p_state.y_speed > 0)
+            if(p_state.ySpeed > 0)
             {
                 player.setPos(player.x()+1, player.y()-1);
                 col->setPos(col->x()-1, col->y()+1);
             }
-            else if(p_state.y_speed < 0)
+            else if(p_state.ySpeed < 0)
             {
                 player.setPos(player.x()+1, player.y()+1);
                 col->setPos(col->x()-1, col->y()-1);
@@ -306,7 +306,7 @@ void World::Private::fixCollisions(Player &player)
         }
         else
         {
-            if(p_state.y_speed > 0)
+            if(p_state.ySpeed > 0)
             {
                 player.setPos(player.x(), player.y()-1);
                 col->setPos(col->x(), col->y()+1);
