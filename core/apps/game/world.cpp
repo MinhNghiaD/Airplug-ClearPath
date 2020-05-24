@@ -1,8 +1,7 @@
 #include "world.h"
 
 //qt include
-#include <QGraphicsScene>
-#include <QGraphicsView>
+
 #include <QBrush>
 #include <QTimer>
 #include <QLinearGradient>
@@ -11,18 +10,26 @@
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QDebug>
+#include <QVector>
 
 //std includes
-#include <vector>
 #include <cmath>
-#include <random>
+
 #include <QList>
 
 //local include
 #include "state.h"
-#include "player.h"
+
 #include "constants.h"
 #include "bas_controller.h"
+
+// TODO: change player shape to round
+// TODO: reorganize the code
+// TODO: get nb of player from Bas Controller and init board
+// TODO: update for each move
+// TODO: sync
+// TODO: Mode Auto
+// TODO: clearpath
 
 namespace GameApplication
 {
@@ -30,8 +37,8 @@ namespace GameApplication
 class Q_DECL_HIDDEN World::Private
 {
 public:
-    Private(QCoreApplication &app)
-        : view(&scene)
+    Private()
+        : board(nullptr)
     {
     }
 
@@ -41,23 +48,37 @@ public:
 
 public:
 
-    void moveAndUpdatePlayer(Player &player);
-    void fixCollisions(Player &player);
+    //void moveAndUpdatePlayer(Player &player);
+    //void fixCollisions(Player &player);
 
-    QGraphicsScene scene;
-    QGraphicsView view;
-
-    Player main_player;
-    std::vector<std::shared_ptr<Player>> connected_player;
+    //QGraphicsView* view;
+    Board* board;
 
     QTimer frame_timer;
 };
 
-World::World(QCoreApplication &app)
+World::World(const QCoreApplication &app, Board* board)
+    : QGraphicsView(board),
+      d(new Private())
+{
+    d->board = board;
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setFixedSize(VIEW_WIDTH, VIEW_HEIGHT);
+}
+
+World::~World()
+{
+    delete d;
+}
+
+/*
+World::World(const QCoreApplication &app)
     : d(new Private(app))
 {
-    //initializing main_player
-    d->main_player.setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
+
+    //initializing mainPlayer
+    d->mainPlayer.setRect(0, 0, PLAYER_SIZE, PLAYER_SIZE);
 
     QLinearGradient linearGrad(QPointF(0, 0), QPointF(PLAYER_SIZE, PLAYER_SIZE));
     linearGrad.setColorAt(0,    Qt::red);
@@ -66,47 +87,51 @@ World::World(QCoreApplication &app)
     linearGrad.setColorAt(0.65, Qt::cyan);
     linearGrad.setColorAt(1,    Qt::blue);
 
-    d->main_player.setBrush(QBrush(linearGrad));
-    d->main_player.setFlag(QGraphicsItem::ItemIsFocusable);
-    d->main_player.setFocus();
+    d->mainPlayer.setBrush(QBrush(linearGrad));
+    d->mainPlayer.setFlag(QGraphicsItem::ItemIsFocusable);
+    d->mainPlayer.setFocus();
 
-    d->scene.addItem(&d->main_player);
+    d->scene.addItem(&d->mainPlayer);
     d->scene.setSceneRect(0, 0, VIEW_WIDTH*2, VIEW_HEIGHT*2);
 
+    // Init position of player randomly
     std::random_device seeder{};
     std::mt19937 twister{seeder()};
-    std::uniform_int_distribution<> x_dis(0, VIEW_WIDTH-1-PLAYER_SIZE);
-    std::uniform_int_distribution<> y_dis(0, VIEW_HEIGHT-1-PLAYER_SIZE);
+    std::uniform_int_distribution<> x_dis(0, VIEW_WIDTH - 1 - PLAYER_SIZE);
+    std::uniform_int_distribution<> y_dis(0, VIEW_HEIGHT - 1 - PLAYER_SIZE);
 
-    d->main_player.setPos(x_dis(twister), y_dis(twister));
+    d->mainPlayer.setPos(x_dis(twister), y_dis(twister));
 
-    std::vector<QColor> color = {Qt::white,Qt::black,Qt::cyan,Qt::red,Qt::magenta,Qt::green,Qt::yellow,Qt::blue,Qt::gray};
-    std::uniform_int_distribution<> color_dis(0, color.size()-1);
+//    std::vector<QColor> color = {Qt::white,Qt::black,Qt::cyan,Qt::red,Qt::magenta,Qt::green,Qt::yellow,Qt::blue,Qt::gray};
+//    std::uniform_int_distribution<> color_dis(0, color.size()-1);
 
-    // int n_connected_players = 5;
-    //
-    // for(int i=0; i<n_connected_players; i++)
-    // {
-    //     d->connected_player.push_back(std::make_shared<Player>());
-    //     d->connected_player[i]->setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
-    //     d->connected_player[i]->setBrush(QBrush(color[color_dis(twister)]));
-    //     d->scene.addItem(d->connected_player[i].get());
-    //
-    //     //to be changed
-    //     QList<QGraphicsItem*> colliding_items;
-    //     do
-    //     {
-    //         d->connected_player[i]->setPos(x_dis(twister), y_dis(twister));
-    //         colliding_items = d->connected_player[i]->collidingItems();
-    //     } while(colliding_items.size() != 0);
-    // }
+//     int n_otherPlayerss = 5;
 
-    connect(&d->frame_timer, SIGNAL(timeout()), this, SLOT(slotFrameTimeout()));
+//     for(int i=0; i<n_otherPlayerss; i++)
+//     {
+//         d->otherPlayers.push_back(std::make_shared<Player>());
+//         d->otherPlayers[i]->setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
+//         d->otherPlayers[i]->setBrush(QBrush(color[color_dis(twister)]));
+//         d->scene.addItem(d->otherPlayers[i].get());
+
+//         //to be changed
+//         QList<QGraphicsItem*> colliding_items;
+//         do
+//         {
+//             d->otherPlayers[i]->setPos(x_dis(twister), y_dis(twister));
+//             colliding_items = d->otherPlayers[i]->collidingItems();
+//         } while(colliding_items.size() != 0);
+//     }
+
+    connect(&d->frame_timer, SIGNAL(timeout()),
+            this,            SLOT(slotFrameTimeout()));
+
     d->frame_timer.start(FRAME_PERIOD_MS);
 
     d->view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     d->view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     d->view.setFixedSize(VIEW_WIDTH, VIEW_HEIGHT);
+
     d->view.show();
 }
 
@@ -117,56 +142,72 @@ World::~World()
 
 void World::slotFrameTimeout(void)
 {
-    d->main_player.incrementFrame();
+    d->mainPlayer.incrementFrame();
 
-    bool all_updated = false;
-    while(!all_updated)
+    bool allUpdated = false;
+
+    while(!allUpdated)
     {
-        all_updated = true;
+        allUpdated = true;
 
-        for(auto it = d->connected_player.begin();
-                 it != d->connected_player.end();
-               ++it)
+        for(QVector<Player>::const_iterator it  = d->otherPlayers.cbegin();
+                                            it != d->otherPlayers.cend();
+                                          ++it)
         {
-            if((*it)->getFrame() != d->main_player.getFrame())
+            if(it->getFrame() != d->mainPlayer.getFrame())
             {
-                all_updated = false;
+                allUpdated = false;
+
                 break;
             }
         }
     }
 
-    d->moveAndUpdatePlayer(d->main_player);
-    for(auto it = d->connected_player.begin(); it != d->connected_player.end(); ++it)
-        d->moveAndUpdatePlayer(**it);
+    d->moveAndUpdatePlayer(d->mainPlayer);
 
-    d->fixCollisions(d->main_player);
-    for(auto it = d->connected_player.begin(); it != d->connected_player.end(); ++it)
-        d->fixCollisions(**it);
+    for(QVector<Player>::const_iterator it  = d->otherPlayers.cbegin();
+                                        it != d->otherPlayers.cend();
+                                      ++it)
+    {
+        d->moveAndUpdatePlayer(*it);
+    }
+
+    d->fixCollisions(d->mainPlayer);
+
+    for(QVector<Player>::iterator it  = d->otherPlayers.begin();
+                                  it != d->otherPlayers.end();
+                                ++it)
+    {
+        d->fixCollisions(*it);
+    }
 }
 
 void World::slotPlayerUpdate(int player_index, QString player_state)
 {
-    if(player_index == d->connected_player.size())
+
+    if(player_index == d->otherPlayers.size())
     {
         std::random_device seeder{};
         std::mt19937 twister{seeder()};
-        std::vector<QColor> color = {Qt::white,Qt::black,Qt::cyan,Qt::red,Qt::magenta,Qt::green,Qt::yellow,Qt::blue,Qt::gray};
+        std::vector<QColor> color = {Qt::white, Qt::black, Qt::cyan, Qt::red, Qt::magenta, Qt::green, Qt::yellow, Qt::blue, Qt::gray};
         std::uniform_int_distribution<> color_dis(0, color.size()-1);
 
-        d->connected_player.push_back(std::make_shared<Player>());
-        d->connected_player[player_index]->setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
-        d->connected_player[player_index]->setBrush(QBrush(color[color_dis(twister)]));
-        d->scene.addItem(d->connected_player[player_index].get());
+        d->otherPlayers.push_back(std::make_shared<Player>());
+        d->otherPlayers[player_index].setRect(0,0,PLAYER_SIZE,PLAYER_SIZE);
+        d->otherPlayers[player_index].setBrush(QBrush(color[color_dis(twister)]));
+
+        d->scene.addItem(d->otherPlayers[player_index].get());
     }
 
     QJsonObject obj = QJsonDocument::fromJson(player_state.toUtf8()).object();
     State new_state;
     new_state.loadFromJson(obj);
-    d->connected_player[player_index]->setState(new_state);
+
+    d->otherPlayers[player_index].setState(new_state);
+
 }
 
-void World::Private::moveAndUpdatePlayer(Player &player)
+void World::Private::moveAndUpdatePlayer(Player& player)
 {
     State state = player.getState();
 
@@ -222,7 +263,7 @@ void World::Private::moveAndUpdatePlayer(Player &player)
 
     if(state.up      == false &&
        state.down    == false &&
-       state.ySpeed != 0)
+       state.ySpeed  != 0)
     {
         if(state.ySpeed > 0)
         {
@@ -245,6 +286,8 @@ void World::Private::moveAndUpdatePlayer(Player &player)
     //write changes
     player.setSpeed(state.xSpeed, state.ySpeed);
     player.setPos(state.x + state.xSpeed, state.y + state.ySpeed);
+
+    // TODO: broadcast self state for other
 }
 
 void World::Private::fixCollisions(Player &player)
@@ -318,5 +361,5 @@ void World::Private::fixCollisions(Player &player)
         player.setSpeed(0,0);
     }
 }
-
+*/
 }

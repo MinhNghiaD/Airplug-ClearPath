@@ -1,10 +1,12 @@
-#include "player.h"
+#include "agent.h"
 
 //qt includes
 //#include <QDebug>
+#include <QBrush>
 
 //std includes
 #include <cmath>
+#include <random>
 
 //local include
 #include "constants.h"
@@ -12,10 +14,13 @@
 namespace GameApplication
 {
 
-class Q_DECL_HIDDEN Player::Private
+class Q_DECL_HIDDEN Agent::Private
 {
 public:
-    Private()
+
+    Private(const QString& siteID, qreal radius)
+        : siteID(siteID),
+          radius(radius)
     {
     }
 
@@ -25,20 +30,34 @@ public:
 
 public:
 
+    QString siteID;
     State state;
+    qreal radius;
 };
 
-Player::Player()
-    : d(new Private())
+Agent::Agent(const QString& siteID, qreal radius)
+    : QGraphicsEllipseItem(0, 0, radius, radius),
+      d(new Private(siteID, radius))
 {
+    setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    setBrush(QBrush(Qt::green));
+
+    // Init position of player randomly
+    std::random_device seeder{};
+    std::mt19937 twister{seeder()};
+    std::uniform_int_distribution<> x(0, VIEW_WIDTH - 1 - PLAYER_SIZE);
+    std::uniform_int_distribution<> y(0, VIEW_HEIGHT - 1 - PLAYER_SIZE);
+
+    setPos(x(twister), y(twister));
+
 }
 
-Player::~Player()
+Agent::~Agent()
 {
     delete d;
 }
 
-void Player::keyPressEvent(QKeyEvent *event)
+void Agent::keyPressEvent(QKeyEvent *event)
 {
     switch(event->key())
     {
@@ -63,7 +82,7 @@ void Player::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void Player::keyReleaseEvent(QKeyEvent *event)
+void Agent::keyReleaseEvent(QKeyEvent *event)
 {
     switch(event->key())
     {
@@ -88,7 +107,7 @@ void Player::keyReleaseEvent(QKeyEvent *event)
     }
 }
 
-State Player::getState(void)
+State Agent::getState(void)
 {
     d->state.x = x();
     d->state.y = y();
@@ -96,23 +115,23 @@ State Player::getState(void)
     return d->state;
 }
 
-int Player::getFrame(void)
+int Agent::getFrame(void)
 {
     return d->state.frame;
 }
 
-void Player::setSpeed(int xSpeed, int ySpeed)
+void Agent::setSpeed(int xSpeed, int ySpeed)
 {
     d->state.xSpeed = xSpeed;
     d->state.ySpeed = ySpeed;
 }
 
-void Player::setState(const State& state)
+void Agent::setState(const State& state)
 {
     d->state = state;
 }
 
-void Player::incrementFrame(void)
+void Agent::incrementFrame(void)
 {
     d->state.frame++;
 }

@@ -13,25 +13,28 @@
 #define WORLD_H
 
 //qt includes
-#include <QObject>
+#include <QGraphicsView>
 #include <QCoreApplication>
+
+// local include
+#include "board.h"
 
 namespace GameApplication
 {
 
-class World : public QObject
+class World : public QGraphicsView
 {
     Q_OBJECT
 
 public:
 
-    World(QCoreApplication &app);
+    World(const QCoreApplication &app, Board* board);
     ~World();
 
 private Q_SLOTS:
 
-    void slotFrameTimeout(void);
-    void slotPlayerUpdate(int playerIndex, QString payerState);
+    //void slotFrameTimeout(void);
+    //void slotPlayerUpdate(int playerIndex, QString playerState);
 
 private:
 

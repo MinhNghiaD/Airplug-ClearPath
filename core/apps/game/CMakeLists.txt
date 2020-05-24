@@ -3,7 +3,8 @@
 
 set(game_SRCS
     main.cpp
-    player.cpp
+    agent.cpp
+    board.cpp
     world.cpp
     state.cpp
     bas_controller.cpp

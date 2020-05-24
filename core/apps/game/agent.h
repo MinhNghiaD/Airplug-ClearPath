@@ -3,7 +3,7 @@
  * This file is a part of Airplug project
  *
  * Date        : 2020-4-24
- * Description : game player class
+ * Description : Agent view in the board
  *
  * 2020 by Lucca Rawlyk
  *
@@ -23,11 +23,17 @@
 namespace GameApplication
 {
 
-class Player : public QGraphicsRectItem
+class Agent : public QGraphicsEllipseItem
 {
 public:
-    Player();
-    ~Player();
+
+    /**
+     * @brief Agent item is a circle in the board, each agent is attached to a site and has a radius
+     * @param siteID
+     * @param radius
+     */
+    Agent(const QString& siteID, qreal radius);
+    ~Agent();
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
