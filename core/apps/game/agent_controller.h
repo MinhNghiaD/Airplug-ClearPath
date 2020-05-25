@@ -20,6 +20,7 @@
 #include "application_controller.h"
 
 #include "ricart_lock.h"
+#include "board.h"
 
 using namespace AirPlug;
 
@@ -37,24 +38,19 @@ public:
     // Initialization of program
     void init(const QCoreApplication& app) override;
 
-    void pause(bool b);
-
-    void setMessage(const QString& msg);
+    //void pause(bool b);
 
     QJsonObject captureLocalState() const override;
 
+    Board* getBoard() const;
+
 public:
 
-    Q_SLOT void slotActivateTimer(int period);
-    Q_SLOT void slotDeactivateTimer();
-    Q_SLOT void slotPeriodChanged(int period);
+    //Q_SLOT void slotActivateTimer(int period);
+    //Q_SLOT void slotDeactivateTimer();
+    //Q_SLOT void slotPeriodChanged(int period);
     Q_SLOT void slotSendMessage();
 
-signals:
-
-    Q_SIGNAL void signalSequenceChange(int);
-
-    Q_SIGNAL void signalMessageReceived(Header, Message);
 
 private:
 

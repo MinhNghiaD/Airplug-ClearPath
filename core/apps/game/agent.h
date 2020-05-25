@@ -32,11 +32,16 @@ public:
      * @param siteID
      * @param radius
      */
-    Agent(const QString& siteID, qreal radius);
+    Agent(const QString& siteID, qreal radius = AGENT_RADIUS);
     ~Agent();
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+
+    /**
+     * @brief init: set agent at random position
+     */
+    void init();
 
     State& getState(void);
     int    getFrame();
@@ -46,6 +51,7 @@ public:
     void   move();
 
 private:
+
     class Private;
     Private* d;
 };

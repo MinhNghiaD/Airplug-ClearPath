@@ -29,6 +29,7 @@ public:
 public:
 
     void addAgent(const QString& siteID, Agent* agent);
+    void updateAgentState(const State& state);
 
 private:
 

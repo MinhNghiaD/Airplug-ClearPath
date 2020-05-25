@@ -1,13 +1,36 @@
 #include "state.h"
 
 //qt includes
-#include <QJsonDocument>
 //#include <QDebug>
 
 namespace GameApplication
 {
 
-State::State()
+State::State(const QString& siteID)
+    : siteID(siteID),
+      left(false),
+      right(false),
+      up(false),
+      down(false),
+      xSpeed(0),
+      ySpeed(0),
+      x(0),
+      y(0),
+      frame(0)
+{
+}
+
+State::State(const QJsonObject& json)
+    : siteID(json["siteID"].toString()),
+      left(json["left"].toBool()),
+      right(json["right"].toBool()),
+      up(json["up"].toBool()),
+      down(json["down"].toBool()),
+      xSpeed(json["xSpeed"].toInt()),
+      ySpeed(json["ySpeed"].toInt()),
+      x(json["x"].toInt()),
+      y(json["y"].toInt()),
+      frame(json["frame"].toInt())
 {
 }
 
@@ -17,7 +40,8 @@ State::~State()
 
 bool State::operator== (const State& s)
 {
-    return (left     == s.left &&
+    return (siteID   == s.siteID &&
+            left     == s.left &&
             right    == s.right &&
             up       == s.up &&
             down     == s.down &&
@@ -28,9 +52,11 @@ bool State::operator== (const State& s)
             frame    == s.frame);
 }
 
-QString State::toJsonString(void)
+QJsonObject State::toJson()
 {
     QJsonObject json;
+
+    json["siteID"]  = siteID;
     json["left"]    = left;
     json["right"]   = right;
     json["up"]      = up;
@@ -41,20 +67,7 @@ QString State::toJsonString(void)
     json["ySpeed"]  = ySpeed;
     json["frame"]   = frame;
 
-    return QJsonDocument(json).toJson(QJsonDocument::Compact);
-}
-
-void State::loadFromJson(const QJsonObject& json)
-{
-    left    = json["left"].toInt();
-    right   = json["right"].toInt();
-    up      = json["up"].toInt();
-    down    = json["down"].toInt();
-    x       = json["x"].toInt();
-    y       = json["y"].toInt();
-    xSpeed = json["xSpeed"].toInt();
-    ySpeed = json["ySpeed"].toInt();
-    frame   = json["frame"].toInt();
+    return json;
 }
 
 }

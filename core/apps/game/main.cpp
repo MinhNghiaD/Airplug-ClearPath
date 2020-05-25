@@ -11,29 +11,35 @@
 
 //Qt includes
 #include <QApplication>
+#include <QDebug>
 
 //local includes
 #include "world.h"
+#include "agent_controller.h"
 
 using namespace GameApplication;
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("game");
+    app.setApplicationName("GAM");
 
-    Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    AgentController controller;
 
-    Agent* agent1 = new Agent(QLatin1String("bas"), AGENT_RADIUS);
-    board->addAgent(QLatin1String("bas"), agent1);
+    controller.init(app);
 
-    World* world = new World(app, board);
+    World* world = nullptr;
 
-    world->show();
+    if (controller.hasGUI())
+    {
+        qDebug() << "------------------------- Start with GUI -------------------------------";
+
+        world = new World(app, controller.getBoard());
+
+        world->show();
+    }
 
     return app.exec();
 
     delete world;
-    delete board;
-    delete agent1;
 }

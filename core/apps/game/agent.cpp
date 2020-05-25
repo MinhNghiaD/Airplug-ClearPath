@@ -19,7 +19,7 @@ class Q_DECL_HIDDEN Agent::Private
 public:
 
     Private(const QString& siteID, qreal radius)
-        : siteID(siteID),
+        : state(State(siteID)),
           radius(radius)
     {
     }
@@ -30,25 +30,21 @@ public:
 
 public:
 
-    QString siteID;
     State state;
     qreal radius;
+
+    static QRgb color;
 };
+
+QRgb Agent::Private::color = 1;
 
 Agent::Agent(const QString& siteID, qreal radius)
     : QGraphicsEllipseItem(0, 0, radius, radius),
       d(new Private(siteID, radius))
 {
     setFlag(QGraphicsItem::ItemIsFocusable, true);
-    setBrush(QBrush(Qt::green));
-
-    // Init position of player randomly
-    std::random_device seeder{};
-    std::mt19937 twister{seeder()};
-    std::uniform_int_distribution<> x(0, VIEW_WIDTH - 1 - PLAYER_SIZE);
-    std::uniform_int_distribution<> y(0, VIEW_HEIGHT - 1 - PLAYER_SIZE);
-
-    setPos(x(twister), y(twister));
+    setBrush(QBrush( Qt::GlobalColor(Private::color) ));
+    Private::color += 5;
 }
 
 Agent::~Agent()
@@ -56,54 +52,15 @@ Agent::~Agent()
     delete d;
 }
 
-void Agent::keyPressEvent(QKeyEvent *event)
+void Agent::init()
 {
-    switch(event->key())
-    {
-        case Qt::Key_Left:
-            d->state.left = true;
-            break;
+    // Init position of player randomly
+    std::random_device seeder{};
+    std::mt19937 twister{seeder()};
+    std::uniform_int_distribution<> x(0, VIEW_WIDTH - 1 - PLAYER_SIZE);
+    std::uniform_int_distribution<> y(0, VIEW_HEIGHT - 1 - PLAYER_SIZE);
 
-        case Qt::Key_Right:
-            d->state.right = true;
-            break;
-
-        case Qt::Key_Up:
-            d->state.up = true;
-            break;
-
-        case Qt::Key_Down:
-            d->state.down = true;
-            break;
-
-        default:
-            return;
-    }
-}
-
-void Agent::keyReleaseEvent(QKeyEvent *event)
-{
-    switch(event->key())
-    {
-        case Qt::Key_Left:
-            d->state.left = false;
-            break;
-
-        case Qt::Key_Right:
-            d->state.right = false;
-            break;
-
-        case Qt::Key_Up:
-            d->state.up = false;
-            break;
-
-        case Qt::Key_Down:
-            d->state.down = false;
-            break;
-
-        default:
-            return;
-    }
+    setPos(x(twister), y(twister));
 }
 
 State& Agent::getState(void)
@@ -122,6 +79,7 @@ int Agent::getFrame(void)
 void Agent::setState(const State& state)
 {
     d->state = state;
+    setPos(d->state.x, d->state.y);
 }
 
 void Agent::incrementFrame(void)
@@ -211,6 +169,56 @@ void Agent::move()
     d->state.y += d->state.ySpeed;
 
     setPos(d->state.x, d->state.y);
+}
+
+void Agent::keyPressEvent(QKeyEvent *event)
+{
+    switch(event->key())
+    {
+        case Qt::Key_Left:
+            d->state.left = true;
+            break;
+
+        case Qt::Key_Right:
+            d->state.right = true;
+            break;
+
+        case Qt::Key_Up:
+            d->state.up = true;
+            break;
+
+        case Qt::Key_Down:
+            d->state.down = true;
+            break;
+
+        default:
+            return;
+    }
+}
+
+void Agent::keyReleaseEvent(QKeyEvent *event)
+{
+    switch(event->key())
+    {
+        case Qt::Key_Left:
+            d->state.left = false;
+            break;
+
+        case Qt::Key_Right:
+            d->state.right = false;
+            break;
+
+        case Qt::Key_Up:
+            d->state.up = false;
+            break;
+
+        case Qt::Key_Down:
+            d->state.down = false;
+            break;
+
+        default:
+            return;
+    }
 }
 
 }

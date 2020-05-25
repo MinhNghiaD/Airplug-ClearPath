@@ -1,9 +1,11 @@
 #include "agent_controller.h"
 
-//Qt includes
+// Qt includes
 #include <QTimer>
 #include <QDebug>
 
+// Local includes
+#include "board.h"
 
 using namespace AirPlug;
 
@@ -16,9 +18,9 @@ public:
 
     Private()
         : timer(nullptr),
+          board(new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT)),
           nbSequence(0)
     {
-        sharedMessage = QLatin1String("~");
         mutex         = new RicartLock();
     }
 
@@ -32,8 +34,10 @@ public:
 
     QTimer*               timer;
 
-    // sharedMessage is shared variables, clients will cumulate  the nb of sequence, if the mutex is working, sum(nbSequences) = sharedMessage
-    QString               sharedMessage;
+    // all agents shared the same Map
+    Board*                board;
+    Agent*                localAgent;
+
     int                   nbSequence;
 
     RicartLock*           mutex;
@@ -59,7 +63,7 @@ void AgentController::init(const QCoreApplication& app)
 
     if (m_optionParser.autoSend && m_optionParser.delay > 0)
     {
-        slotActivateTimer(m_optionParser.delay);
+        // TODO handle auto play
     }
 
     connect(d->mutex, &RicartLock::signalResponse,
@@ -77,8 +81,24 @@ void AgentController::init(const QCoreApplication& app)
     pong.setContent(content);
 
     sendMessage(pong, QString(), QString(), QString());
+
+    // init local agent
+    d->localAgent = new Agent(siteID(), AGENT_RADIUS);
+    d->localAgent->init();
+
+    d->board->addAgent(siteID(), d->localAgent);
+
+    // Broadcast agent initial state to others
+    slotSendMessage();
 }
 
+
+Board* AgentController::getBoard() const
+{
+    return d->board;
+}
+
+/*
 void AgentController::pause(bool b)
 {
     m_optionParser.start = !b;
@@ -88,13 +108,9 @@ void AgentController::pause(bool b)
         slotDeactivateTimer();
     }
 }
+*/
 
-void AgentController::setMessage(const QString& msg)
-{
-    //d->sharedMessage = msg;
-
-    //++(*m_clock);
-}
+/*
 
 void AgentController::slotActivateTimer(int period)
 {
@@ -113,6 +129,8 @@ void AgentController::slotActivateTimer(int period)
 
     ++(*m_clock);
 }
+
+
 
 void AgentController::slotDeactivateTimer()
 {
@@ -139,6 +157,7 @@ void AgentController::slotPeriodChanged(int period)
     ++(*m_clock);
 }
 
+*/
 void AgentController::slotSendMessage()
 {
     d->mutex->trylock((*m_clock));
@@ -203,13 +222,10 @@ void AgentController::slotReceiveMessage(Header header, Message message)
                 m_clock->updateClock(*senderClock);
             }
 
+            // TODO: receive Agent message
             QJsonObject contents = aclMessage->getContent();
 
-            d->sharedMessage = contents[QLatin1String("payload")].toString();
-            //d->nbSequence    = contents[QLatin1String("nseq")].toInt();
-
-            emit signalMessageReceived(header, message);
-            //emit signalSequenceChange(d->nbSequence);
+            d->board->updateAgentState(State(contents));
 
             break;
     }
@@ -221,8 +237,8 @@ QJsonObject AgentController::captureLocalState() const
 
     QJsonObject applicationState;
 
-    applicationState[QLatin1String("sharedMessage")] = d->sharedMessage;
-    applicationState[QLatin1String("nbSequence")]    = d->nbSequence;
+    // TODO capture game state
+
     applicationState[QLatin1String("mutexQueue")]    = d->mutex->getPendingQueue();
 
     QJsonObject localState;
@@ -269,21 +285,13 @@ void AgentController::slotEnterCriticalSection()
     // attache clock to the message
     message.setTimeStamp(*m_clock);
 
-    QJsonObject contents;
-
-    ++d->nbSequence;
-    d->sharedMessage = QString::number(d->sharedMessage.toInt() + 1);
-
-    contents[QLatin1String("payload")] =  d->sharedMessage;
-    contents[QLatin1String("nseq")]    =  d->nbSequence;
+    // TODO update all changes making since the last update to the network
+    QJsonObject contents = d->localAgent->getState().toJson();
 
     message.setContent(contents);
 
     // TODO: get what, where, who from user interface
     sendMessage(message, QString(), QString(), QString());
-
-    emit signalMessageReceived(Header("NET", "BAS", Header::localHost), message);
-    emit signalSequenceChange(d->nbSequence);
 
     d->mutex->unlock();
 }

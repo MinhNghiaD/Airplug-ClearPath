@@ -24,9 +24,9 @@ mkfifo in3 out3
 mkfifo in4 out4
 
 echo "init applications"
-$APPDIR/BAS/bas -geometry -0+0 --whatwho --auto --dest=NET --ident=bas1 < in1 > out1 &
+$APPDIR/game/game -geometry -0+0 --whatwho --auto --dest=NET --ident=bas1 < in1 > out1 &
 $APPDIR/NET/net -geometry -450+0 --whatwho --ident=net1 < in2 > out2 &
-$APPDIR/BAS/bas -geometry -900+0 --whatwho --auto --dest=NET --ident=bas2 < in3 > out3 &
+$APPDIR/game/game -geometry -900+0 --whatwho --auto --dest=NET --ident=bas2 < in3 > out3 &
 $APPDIR/NET/net --whatwho --ident=net2 --nogui < in4 > out4 &
 
 # wait for the link creations

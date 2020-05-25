@@ -138,6 +138,19 @@ void Board::addAgent(const QString& siteID, Agent* agent)
     addItem(agent);
 }
 
+void Board::updateAgentState(const State& state)
+{
+    if (! d->agents.contains(state.siteID))
+    {
+        Agent* newAgent = new Agent(state.siteID);
+        newAgent->setState(state);
 
+        addAgent(state.siteID, newAgent);
+    }
+    else
+    {
+        d->agents[state.siteID]->setState(state);
+    }
+}
 
 }
