@@ -194,7 +194,7 @@ void CommunicationManager::send(const Message& message,
         QString package = header.generateHeader(d->headerMode) + message.getMessage();
 
         // TODO: multiple data is put to pipe at the same time ==> only 1 signal emit and 1 message is handled
-        QThread::msleep(30);
+        QThread::msleep(10);
         d->protocols[protocol]->send(package);
 
         if (save)

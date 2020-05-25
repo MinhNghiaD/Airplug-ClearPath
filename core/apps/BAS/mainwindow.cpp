@@ -35,9 +35,9 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
 
     int period = controller->getPeriod();
 
-    ui->frequencySpinBox->setSingleStep(500);
+    ui->frequencySpinBox->setSingleStep(10);
     ui->frequencySpinBox->setMaximum(10000);
-    ui->frequencySpinBox->setMinimum(500);
+    ui->frequencySpinBox->setMinimum(10);
 
     if (period > 0)
     {
