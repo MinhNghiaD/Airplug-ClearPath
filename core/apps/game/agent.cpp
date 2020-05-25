@@ -39,7 +39,7 @@ Agent::Agent(const QString& siteID, qreal radius)
     : QGraphicsEllipseItem(0, 0, radius, radius),
       d(new Private(siteID, radius))
 {
-    setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    setFlag(QGraphicsItem::ItemIsFocusable, true);
     setBrush(QBrush(Qt::green));
 
     // Init position of player randomly
@@ -49,7 +49,6 @@ Agent::Agent(const QString& siteID, qreal radius)
     std::uniform_int_distribution<> y(0, VIEW_HEIGHT - 1 - PLAYER_SIZE);
 
     setPos(x(twister), y(twister));
-
 }
 
 Agent::~Agent()
@@ -107,7 +106,7 @@ void Agent::keyReleaseEvent(QKeyEvent *event)
     }
 }
 
-State Agent::getState(void)
+State& Agent::getState(void)
 {
     d->state.x = x();
     d->state.y = y();
@@ -120,12 +119,6 @@ int Agent::getFrame(void)
     return d->state.frame;
 }
 
-void Agent::setSpeed(int xSpeed, int ySpeed)
-{
-    d->state.xSpeed = xSpeed;
-    d->state.ySpeed = ySpeed;
-}
-
 void Agent::setState(const State& state)
 {
     d->state = state;
@@ -134,6 +127,90 @@ void Agent::setState(const State& state)
 void Agent::incrementFrame(void)
 {
     d->state.frame++;
+}
+
+void Agent::move()
+{
+    //apply acceleration modifications from controls
+    if(d->state.left == true)
+    {
+        d->state.xSpeed -= X_CONTROL_ACCELERATION;
+    }
+    else if(d->state.right == true)
+    {
+        d->state.xSpeed += X_CONTROL_ACCELERATION;
+    }
+
+    if(d->state.up == true)
+    {
+        d->state.ySpeed -= Y_CONTROL_ACCELERATION;
+    }
+    else if(d->state.down == true)
+    {
+        d->state.ySpeed += Y_CONTROL_ACCELERATION;
+    }
+
+
+    // update speed
+    if(abs(d->state.xSpeed) > X_SPEED_LIMIT)
+    {
+        d->state.xSpeed = (d->state.xSpeed > 0) ? X_SPEED_LIMIT : (-X_SPEED_LIMIT);
+    }
+
+    if(abs(d->state.ySpeed) > Y_SPEED_LIMIT)
+    {
+        d->state.ySpeed = (d->state.ySpeed >= 0) ? Y_SPEED_LIMIT : (-Y_SPEED_LIMIT);
+    }
+
+    //apply speed reduction from friction
+    if( (d->state.left == false && d->state.right == false) && d->state.xSpeed != 0 )
+    {
+        if(d->state.xSpeed > 0)
+        {
+            d->state.xSpeed -= X_FRICTION;
+
+            if(d->state.xSpeed < 0)
+            {
+                d->state.xSpeed = 0;
+            }
+        }
+        else
+        {
+            d->state.xSpeed += X_FRICTION;
+
+            if(d->state.xSpeed > 0)
+            {
+                d->state.xSpeed = 0;
+            }
+        }
+    }
+
+    if( (d->state.up == false && d->state.down == false) && d->state.ySpeed != 0 )
+    {
+        if(d->state.ySpeed > 0)
+        {
+            d->state.ySpeed -= Y_FRICTION;
+
+            if(d->state.ySpeed < 0)
+            {
+                d->state.ySpeed = 0;
+            }
+        }
+        else
+        {
+            d->state.ySpeed += Y_FRICTION;
+
+            if(d->state.ySpeed > 0)
+            {
+                d->state.ySpeed = 0;
+            }
+        }
+    }
+
+    d->state.x += d->state.xSpeed;
+    d->state.y += d->state.ySpeed;
+
+    setPos(d->state.x, d->state.y);
 }
 
 }

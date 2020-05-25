@@ -38,11 +38,12 @@ public:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
-    State getState(void);
-    int   getFrame();
-    void  setSpeed(int xSpeed, int ySpeed);
-    void  setState(const State& state);
-    void  incrementFrame(void);
+    State& getState(void);
+    int    getFrame();
+    void   setState(const State& state);
+    void   incrementFrame(void);
+
+    void   move();
 
 private:
     class Private;

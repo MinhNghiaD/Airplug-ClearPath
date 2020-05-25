@@ -25,13 +25,15 @@ int main(int argc, char *argv[])
     Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
 
     Agent* agent1 = new Agent(QLatin1String("bas"), AGENT_RADIUS);
-    board->addPlayer(agent1);
+    board->addAgent(QLatin1String("bas"), agent1);
 
     World* world = new World(app, board);
-
-
 
     world->show();
 
     return app.exec();
+
+    delete world;
+    delete board;
+    delete agent1;
 }

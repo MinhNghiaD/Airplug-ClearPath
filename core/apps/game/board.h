@@ -28,7 +28,7 @@ public:
 
 public:
 
-    void addPlayer(Agent* player);
+    void addAgent(const QString& siteID, Agent* agent);
 
 private:
 

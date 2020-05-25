@@ -7,7 +7,7 @@ set(game_SRCS
     board.cpp
     world.cpp
     state.cpp
-    bas_controller.cpp
+    agent_controller.cpp
 )
 
 add_executable(game ${game_SRCS})
