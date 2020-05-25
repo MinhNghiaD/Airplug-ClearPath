@@ -88,6 +88,9 @@ void AgentController::init(const QCoreApplication& app)
 
     d->board->addAgent(siteID(), d->localAgent);
 
+    connect(d->localAgent, &Agent::signalStateChanged,
+            this,          &AgentController::slotSendMessage);
+
     // Broadcast agent initial state to others
     slotSendMessage();
 }
@@ -286,6 +289,7 @@ void AgentController::slotEnterCriticalSection()
     message.setTimeStamp(*m_clock);
 
     // TODO update all changes making since the last update to the network
+    d->localAgent->move();
     QJsonObject contents = d->localAgent->getState().toJson();
 
     message.setContent(contents);

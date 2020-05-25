@@ -23,8 +23,9 @@
 namespace GameApplication
 {
 
-class Agent : public QGraphicsEllipseItem
+class Agent : public QObject, public QGraphicsEllipseItem
 {
+    Q_OBJECT
 public:
 
     /**
@@ -49,6 +50,10 @@ public:
     void   incrementFrame(void);
 
     void   move();
+
+public:
+
+    Q_SIGNAL void signalStateChanged();
 
 private:
 

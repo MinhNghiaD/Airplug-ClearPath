@@ -1,7 +1,7 @@
 #include "agent.h"
 
 //qt includes
-//#include <QDebug>
+#include <QDebug>
 #include <QBrush>
 
 //std includes
@@ -20,7 +20,8 @@ public:
 
     Private(const QString& siteID, qreal radius)
         : state(State(siteID)),
-          radius(radius)
+          radius(radius),
+          updated(false)
     {
     }
 
@@ -32,6 +33,7 @@ public:
 
     State state;
     qreal radius;
+    bool  updated;
 
     static QRgb color;
 };
@@ -42,7 +44,7 @@ Agent::Agent(const QString& siteID, qreal radius)
     : QGraphicsEllipseItem(0, 0, radius, radius),
       d(new Private(siteID, radius))
 {
-    setFlag(QGraphicsItem::ItemIsFocusable, true);
+    //setFlag(QGraphicsItem::ItemIsFocusable, true);
     setBrush(QBrush( Qt::GlobalColor(Private::color) ));
     Private::color += 5;
 }
@@ -54,13 +56,21 @@ Agent::~Agent()
 
 void Agent::init()
 {
+    setFlag(QGraphicsItem::ItemIsFocusable);
+    setFocus();
+
     // Init position of player randomly
     std::random_device seeder{};
     std::mt19937 twister{seeder()};
     std::uniform_int_distribution<> x(0, VIEW_WIDTH - 1 - PLAYER_SIZE);
     std::uniform_int_distribution<> y(0, VIEW_HEIGHT - 1 - PLAYER_SIZE);
 
-    setPos(x(twister), y(twister));
+    d->state.x = x(twister);
+    d->state.y = y(twister);
+
+    setPos(d->state.x, d->state.y);
+
+    d->updated = true;
 }
 
 State& Agent::getState(void)
@@ -79,6 +89,8 @@ int Agent::getFrame(void)
 void Agent::setState(const State& state)
 {
     d->state = state;
+    d->updated = true;
+
     setPos(d->state.x, d->state.y);
 }
 
@@ -169,10 +181,21 @@ void Agent::move()
     d->state.y += d->state.ySpeed;
 
     setPos(d->state.x, d->state.y);
+
+    d->updated = true;
 }
 
 void Agent::keyPressEvent(QKeyEvent *event)
 {
+    qDebug() << "Agent is updated" << d->updated;
+
+    if (d->updated)
+    {
+        // TODO sync
+        emit signalStateChanged();
+        d->updated = false;
+    }
+
     switch(event->key())
     {
         case Qt::Key_Left:
