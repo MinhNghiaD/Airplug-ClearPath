@@ -215,7 +215,7 @@ void Router::Private::receiveElectionMsg (ACLMessage& message)
 {
     if (electionMng)
     {
-        // TODO ELECTION 11: process Election messages
+        // process Election messages
         switch (message.getPerformative())
         {
         case ACLMessage::ELECTION:
@@ -454,8 +454,9 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     connect(d->watchdog, &Watchdog::signalNetworkChanged,
             this,        &Router::slotUpdateNbApps, Qt::DirectConnection);
 
-    // TODO ELECTION 10: connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
-    connect(d->electionMng, &ElectionManager::signalSendElectionMessage, this, &Router::slotBroadcastNetwork);
+    // connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
+    connect(d->electionMng, &ElectionManager::signalSendElectionMessage,
+            this,           &Router::slotBroadcastNetwork, Qt::DirectConnection);
 
     // TODO ELECTION 18: connect signals of ElectionManager and LaiYangSnapshot with slot defined at TODO 15 16 17
 
@@ -532,17 +533,16 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->receiveMutexApproval(aclMessage, false);
                 break;
 
-            // TODO ELECTION 13 call Private::receiveElectionMsg to process election message
             case ACLMessage::ELECTION:
                 d->receiveElectionMsg(aclMessage);
                 break;
 
             case ACLMessage::ACK_ELECTION:
-                d->
+                d->receiveElectionMsg(aclMessage);
                 break;
 
             case ACLMessage::FINISH_ELECTION:
-
+                d->receiveElectionMsg(aclMessage);
                 break;
 
             default:
@@ -606,7 +606,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
     d->snapshot->setNbOfNeighbor(nbSites - 1);
 
     // TODO ELECTION 9 : update nbNeighbor to electionMng when receive network update
-    d->electionMng->setNbOfNeighbor(nbApp);
+    d->electionMng->setNbOfNeighbor(nbSites - 1);
 
 }
 

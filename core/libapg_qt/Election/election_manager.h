@@ -105,7 +105,7 @@ public:
 
 public:
 
-    Q_SIGNAL void signalSendElectionMessage(Message& request);
+    Q_SIGNAL void signalSendElectionMessage(ACLMessage& request);
     Q_SIGNAL void signalWinElection(ElectionReason reason);
 
 private:

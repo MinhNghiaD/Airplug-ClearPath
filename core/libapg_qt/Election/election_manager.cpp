@@ -50,23 +50,22 @@ namespace AirPlug
     else
     {
       // Starting the election process
-      // TODO ELECTION 1: if not already in an election => save election to the list of ongoing election
+      // if not already in an election => save election to the list of ongoing election
       // nbWaitedResponses is set to the nbNeighbor
-      Election* election = new Election();
-      election->reason = reason;
-      election->candidate = d->siteID;
-      election->nbAgains = 0;
-      election->nbFor = 0;
-      election->nbWaitedResponses = d->nbNeighbor;
+      Election election;
+      election.reason            = reason;
+      election.candidate         = d->siteID;
+      election.nbAgains          = 0;
+      election.nbFor             = 0;
+      election.nbWaitedResponses = d->nbNeighbor;
 
-      d->ongoingElections.insert(reason, *election);
+      d->ongoingElections.insert(reason, election);
 
       ACLMessage request(ACLMessage::ELECTION);
 
-      // TODO ELECTION 2: write request message to QJsonObject indicate Election Reason and siteID then broadcast
       QJsonObject content;
-      content.insert("reason", reason);
-      content.insert("siteID", d->siteID);
+      content.insert(QLatin1String("reason"), reason);
+      content.insert(QLatin1String("candidate"), d->siteID);
 
       request.setContent(content);
 
@@ -78,23 +77,32 @@ namespace AirPlug
   void ElectionManager::processElectionRequest(ACLMessage& request)
   {
     QJsonObject content = request.getContent();
-    QString candidate = content["candidate"];
-    // TODO ELECTION 3: process request message and update ongoing elections
+    QString candidate = content[QLatin1String("candidate")].toString();
+    // process request message and update ongoing elections
     // if not participating in this election, nbWaitedResponses is set to 0
-    if (d->ongoingElections.contains(ElectionReason::Snapshot)){
-      // Already a candidate or a 2nd+ call of a non candidate
-      if (!d->ongoingElections[ElectionReason::Snapshot].candidate.toInt() < candidate.toInt()) {
-        // Update candidate for this site
-        d->ongoingElections[ElectionReason::Snapshot].candidate = candidate;
-      }
-    } else {
-      // First time : generally not a candidate
-      Election *election = new Election();
-      election->candidate = candidate;
-      election->reason = content["reason"];
-      election->nbWaitedResponses = 0;
 
-      d->ongoingElections.insert(ElectionReason::Snapshot, *election);
+    ElectionReason reason = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
+
+    if (d->ongoingElections.contains(reason))
+    {
+        // Already a candidate or a 2nd+ call of a non candidate
+        if (d->ongoingElections[reason].candidate > candidate)
+        {
+            // Update candidate voted by this site
+            d->ongoingElections[reason].candidate = candidate;
+        }
+    }
+    else
+    {
+        // First time : generally not a candidate
+        Election election;
+        election.candidate         = candidate;
+        election.reason            = reason;
+        election.nbFor             = 0;
+        election.nbAgains          = 0;
+        election.nbWaitedResponses = 0;
+
+        d->ongoingElections.insert(reason, election);
     }
 
     // Send ACK message back to sender
@@ -102,8 +110,9 @@ namespace AirPlug
     request.setReceiver(request.getSender());
 
     QJsonObject responseContent;
-    // TODO ELECTION 4: indicate siteID of current candidate of this site and send back to sender
-    responseContent["candidate"] = d->ongoingElections[ElectionReason::Snapshot].candidate;
+    // indicate siteID of current candidate of this site and send back to sender
+    responseContent[QLatin1String("candidate")] = d->ongoingElections[reason].candidate;
+    responseContent[QLatin1String("reason")] = d->ongoingElections[reason].reason;
 
     request.setContent(responseContent);
 
@@ -112,31 +121,35 @@ namespace AirPlug
 
   void ElectionManager::processElectionAck(ACLMessage& ackMessage)
   {
-    QJsonObject content = ackMessage.getContent();
-    // TODO ELECTION 5: get candidate of ack message and update info about ongoing elections
-    // If candidate in ack message is local site => increment nbFor
-    // If candidate in ack message is not local site => increment nbAgains
-    // Decrement nbWaitedResponses, if nbWaitedResponses = 0 => election finish
-    // if nbFor == nbApp => win election, send signal signalWinElection back to Router to give permission to do the task
-    if (d->ongoingElections[ElectionReason::Snapshot].nbWaitedResponses == 0) {
-      return;
-    }
+        QJsonObject content = ackMessage.getContent();
+        QString candidate       = content[QLatin1String("candidate")].toString();
+        ElectionReason reason   = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
 
-    QString candidate = content["candidate"];
+        // TODO ELECTION 5: get candidate of ack message and update info about ongoing elections
+        // If candidate in ack message is local site => increment nbFor
+        // If candidate in ack message is not local site => increment nbAgains
+        // Decrement nbWaitedResponses, if nbWaitedResponses = 0 => election finish
+        // if nbFor == nbApp => win election, send signal signalWinElection back to Router to give permission to do the task
+        if (d->ongoingElections[ElectionReason::Snapshot].nbWaitedResponses == 0)
+        {
+            return;
+        }
 
-    if (candidate == d->siteID) {
-      d->ongoingElections[ElectionReason::Snapshot].nbFor += 1;
-    } else {
-      d->ongoingElections[ElectionReason::Snapshot].nbAgains += 1;
-    }
-    d->ongoingElections[ElectionReason::Snapshot].nbWaitedResponses -= 1;
+        if (candidate == d->siteID)
+        {
+            d->ongoingElections[reason].nbFor += 1;
+        }
+        else
+        {
+            d->ongoingElections[reason].nbAgains += 1;
+        }
 
-    if (d->ongoingElections[ElectionReason::Snapshot].nbFor == d->nbNeighbor)
-    {
-      ElectionReason reason = ElectionReason::Snapshot;
+        d->ongoingElections[reason].nbWaitedResponses -= 1;
 
-      emit signalWinElection(reason);
-    }
+        if (d->ongoingElections[reason].nbFor == d->nbNeighbor)
+        {
+            emit signalWinElection(reason);
+        }
   }
 
   void ElectionManager::finishElection(ElectionReason reason)
@@ -145,6 +158,11 @@ namespace AirPlug
     {
       // only winner can broadcast finish election message
       ACLMessage inform(ACLMessage::FINISH_ELECTION);
+      // mark reason of finished election
+      QJsonObject content;
+      content[QLatin1String("reason")] = reason;
+
+      inform.setContent(content);
 
       // Broadcast election message
       emit signalSendElectionMessage(inform);
@@ -157,8 +175,8 @@ namespace AirPlug
   void ElectionManager::processFinishElection(ACLMessage& finishMessage)
   {
     QJsonObject content = finishMessage.getContent();
-    // TODO ELECTION 8: get reason of finish election in order to remove from ongoing list
-    content[]
+    // get reason of finish election in order to remove from ongoing list
+   ElectionReason reason = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
 
     d->ongoingElections.remove(reason);
   }
