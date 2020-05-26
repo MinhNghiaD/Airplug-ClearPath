@@ -219,11 +219,11 @@ void Router::Private::receiveElectionMsg (ACLMessage& message)
         switch (message.getPerformative())
         {
         case ACLMessage::ELECTION:
-
+            electionMng->processElectionRequest(message);
             break;
 
         case ACLMessage::FINISH_ELECTION:
-
+            electionMng->processFinishElection(message);
             break;
 
         case ACLMessage::ACK_ELECTION:
@@ -455,6 +455,7 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
             this,        &Router::slotUpdateNbApps, Qt::DirectConnection);
 
     // TODO ELECTION 10: connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
+    connect(d->electionMng, &ElectionManager::signalSendElectionMessage, this, &Router::slotBroadcastNetwork);
 
     // TODO ELECTION 18: connect signals of ElectionManager and LaiYangSnapshot with slot defined at TODO 15 16 17
 
@@ -533,11 +534,11 @@ void Router::slotReceiveMessage(Header header, Message message)
 
             // TODO ELECTION 13 call Private::receiveElectionMsg to process election message
             case ACLMessage::ELECTION:
-
+                d->receiveElectionMsg(aclMessage);
                 break;
 
             case ACLMessage::ACK_ELECTION:
-
+                d->
                 break;
 
             case ACLMessage::FINISH_ELECTION:
@@ -605,6 +606,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
     d->snapshot->setNbOfNeighbor(nbSites - 1);
 
     // TODO ELECTION 9 : update nbNeighbor to electionMng when receive network update
+    d->electionMng->setNbOfNeighbor(nbApp);
 
 }
 

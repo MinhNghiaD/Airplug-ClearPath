@@ -52,8 +52,6 @@ namespace AirPlug
       // Starting the election process
       // TODO ELECTION 1: if not already in an election => save election to the list of ongoing election
       // nbWaitedResponses is set to the nbNeighbor
-
-      // Maybe *Election instead of Election
       Election* election = new Election();
       election->reason = reason;
       election->candidate = d->siteID;
@@ -63,15 +61,12 @@ namespace AirPlug
 
       d->ongoingElections.insert(reason, *election);
 
-
       ACLMessage request(ACLMessage::ELECTION);
 
       // TODO ELECTION 2: write request message to QJsonObject indicate Election Reason and siteID then broadcast
       QJsonObject content;
-      QJsonArray array;
-      array["reason"] = reason;
-      array["siteID"] = d->siteID;
-      content.insert("election", array);
+      content.insert("reason", reason);
+      content.insert("siteID", d->siteID);
 
       request.setContent(content);
 
@@ -83,17 +78,23 @@ namespace AirPlug
   void ElectionManager::processElectionRequest(ACLMessage& request)
   {
     QJsonObject content = request.getContent();
+    QString candidate = content["candidate"];
     // TODO ELECTION 3: process request message and update ongoing elections
     // if not participating in this election, nbWaitedResponses is set to 0
-    if (content.contains("reason") && content["reason"] == ElectionReason::Snapshot){
-      if (content.contains("candidate") && content["candidate"].toInt() < d->siteID) {
-        d->ongoingElections[content["reason"]].nbAgains += 1;
-      } else {
-        d->ongoingElections[content["reason"]].nbFor += 1;
+    if (d->ongoingElections.contains(ElectionReason::Snapshot)){
+      // Already a candidate or a 2nd+ call of a non candidate
+      if (!d->ongoingElections[ElectionReason::Snapshot].candidate.toInt() < candidate.toInt()) {
+        // Update candidate for this site
+        d->ongoingElections[ElectionReason::Snapshot].candidate = candidate;
       }
-      d->ongoingElections[content["reason"]].nbWaitedResponses -= 1;
     } else {
-      d->ongoingElections[content["reason"]].nbWaitedResponses = 0;
+      // First time : generally not a candidate
+      Election *election = new Election();
+      election->candidate = candidate;
+      election->reason = content["reason"];
+      election->nbWaitedResponses = 0;
+
+      d->ongoingElections.insert(ElectionReason::Snapshot, *election);
     }
 
     // Send ACK message back to sender
@@ -102,8 +103,7 @@ namespace AirPlug
 
     QJsonObject responseContent;
     // TODO ELECTION 4: indicate siteID of current candidate of this site and send back to sender
-    responseContent;
-
+    responseContent["candidate"] = d->ongoingElections[ElectionReason::Snapshot].candidate;
 
     request.setContent(responseContent);
 
@@ -118,10 +118,22 @@ namespace AirPlug
     // If candidate in ack message is not local site => increment nbAgains
     // Decrement nbWaitedResponses, if nbWaitedResponses = 0 => election finish
     // if nbFor == nbApp => win election, send signal signalWinElection back to Router to give permission to do the task
+    if (d->ongoingElections[ElectionReason::Snapshot].nbWaitedResponses == 0) {
+      return;
+    }
 
-    if (false)
+    QString candidate = content["candidate"];
+
+    if (candidate == d->siteID) {
+      d->ongoingElections[ElectionReason::Snapshot].nbFor += 1;
+    } else {
+      d->ongoingElections[ElectionReason::Snapshot].nbAgains += 1;
+    }
+    d->ongoingElections[ElectionReason::Snapshot].nbWaitedResponses -= 1;
+
+    if (d->ongoingElections[ElectionReason::Snapshot].nbFor == d->nbNeighbor)
     {
-      ElectionReason reason;
+      ElectionReason reason = ElectionReason::Snapshot;
 
       emit signalWinElection(reason);
     }
@@ -146,8 +158,9 @@ namespace AirPlug
   {
     QJsonObject content = finishMessage.getContent();
     // TODO ELECTION 8: get reason of finish election in order to remove from ongoing list
+    content[]
 
-    //d->ongoingElections.remove(reason);
+    d->ongoingElections.remove(reason);
   }
 
   void ElectionManager::setNbOfNeighbor(int nbNeighbor)
