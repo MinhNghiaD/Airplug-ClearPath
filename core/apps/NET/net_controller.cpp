@@ -61,7 +61,7 @@ void NetController::init(const QCoreApplication &app)
 
 void NetController::takeSnapshot() const
 {
-    d->snapshot->callElection();
+    d->snapshot->init();
 }
 
 void NetController::slotReceiveMessage(Header, Message)
