@@ -36,7 +36,7 @@ StdTransporter::StdTransporter(QObject* parent)
 {
     setObjectName(QLatin1String("StandardIO Protocol"));
 
-    d->notifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
+    d->notifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read);
 
     connect(d->notifier, &QSocketNotifier::activated,
             this,        &StdTransporter::slotMessageArrive, Qt::DirectConnection);

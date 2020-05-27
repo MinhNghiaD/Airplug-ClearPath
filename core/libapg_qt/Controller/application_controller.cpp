@@ -11,7 +11,8 @@ namespace AirPlug
 ApplicationController::ApplicationController(const QString& appName, QObject* parent)
     : QObject(parent),
       m_communication(nullptr),
-      m_clock(nullptr)
+      m_clock(nullptr),
+      m_eventThread(new QThread())
 {
     setObjectName(appName);
 }
@@ -20,6 +21,10 @@ ApplicationController::~ApplicationController()
 {
     delete m_communication;
     delete m_clock;
+
+    m_eventThread->quit();
+    m_eventThread->wait();
+    delete m_eventThread;
 }
 
 void ApplicationController::init(const QCoreApplication& app)
@@ -34,15 +39,14 @@ void ApplicationController::init(const QCoreApplication& app)
     m_communication = new CommunicationManager(QString(),
                                                m_optionParser.destination,
                                                Header::airHost,
-                                               m_optionParser.headerMode,
-                                               this);
+                                               m_optionParser.headerMode);
 
     m_communication->setSafeMode(m_optionParser.safemode);
 
     m_communication->subscribeAir(m_optionParser.source);
 
-    connect(m_communication, SIGNAL(signalMessageReceived(Header,Message)),
-            this,            SLOT(slotReceiveMessage(Header,Message)), Qt::DirectConnection);
+    connect(m_communication, &CommunicationManager::signalMessageReceived,
+            this,            &ApplicationController::slotReceiveMessage, Qt::DirectConnection);
 
     if (m_optionParser.remote)
     {
@@ -54,6 +58,9 @@ void ApplicationController::init(const QCoreApplication& app)
     {
         m_communication->addStdTransporter();
     }
+
+    m_communication->moveToThread(m_eventThread);
+    m_eventThread->start();
 
     QString siteID = m_optionParser.ident;
 
