@@ -32,7 +32,7 @@ class AgentController: public ApplicationController
     Q_OBJECT
 public:
 
-    AgentController(QObject* parent = nullptr);
+    AgentController(Board* board, QObject* parent = nullptr);
     ~AgentController();
 
     // Initialization of program
@@ -41,8 +41,6 @@ public:
     //void pause(bool b);
 
     QJsonObject captureLocalState() const override;
-
-    Board* getBoard() const;
 
 public:
 

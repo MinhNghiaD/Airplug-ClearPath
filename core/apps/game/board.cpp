@@ -4,6 +4,7 @@
 #include <QRectF>
 
 #include <QHash>
+#include <QDebug>
 
 // local includes
 
@@ -20,6 +21,7 @@ public:
 
     ~Private()
     {
+        // TODO: delete agent
     }
 
 public:
@@ -121,7 +123,7 @@ void Board::Private::fixCollisions(Agent* agent)
 
 
 Board::Board(qreal x, qreal y, qreal width, qreal height)
-    :  QGraphicsScene(x, y, width, height),
+    : QGraphicsScene(x, y, width, height),
       d(new Private())
 {
 }
@@ -140,6 +142,8 @@ void Board::addAgent(const QString& siteID, Agent* agent)
 
 void Board::updateAgentState(const State& state)
 {
+    qDebug() << "update state for agent" << state.siteID;
+
     if (! d->agents.contains(state.siteID))
     {
         Agent* newAgent = new Agent(state.siteID);

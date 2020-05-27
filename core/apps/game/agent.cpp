@@ -38,7 +38,7 @@ public:
     static QRgb color;
 };
 
-QRgb Agent::Private::color = 1;
+QRgb Agent::Private::color = 5;
 
 Agent::Agent(const QString& siteID, qreal radius)
     : QGraphicsEllipseItem(0, 0, radius, radius),

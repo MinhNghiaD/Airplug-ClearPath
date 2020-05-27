@@ -3,9 +3,8 @@
 // Qt includes
 #include <QTimer>
 #include <QDebug>
+#include <QThread>
 
-// Local includes
-#include "board.h"
 
 using namespace AirPlug;
 
@@ -16,9 +15,9 @@ class Q_DECL_HIDDEN AgentController::Private
 {
 public:
 
-    Private()
-        : timer(nullptr),
-          board(new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT)),
+    Private(Board* board)
+        : //timer(nullptr),
+          board(board),
           nbSequence(0)
     {
         mutex         = new RicartLock();
@@ -26,30 +25,31 @@ public:
 
     ~Private()
     {
-        delete timer;
+        //delete timer;
         delete mutex;
     }
 
 public:
 
-    QTimer*               timer;
+    //QTimer*     timer;
 
     // all agents shared the same Map
-    Board*                board;
-    Agent*                localAgent;
+    Board*      board;
+    Agent*      localAgent;
 
-    int                   nbSequence;
+    int         nbSequence;
 
-    RicartLock*           mutex;
+    RicartLock* mutex;
 };
 
 
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-AgentController::AgentController(QObject* parent)
+AgentController::AgentController(Board* board, QObject* parent)
     : ApplicationController(QLatin1String("BAS"), parent),
-      d(new Private)
+      d(new Private(board))
 {
+    setObjectName(QLatin1String("Agent Controller"));
 }
 
 AgentController::~AgentController()
@@ -89,17 +89,12 @@ void AgentController::init(const QCoreApplication& app)
     d->board->addAgent(siteID(), d->localAgent);
 
     connect(d->localAgent, &Agent::signalStateChanged,
-            this,          &AgentController::slotSendMessage);
+            this,          &AgentController::slotSendMessage, Qt::DirectConnection);
 
     // Broadcast agent initial state to others
     slotSendMessage();
 }
 
-
-Board* AgentController::getBoard() const
-{
-    return d->board;
-}
 
 /*
 void AgentController::pause(bool b)
@@ -227,6 +222,7 @@ void AgentController::slotReceiveMessage(Header header, Message message)
 
             // TODO: receive Agent message
             QJsonObject contents = aclMessage->getContent();
+            qDebug() << siteID() << "receive state from" << aclMessage->getSender();
 
             d->board->updateAgentState(State(contents));
 
@@ -293,6 +289,7 @@ void AgentController::slotEnterCriticalSection()
     QJsonObject contents = d->localAgent->getState().toJson();
 
     message.setContent(contents);
+    qDebug() << siteID() << "send state";
 
     // TODO: get what, where, who from user interface
     sendMessage(message, QString(), QString(), QString());

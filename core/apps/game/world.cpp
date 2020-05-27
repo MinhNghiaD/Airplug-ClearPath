@@ -53,7 +53,7 @@ public:
     //QGraphicsView* view;
     Board* board;
 
-    QTimer frame_timer;
+    //QTimer frame_timer;
 };
 
 World::World(const QCoreApplication &app, Board* board)
