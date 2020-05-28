@@ -42,6 +42,7 @@ set(libapg_includes_directories ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Frame
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Snapshot/
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/MutualExclusion/
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Election/
+                                ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Synchronizer/
    )
 
 
