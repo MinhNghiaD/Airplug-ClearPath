@@ -6,6 +6,7 @@
  * Description : main application of the game
  *
  * 2020 by Lucca Rawlyk
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
  * ============================================================ */
 
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
 
     AgentController* controller = new AgentController(board);
     controller->moveToThread(eventThread);
+    eventThread->start();
     controller->init(app);
 
     World* view = nullptr;
