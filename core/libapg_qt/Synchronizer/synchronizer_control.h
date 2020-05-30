@@ -58,8 +58,9 @@ public:
     /**
      * @brief processLocalMessage : process messages come from local base application
      * @param message
+     * @return true if message can continue to send to Network
      */
-    void processLocalMessage(ACLMessage& message);
+    bool processLocalMessage(ACLMessage& message);
 
     /**
      * @brief processExternalMessage : process messages come from network
@@ -67,7 +68,7 @@ public:
      */
     void processExternalMessage(ACLMessage& message);
 
-    void setNbApps(int nbApps);
+    void setNbOfApp(int nbApps);
 
 public:
 

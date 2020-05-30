@@ -7,6 +7,7 @@
 // libapg include
 
 #include "watchdog.h"
+#include "synchronizer_control.h"
 
 namespace AirPlug
 {
@@ -20,7 +21,8 @@ public:
           nbApp(0),
           snapshot(nullptr),
           watchdog(nullptr),
-          electionMng(nullptr)
+          electionMng(nullptr),
+          synchronizer(nullptr)
     {
     }
 
@@ -62,6 +64,7 @@ public:
     Watchdog*             watchdog;
 
     ElectionManager*      electionMng;
+    SynchronizerControl*  synchronizer;
 
     // map external router with : - the most recent nbSequence received
     QHash<QString, int>   recentSequences;
@@ -75,6 +78,12 @@ void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 {
     // Broadcast to all other applications in same site first
     communicationMngr->send(message, QLatin1String("NET"), Header::allApp, Header::localHost);
+
+    if (synchronizer)
+    {
+        // TODO SYNCHRONIZER 8 : call processLocalMessage() method of synchronizer to process message from local to net
+        // if return false => return
+    }
 
     // mark message ID
     message.setSender(siteID);
@@ -97,7 +106,7 @@ void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 
 void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
 {
-    if (! message.getContents().contains(QLatin1String("receiver")))
+    if (message.getReceiver() != siteID)
     {
         // broadcast the message to another net
         communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), header.where());
@@ -127,6 +136,11 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     }
 
     message.setContent(contents);
+
+    if (synchronizer)
+    {
+        // TODO SYNCHRONIZER 9 : call processExternalMessage of SychronizerControl to process message
+    }
 
     communicationMngr->send(message, QLatin1String("NET"), app, Header::localHost);
 }
@@ -441,6 +455,7 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     d->siteID            = siteID;
     d->watchdog          = new Watchdog(siteID);
     d->electionMng       = new ElectionManager(siteID);
+    d->synchronizer      = new SynchronizerControl();
 
     connect(d->communicationMngr, SIGNAL(signalMessageReceived(Header, Message)),
             this,                 SLOT(slotReceiveMessage(Header, Message)), Qt::DirectConnection);
@@ -454,9 +469,7 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     connect(d->watchdog, &Watchdog::signalNetworkChanged,
             this,        &Router::slotUpdateNbApps, Qt::DirectConnection);
 
-    // TODO ELECTION 10: connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
-
-    // TODO ELECTION 18: connect signals of ElectionManager and LaiYangSnapshot with slot defined at TODO 15 16 17
+    // TODO SYNCHRONIZER 10 : connect signals of SynchronizerControl to slots slotBroadcastLocal and slotBroadcastNetwork of Router
 
 }
 
@@ -604,7 +617,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
     d->snapshot->setNbOfApp(nbApp);
     d->snapshot->setNbOfNeighbor(nbSites - 1);
 
-    // TODO ELECTION 9 : update nbNeighbor to electionMng when receive network update
+    // TODO SYNCHRONIZER 7 : set nbApp for synchronizer
 
 }
 
