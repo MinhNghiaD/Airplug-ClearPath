@@ -25,7 +25,8 @@ set(libapg_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/Frame/header.cpp
 
                 ${CMAKE_CURRENT_SOURCE_DIR}/Election/election_manager.cpp
 
-                ${CMAKE_CURRENT_SOURCE_DIR}/Synchronizer/synchronizer.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/Synchronizer/synchronizer_base.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/Synchronizer/synchronizer_control.cpp
     )
 
 add_library(apg STATIC ${libapg_SRCS})

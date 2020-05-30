@@ -44,6 +44,7 @@ public:
         UNKNOWN,
         PING,
         PONG,
+        SYNC,
 
         // custom Distributed perfomative
         REQUEST_SNAPSHOT,
