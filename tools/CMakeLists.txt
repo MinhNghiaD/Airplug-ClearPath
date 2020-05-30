@@ -21,5 +21,6 @@ MACRO(LIBAPG_TOOLS_BUILD)
                          )
 ENDMACRO()
 
+# add unit tests hear:
 LIBAPG_TOOLS_BUILD(test_message.cpp)
 LIBAPG_TOOLS_BUILD(test_clock.cpp)
