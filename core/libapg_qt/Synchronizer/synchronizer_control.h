@@ -16,6 +16,7 @@
 #include <QObject>
 
 // Local includes
+#include "aclmessage.h"
 
 namespace AirPlug
 {
@@ -55,17 +56,34 @@ public:
 public:
 
     /**
-     * @brief init: make local site become the initiator of the network
-     * Election will be used to elect one unique initiator per network
+     * @brief processLocalMessage : process messages come from local base application
+     * @param message
      */
-    void init(const QString& initiator);
+    void processLocalMessage(ACLMessage& message);
 
-    void processLocalMessage(const QString& initiator);
+    /**
+     * @brief processExternalMessage : process messages come from network
+     * @param message
+     */
+    void processExternalMessage(ACLMessage& message);
 
     void setNbApps(int nbApps);
 
 public:
 
+    // Use for forwarding message from local base application to the network
+    Q_SIGNAL void signalSendToNet(ACLMessage& message);
+
+    // Use for forwarding message from network to local base application
+    Q_SIGNAL void signalSendToApp(ACLMessage& message);
+
+private:
+
+    /**
+     * @brief init: make local site become the initiator of the network
+     * Election will be used to elect one unique initiator per network
+     */
+    void init(const QString& initiator);
 
 private:
 

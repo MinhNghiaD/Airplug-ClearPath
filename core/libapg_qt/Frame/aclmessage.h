@@ -45,6 +45,7 @@ public:
         PING,
         PONG,
         SYNC,
+        SYNC_ACK,
 
         // custom Distributed perfomative
         REQUEST_SNAPSHOT,

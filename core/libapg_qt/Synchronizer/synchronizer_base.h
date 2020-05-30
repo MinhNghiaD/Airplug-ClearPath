@@ -16,6 +16,7 @@
 #include <QObject>
 
 // Local includes
+#include "aclmessage.h"
 
 namespace AirPlug
 {
@@ -54,8 +55,18 @@ public:
 
 public:
 
+    /**
+     * @brief init : used to initiate a synchronous process in the network,
+     * this method will send out a dummy message to its local NET to candidate as initator
+     */
+    void init();
+
+    void processMessage(ACLMessage& message);
+
 public:
 
+    Q_SIGNAL void signalSendMessage(ACLMessage& message);
+    Q_SIGNAL void signalDoStep(ACLMessage& message);
 
 private:
 
