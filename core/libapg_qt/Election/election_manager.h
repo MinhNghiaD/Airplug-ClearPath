@@ -54,6 +54,7 @@ class ElectionManager : public QObject
     Q_OBJECT
 public:
 
+    // Maybe more in the future
     enum ElectionReason
     {
         Snapshot = 0,

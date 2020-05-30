@@ -130,7 +130,7 @@ namespace AirPlug
         // If candidate in ack message is not local site => increment nbAgains
         // Decrement nbWaitedResponses, if nbWaitedResponses = 0 => election finish
         // if nbFor == nbApp => win election, send signal signalWinElection back to Router to give permission to do the task
-        if (d->ongoingElections[ElectionReason::Snapshot].nbWaitedResponses == 0)
+        if (d->ongoingElections[reason].nbWaitedResponses == 0)
         {
             return;
         }
@@ -146,6 +146,7 @@ namespace AirPlug
 
         d->ongoingElections[reason].nbWaitedResponses -= 1;
 
+        // Le site élu a reçu tous les votes "Pour" de ses voisins
         if (d->ongoingElections[reason].nbFor == d->nbNeighbor)
         {
             emit signalWinElection(reason);

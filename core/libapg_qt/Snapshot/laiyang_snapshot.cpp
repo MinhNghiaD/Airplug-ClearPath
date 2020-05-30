@@ -197,6 +197,7 @@ LaiYangSnapshot::~LaiYangSnapshot()
 void LaiYangSnapshot::callElection()
 {
     // TODO ELECTION 14: send signal signalRequestElection() to router to start election for init snapshot
+    emit signalRequestElection();
 }
 
 void LaiYangSnapshot::init()

@@ -459,6 +459,10 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
             this,           &Router::slotBroadcastNetwork, Qt::DirectConnection);
 
     // TODO ELECTION 18: connect signals of ElectionManager and LaiYangSnapshot with slot defined at TODO 15 16 17
+    connect(d->snapshot, &LaiYangSnapshot::signalRequestElection,
+            this, &Router::slotRequestElection, Qt::DirectConnection);
+    // connect();
+    // connect();
 
 }
 
@@ -615,7 +619,18 @@ void Router::slotRequestElection()
     // TODO ELECTION 15: find who is sender and request Election to electionMng with correspondant reason
     if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
     {
+        LaiYangSnapshot *snapshot = dynamic_cast<LaiYangSnapshot*>(sender());
+        Router *router = dynamic_cast<Router*>(snapshot->parent());
+        QString candidate = router->d->siteID;
+        QJsonObject array = {
+                    {"candidate", candidate},
+                    {"reason", ElectionManager::ElectionReason::Snapshot}
+                };
+        QJsonObject content = {{"content", array},};
 
+        ACLMessage request = ACLMessage(ACLMessage::ELECTION);
+        request.setContent(content);
+        d->electionMng->processElectionRequest(request);
     }
 }
 
@@ -625,7 +640,7 @@ void Router::slotWinElection(ElectionManager::ElectionReason reason)
     switch (reason)
     {
     case ElectionManager::ElectionReason::Snapshot:
-
+        ;
         break;
     default:
         break;
