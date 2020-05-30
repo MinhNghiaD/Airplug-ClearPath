@@ -461,7 +461,8 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     // TODO ELECTION 18: connect signals of ElectionManager and LaiYangSnapshot with slot defined at TODO 15 16 17
     connect(d->snapshot, &LaiYangSnapshot::signalRequestElection,
             this, &Router::slotRequestElection, Qt::DirectConnection);
-    // connect();
+    connect(d->snapshot, &LaiYangSnapshot::signalFinishElection,
+            this, &Router::slotFinishElection, Qt::DirectConnection);
     // connect();
 
 }
@@ -640,7 +641,7 @@ void Router::slotWinElection(ElectionManager::ElectionReason reason)
     switch (reason)
     {
     case ElectionManager::ElectionReason::Snapshot:
-        ;
+        d->snapshot->init();
         break;
     default:
         break;
@@ -652,7 +653,7 @@ void Router::slotFinishElection()
     // TODO ELECTION 17: inform electionMng that the election is finished
     if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
     {
-
+        d->electionMng->finishElection(ElectionManager::ElectionReason::Snapshot);
     }
 }
 
