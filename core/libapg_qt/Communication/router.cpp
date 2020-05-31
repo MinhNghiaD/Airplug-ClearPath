@@ -463,7 +463,8 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
             this, &Router::slotRequestElection, Qt::DirectConnection);
     connect(d->snapshot, &LaiYangSnapshot::signalFinishElection,
             this, &Router::slotFinishElection, Qt::DirectConnection);
-    // connect();
+    connect(d->electionMng, &ElectionManager::signalWinElection,
+            this, &Router::slotWinElection, Qt::DirectConnection);
 
 }
 
@@ -637,7 +638,6 @@ void Router::slotRequestElection()
 
 void Router::slotWinElection(ElectionManager::ElectionReason reason)
 {
-    // TODO ELECTION 16: win election => approve action
     switch (reason)
     {
     case ElectionManager::ElectionReason::Snapshot:

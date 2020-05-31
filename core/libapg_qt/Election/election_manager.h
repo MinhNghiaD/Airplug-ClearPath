@@ -7,6 +7,9 @@
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
+ * Contributors :
+ * Gaétan Carabetta <carabetta.gaetan at gmail.com>
+ *
  * ============================================================ */
 
 #ifndef ELECTION_MANAGER_H
