@@ -124,7 +124,7 @@ void SynchronizerControl::processExternalMessage(ACLMessage& message)
             // Decrement nbWaitMsg, then pass the message to application
             // if nbWaitMsg reachs 0 -> send a SYNC_ACK message back to initiator by emit signal signalSendToNet
 
-            if (message.getContent()['initiator'] == message.getSender())
+            if (message.getContent()["initiator"] == message.getSender())
             {
                 d->nbWaitMsg--;
                 emit signalSendToApp(message);
