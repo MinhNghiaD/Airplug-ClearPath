@@ -46,7 +46,7 @@ public:
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 AgentController::AgentController(Board* board, QObject* parent)
-    : ApplicationController(QLatin1String("BAS"), parent),
+    : ApplicationController(QLatin1String("RVO"), parent),
       d(new Private(board))
 {
     setObjectName(QLatin1String("Agent Controller"));
