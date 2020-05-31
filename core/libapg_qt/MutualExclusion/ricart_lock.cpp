@@ -101,13 +101,13 @@ void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)
 
 void RicartLock::lock()
 {
-    qDebug() << d->clock->getSiteID() << "Enter critical section";
+    //qDebug() << d->clock->getSiteID() << "Enter critical section";
     emit signalEnterRaceCondition();
 }
 
 void RicartLock::unlock()
 {
-    qDebug() << d->clock->getSiteID() << "Out of critical section, liberates pending applications: " << d->queue;
+    //qDebug() << d->clock->getSiteID() << "Out of critical section, liberates pending applications: " << d->queue;
 
     if (! d->queue.isEmpty())
     {

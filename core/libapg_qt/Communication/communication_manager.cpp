@@ -139,7 +139,7 @@ CommunicationManager::~CommunicationManager()
 
 void CommunicationManager::addStdTransporter()
 {
-    MessageTransporter* transporter        = new StdTransporter(this);
+    MessageTransporter* transporter        = new StdTransporter();
     d->protocols[ProtocolType::StandardIO] = transporter;
 
     connect(transporter, &MessageTransporter::signalMessageReceived,
@@ -150,7 +150,7 @@ void CommunicationManager::addStdTransporter()
 void CommunicationManager::addUdpTransporter(const QString& host, int port,
                                              MessageTransporter::UdpType type)
 {
-    MessageTransporter* transporter = new UdpTransporter(host, port, type, this);
+    MessageTransporter* transporter = new UdpTransporter(host, port, type);
     d->protocols[ProtocolType::UDP] = transporter;
 
     connect(transporter, &MessageTransporter::signalMessageReceived,
@@ -194,7 +194,7 @@ void CommunicationManager::send(const Message& message,
         QString package = header.generateHeader(d->headerMode) + message.getMessage();
 
         // TODO: multiple data is put to pipe at the same time ==> only 1 signal emit and 1 message is handled
-        QThread::msleep(30);
+        QThread::msleep(10);
         d->protocols[protocol]->send(package);
 
         if (save)

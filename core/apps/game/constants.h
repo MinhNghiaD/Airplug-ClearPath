@@ -26,6 +26,8 @@
 #define VIEW_WIDTH 1280
 #define VIEW_HEIGHT 720
 
+#define AGENT_RADIUS 10
+
 #define FRAME_PERIOD_MS 50
 
 #define HANDSHAKE_TIMEOUT 500

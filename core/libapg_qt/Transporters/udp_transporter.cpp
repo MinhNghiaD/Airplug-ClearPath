@@ -44,7 +44,7 @@ UdpTransporter::UdpTransporter(const QString& host,
 {
     setObjectName(QLatin1String("UDP Protocol"));
 
-    d->socket = new QUdpSocket(this);
+    d->socket = new QUdpSocket();
     d->host   = QHostAddress(host);
     d->port   = port;
 

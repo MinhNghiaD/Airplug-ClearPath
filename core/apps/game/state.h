@@ -15,11 +15,6 @@
 //qt includes
 #include <QString>
 #include <QJsonObject>
-#include <QJsonValue>
-#include <QJsonDocument>
-
-//std includes
-#include <string>
 
 //local includes
 #include "constants.h"
@@ -29,30 +24,32 @@ namespace GameApplication
 
 class State
 {
-private:
-
 public:
-    State();
+    explicit State(const QString& siteID);
+    State(const QJsonObject& json);
+
     ~State();
 
-    State& operator=(const State& s);
-    bool operator==(const State& s);
+    bool   operator== (const State& s);
 
-    bool left = false;
-    bool right = false;
-    bool up = false;
-    bool down = false;
+    QJsonObject toJson(void);
 
-    int x_speed = 0;
-    int y_speed = 0;
+public:
 
-    int x = 0;
-    int y = 0;
+    QString siteID;
 
-    int frame = 0;
+    bool left;
+    bool right;
+    bool up;
+    bool down;
 
-    QString toJsonString(void);
-    void loadFromJson(QJsonObject json_obj);
+    int xSpeed;
+    int ySpeed;
+
+    int x;
+    int y;
+
+    int frame;
 };
 
 }

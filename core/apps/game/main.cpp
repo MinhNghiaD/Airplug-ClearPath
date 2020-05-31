@@ -11,21 +11,45 @@
 
 //Qt includes
 #include <QApplication>
-
-//std includes
-//#include <memory>
+#include <QThread>
+#include <QDebug>
 
 //local includes
 #include "world.h"
+#include "agent_controller.h"
 
 using namespace GameApplication;
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("game");
+    app.setApplicationName("GAM");
 
-    World world(app);
+    QThread* eventThread = new QThread();
+
+    Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+    AgentController* controller = new AgentController(board);
+    controller->moveToThread(eventThread);
+    controller->init(app);
+
+    World* view = nullptr;
+
+    if (controller->hasGUI())
+    {
+        qDebug() << "------------------------- Start with GUI -------------------------------";
+
+        view = new World(app, board);
+        view->show();
+    }
 
     return app.exec();
+
+    eventThread->quit();
+    eventThread->wait();
+
+    delete eventThread;
+    delete controller;
+    delete view;
+    delete board;
 }
