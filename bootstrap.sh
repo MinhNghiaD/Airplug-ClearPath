@@ -32,3 +32,5 @@ mkdir -p $BUILDDIR
 cd $BUILDDIR
 
 cmake ..
+
+make
