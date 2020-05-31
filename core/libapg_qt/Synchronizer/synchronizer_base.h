@@ -29,17 +29,17 @@ namespace AirPlug
  * processes can move to the next pulse. Then next messages travel down the tree to start this next pulse.
  *
  * An object Synchronizer is placed in NET application, if NET receives a message with performative SYNC (synchronized message),
- * if the synchronization process hasn't been initaied, Synchronizer will call for an election to chose a unique initiator.
+ * if the synchronization process hasn't been initiated, Synchronizer will call for an election to chose a unique initiator.
  * Synchronizer marks the Base application who send out the first message, this BAS will be the controller of the sync network in case
  * Synchronizer wins the election.
  *
  * The first sync message from BAS should only be a dummy to init the synchronization
  *
- * The implementation of this algo will be devided in to 2 components:
+ * The implementation of this algorithm will be divided into 2 components:
  *  - One with the base application (BAS) :
  *      + helps base application mark messages as sync messages,
  *      + receive messages and apply some controls to keep the system in synchronization
- *      + receive notify cation from the Control part in Control application at each step
+ *      + receive notification from the Control part in Control application at each step
  *  - One with the control application (NET) :
  *      + helps init the synchronization
  *      + Forward messages between Base applications
@@ -57,7 +57,7 @@ public:
 
     /**
      * @brief init : used to initiate a synchronous process in the network,
-     * this method will send out a dummy message to its local NET to candidate as initator
+     * this method will send out a dummy message to its local NET to candidate as initiator
      */
     void init();
 

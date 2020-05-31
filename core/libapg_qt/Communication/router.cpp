@@ -83,6 +83,11 @@ void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
     {
         // TODO SYNCHRONIZER 8 : call processLocalMessage() method of synchronizer to process message from local to net
         // if return false => return
+        if (!synchronizer->processLocalMessage(message))
+        {
+            return;
+        }
+
     }
 
     // mark message ID
@@ -140,6 +145,7 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     if (synchronizer)
     {
         // TODO SYNCHRONIZER 9 : call processExternalMessage of SychronizerControl to process message
+        synchronizer->processExternalMessage(message);
     }
 
     communicationMngr->send(message, QLatin1String("NET"), app, Header::localHost);
@@ -471,6 +477,12 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
 
     // TODO SYNCHRONIZER 10 : connect signals of SynchronizerControl to slots slotBroadcastLocal and slotBroadcastNetwork of Router
 
+    connect(d->synchronizer, &SynchronizerControl::signalSendToNet,
+            this,        &Router::slotBroadcastNetwork, Qt::DirectConnection);
+
+    connect(d->synchronizer, &SynchronizerControl::signalSendToApp,
+            this,        &Router::slotBroadcastLocal, Qt::DirectConnection);
+
 }
 
 Router::~Router()
@@ -618,6 +630,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
     d->snapshot->setNbOfNeighbor(nbSites - 1);
 
     // TODO SYNCHRONIZER 7 : set nbApp for synchronizer
+    d->synchronizer->setNbOfApp(nbApp);
 
 }
 

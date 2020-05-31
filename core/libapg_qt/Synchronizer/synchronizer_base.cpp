@@ -43,6 +43,12 @@ void SynchronizerBase::init()
 
     emit signalSendMessage(message);
     */
+    QJsonObject content;
+    content[QLatin1String("siteID")] = d->siteID;
+    message.setContent(content);
+    message.setSender(d->siteID);
+
+    emit signalSendMessage(message);
 }
 
 void SynchronizerBase::processMessage(ACLMessage& message)
@@ -54,6 +60,18 @@ void SynchronizerBase::processMessage(ACLMessage& message)
     // The application will use this envelop to send the message in the next cycle
 
     // If not SYNC_ACK, do nothing
+
+    if (message.getPerformative() != ACLMessage::SYNC_ACK)
+    {
+        return;
+    }
+
+    QJsonObject content;
+    ACLMessage answer (ACLMessage::SYNC);
+    content[QLatin1String("siteID")] = d->siteID;
+    answer.setContent(content);
+
+    emit signalDoStep(answer);
 }
 
 

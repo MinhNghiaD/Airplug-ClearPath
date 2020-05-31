@@ -56,14 +56,14 @@ public:
 public:
 
     /**
-     * @brief processLocalMessage : process messages come from local base application
+     * @brief processLocalMessage : process messages coming from local base application
      * @param message
-     * @return true if message can continue to send to Network
+     * @return true if message can be sent to Network
      */
     bool processLocalMessage(ACLMessage& message);
 
     /**
-     * @brief processExternalMessage : process messages come from network
+     * @brief processExternalMessage : process messages coming from network
      * @param message
      */
     void processExternalMessage(ACLMessage& message);
