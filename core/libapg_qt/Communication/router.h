@@ -6,9 +6,7 @@
  * Description : Handler for Message routing at NET layer
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
- *
- * Contributors :
- * Gaétan Carabetta <carabetta.gaetan at gmail.com>
+ * 2020 by Gaétan Carabetta <carabetta.gaetan at gmail dot com>
  *
  * ============================================================ */
 

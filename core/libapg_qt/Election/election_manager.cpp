@@ -100,7 +100,7 @@ namespace AirPlug
         election.reason            = reason;
         election.nbFor             = 0;
         election.nbAgains          = 0;
-        election.nbWaitedResponses = 0;
+        election.nbWaitedResponses = d->nbNeighbor;
 
         d->ongoingElections.insert(reason, election);
     }
@@ -121,15 +121,14 @@ namespace AirPlug
 
   void ElectionManager::processElectionAck(ACLMessage& ackMessage)
   {
-        QJsonObject content = ackMessage.getContent();
+        QJsonObject content     = ackMessage.getContent();
         QString candidate       = content[QLatin1String("candidate")].toString();
         ElectionReason reason   = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
 
-        // TODO ELECTION 5: get candidate of ack message and update info about ongoing elections
-        // If candidate in ack message is local site => increment nbFor
-        // If candidate in ack message is not local site => increment nbAgains
+        // If candidate currently voted by ack message is local site => increment nbFor
+        // If candidate currently voted by ack message is not local site => increment nbAgains
         // Decrement nbWaitedResponses, if nbWaitedResponses = 0 => election finish
-        // if nbFor == nbApp => win election, send signal signalWinElection back to Router to give permission to do the task
+        // if nbFor == nbApp => win election, send signal signalWinElection back to Router to give permission to do demanded task
         if (d->ongoingElections[reason].nbWaitedResponses == 0)
         {
             return;

@@ -640,17 +640,16 @@ void Router::slotWinElection(ElectionManager::ElectionReason reason)
 {
     switch (reason)
     {
-    case ElectionManager::ElectionReason::Snapshot:
-        d->snapshot->init();
-        break;
-    default:
-        break;
+        case ElectionManager::ElectionReason::Snapshot:
+            d->snapshot->init();
+            break;
+        default:
+            break;
     }
 }
 
 void Router::slotFinishElection()
 {
-    // TODO ELECTION 17: inform electionMng that the election is finished
     if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
     {
         d->electionMng->finishElection(ElectionManager::ElectionReason::Snapshot);
