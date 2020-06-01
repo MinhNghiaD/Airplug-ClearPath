@@ -6,6 +6,7 @@
  * Description : Manager of Election process in the network
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ * 2020 by Gaétan Carabetta <carabetta.gaetan at gmail dot com>
  *
  * ============================================================ */
 
@@ -54,6 +55,7 @@ class ElectionManager : public QObject
     Q_OBJECT
 public:
 
+    // Maybe more in the future
     enum ElectionReason
     {
         Snapshot = 0,
@@ -105,7 +107,7 @@ public:
 
 public:
 
-    Q_SIGNAL void signalSendElectionMessage(Message& request);
+    Q_SIGNAL void signalSendElectionMessage(ACLMessage& request);
     Q_SIGNAL void signalWinElection(ElectionReason reason);
 
 private:
