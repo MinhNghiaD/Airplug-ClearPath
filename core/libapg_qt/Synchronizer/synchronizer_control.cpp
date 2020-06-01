@@ -5,8 +5,9 @@ class SynchronizerControl::Private
 {
 public:
 
-    explicit Private()
-        : activated(false),
+    explicit Q_DECL_HIDDEN Private(const QString& siteID)
+        : siteID(siteID),
+          activated(false),
           nbApps(0)
     {
     }
@@ -17,8 +18,11 @@ public:
 
 public:
 
-    // TODO sync on Base application level
+    QString siteID;
+    // id of Base application who is the initaitor
     QString initiator;
+    // id of NET application who in charge of initiator
+    QString initiatorSite;
     bool    activated;
     bool    isInitiator;
     int     nbApps;
@@ -26,9 +30,9 @@ public:
     int     nbWaitAck;
 };
 
-SynchronizerControl::SynchronizerControl()
+SynchronizerControl::SynchronizerControl(const QString& siteID)
     : QObject(),
-      d(new Private())
+      d(new Private(siteID))
 {
 }
 
@@ -37,31 +41,35 @@ SynchronizerControl::~SynchronizerControl()
     delete d;
 }
 
-void SynchronizerControl::init(const QString& initiator)
+// TODO :  integrate with election to choose an unique initiator
+void SynchronizerControl::init(const QString& initiator, const QString& initiatorSite)
 {
-    // TODO SYNCHRONIZER 3 : set initiator, nbWaitMsg and nbWaitAck
+    // set initiator, nbWaitMsg and nbWaitAck
     // NOTE: nbWaitMsg is equal to the nbApps (nb total of Base applications) in the network, including itself
     //       nbWaitAck is equal to nbApps - 1 (not including initiator)
 
-    d->initiator = initiator;
+    d->initiator     = initiator;
+    d->initiatorSite = initiatorSite;
+
     d->nbWaitMsg = d->nbApps;
     d->nbWaitAck = d->nbApps - 1;
-
-
-    // NOTE : after initiated at Control level, it will give a permission to the base application who will be the initiator
-    // to send the first message of the next cycle of synchronous process
-
     d->activated = true;
-    d->isInitiator = true;
 
-    ACLMessage permission(ACLMessage::SYNC_ACK);
+    if (d->initiatorSite == d->siteID)
+    {
+        // NOTE : after initiated at Control level, it will give a permission to the base application who will be the initiator
+        // to send the first message of the next cycle of synchronous process
 
-    QJsonObject content;
-    content[QLatin1String("initiator")] = initiator;
+        d->isInitiator = true;
+        ACLMessage permission(ACLMessage::SYNC_ACK);
 
-    permission.setContent(content);
+        QJsonObject content;
+        content[QLatin1String("initiator")] = initiator;
 
-    emit signalSendToApp(permission);
+        permission.setContent(content);
+
+        emit signalSendToApp(permission);
+    }
 }
 
 void SynchronizerControl::setNbOfApp(int nbApps)
@@ -69,6 +77,7 @@ void SynchronizerControl::setNbOfApp(int nbApps)
     d->nbApps = nbApps;
 }
 
+// preprocess messages come from local base application before handing it to the rest of the network
 bool SynchronizerControl::processLocalMessage(ACLMessage& message)
 {
     // process only SYNC message
@@ -76,35 +85,38 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
     {
         QJsonObject content = message.getContent();
 
-        // TODO SYNCHRONIZER 1 : get siteID of the base application who send this message
-        QString sender_id = message.getSender();
+        // get siteID of the base application who send this message
+        QString baseid = content[QLatin1String("siteID")].toString();
 
         if (! d->activated)
         {
-            // TODO SYNCHRONIZER 2 : if the synchronization is not yet activated, call init() to activate
-            init(sender_id);
+            // TODO call election here to init election process
+            // if the synchronization is not yet activated, call init() to activate
+            init(baseid, d->siteID);
 
+            // This message will not be continued to passed to the network
             return false;
         }
         else
         {
-            // NOTE: here, after the local message is controlled, it is sent out to the network by a signal,
-            // this signal will be connected to a slot in Router to send the message
             if (d->isInitiator)
             {
                 QJsonObject content = message.getContent();
                 content[QLatin1String("initiator")] = d->initiator;
 
                 message.setContent(content);
-                emit signalSendToNet(message);
-
             }
 
             if (--(d->nbWaitMsg) == 0)
             {
                 // send ack to initiator
                 ACLMessage ack(ACLMessage::SYNC_ACK);
-                ack.setReceiver(d->initiator);
+
+                QJsonObject content;
+                content[QLatin1String("initiator")] = d->initiator;
+
+                ack.setContent(content);
+
                 emit signalSendToApp(ack);
             }
         }

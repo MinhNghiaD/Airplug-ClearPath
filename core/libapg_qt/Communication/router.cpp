@@ -76,19 +76,17 @@ public:
 
 void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 {
-    // Broadcast to all other applications in same site first
-    communicationMngr->send(message, QLatin1String("NET"), Header::allApp, Header::localHost);
-
     if (synchronizer)
     {
-        // TODO SYNCHRONIZER 8 : call processLocalMessage() method of synchronizer to process message from local to net
-        // if return false => return
+        // control synchronized messages first
         if (!synchronizer->processLocalMessage(message))
         {
             return;
         }
-
     }
+
+    // Broadcast to all other applications in same site first
+    communicationMngr->send(message, QLatin1String("NET"), Header::allApp, Header::localHost);
 
     // mark message ID
     message.setSender(siteID);
@@ -144,7 +142,6 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
 
     if (synchronizer)
     {
-        // TODO SYNCHRONIZER 9 : call processExternalMessage of SychronizerControl to process message
         synchronizer->processExternalMessage(message);
     }
 
@@ -461,7 +458,7 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     d->siteID            = siteID;
     d->watchdog          = new Watchdog(siteID);
     d->electionMng       = new ElectionManager(siteID);
-    d->synchronizer      = new SynchronizerControl();
+    d->synchronizer      = new SynchronizerControl(d->siteID);
 
     connect(d->communicationMngr, SIGNAL(signalMessageReceived(Header, Message)),
             this,                 SLOT(slotReceiveMessage(Header, Message)), Qt::DirectConnection);
@@ -474,8 +471,6 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
 
     connect(d->watchdog, &Watchdog::signalNetworkChanged,
             this,        &Router::slotUpdateNbApps, Qt::DirectConnection);
-
-    // TODO SYNCHRONIZER 10 : connect signals of SynchronizerControl to slots slotBroadcastLocal and slotBroadcastNetwork of Router
 
     connect(d->synchronizer, &SynchronizerControl::signalSendToNet,
             this,        &Router::slotBroadcastNetwork, Qt::DirectConnection);
@@ -517,6 +512,7 @@ void Router::slotReceiveMessage(Header header, Message message)
 
     if (header.what() == QLatin1String("NET"))
     {
+        // Message From NET
         if (d->isOldMessage(aclMessage))
         {
             return;
@@ -576,10 +572,11 @@ void Router::slotReceiveMessage(Header header, Message message)
     }
     else
     {
+        // Message From Base
         switch (aclMessage.getPerformative())
         {
             case ACLMessage::INFORM_STATE:
-                // receive local state
+                // receive local snapshot state
                 d->forwardStateMessage(aclMessage, true);
                 break;
 
@@ -628,10 +625,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
 
     d->snapshot->setNbOfApp(nbApp);
     d->snapshot->setNbOfNeighbor(nbSites - 1);
-
-    // TODO SYNCHRONIZER 7 : set nbApp for synchronizer
     d->synchronizer->setNbOfApp(nbApp);
-
 }
 
 void Router::slotRequestElection()

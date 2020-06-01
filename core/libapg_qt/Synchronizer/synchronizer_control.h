@@ -50,7 +50,7 @@ class SynchronizerControl: public QObject
     Q_OBJECT
 public:
 
-    explicit SynchronizerControl();
+    explicit SynchronizerControl(const QString& siteID);
     ~SynchronizerControl();
 
 public:
@@ -84,7 +84,7 @@ private:
      * @brief init: make local site become the initiator of the network
      * Election will be used to elect one unique initiator per network
      */
-    void init(const QString& initiator);
+    void init(const QString& initiator,const QString& initiatorSite);
 
 private:
 
