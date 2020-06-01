@@ -2,6 +2,7 @@
 
 // Qt includes
 #include <QHash>
+#include <QDebug>
 
 namespace AirPlug
 {
@@ -71,6 +72,7 @@ void ElectionManager::initElection(ElectionReason reason)
         request.setContent(content);
 
         // Broadcast election message
+        qDebug() << "initElection : send election request";
         emit signalSendElectionMessage(request);
     }
 }
@@ -84,6 +86,7 @@ void ElectionManager::processElectionRequest(ACLMessage& request)
 
     ElectionReason reason = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
 
+    qDebug() << "ElectionManager of" << d->siteID << "receives election request from " << candidate;
     if (d->ongoingElections.contains(reason))
     {
         // Already a candidate or a 2nd+ call of a non candidate
@@ -122,6 +125,7 @@ void ElectionManager::processElectionRequest(ACLMessage& request)
 
 void ElectionManager::processElectionAck(ACLMessage& ackMessage)
 {
+    qDebug() << "ElectionManager of" << d->siteID << "receive ack message from" << ackMessage.getSender();
     QJsonObject    content   = ackMessage.getContent();
     QString        candidate = content[QLatin1String("candidate")].toString();
     ElectionReason reason    = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
