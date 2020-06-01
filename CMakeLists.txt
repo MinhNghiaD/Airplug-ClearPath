@@ -45,7 +45,11 @@ set(libapg_includes_directories ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Frame
                                 ${CMAKE_CURRENT_SOURCE_DIR}/core/libapg_qt/Synchronizer/
    )
 
+set(extras_directories ${CMAKE_CURRENT_SOURCE_DIR}/core/extras/clearpath
+   )
+
 include_directories(${libapg_includes_directories})
+include_directories(${extras_directories})
 
 add_subdirectory(core)
 

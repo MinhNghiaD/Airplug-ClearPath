@@ -6,6 +6,7 @@
  * Description : Manager of Election process in the network
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ * 2020 by Gaétan Carabetta <carabetta.gaetan at gmail dot com>
  *
  * ============================================================ */
 
@@ -54,6 +55,7 @@ class ElectionManager : public QObject
     Q_OBJECT
 public:
 
+    // Maybe more in the future
     enum ElectionReason
     {
         Snapshot = 0,
@@ -67,10 +69,10 @@ public:
 public:
 
     /**
-     * @brief requestElection: take request from hosted site
+     * @brief initElection: take request from hosted site
      * @param reason
      */
-    void requestElection(ElectionReason reason);
+    void initElection(ElectionReason reason);
 
     /**
      * @brief finishElection: finish election informed by hosted site
@@ -96,16 +98,9 @@ public:
      */
     void processElectionAck(ACLMessage& ackMessage);
 
-    /**
-     * @brief processFinishElection: receive finish message from network
-     * @param finishMessage
-     */
-    void processFinishElection(ACLMessage& finishMessage);
-
-
 public:
 
-    Q_SIGNAL void signalSendElectionMessage(Message& request);
+    Q_SIGNAL void signalSendElectionMessage(ACLMessage& request);
     Q_SIGNAL void signalWinElection(ElectionReason reason);
 
 private:
