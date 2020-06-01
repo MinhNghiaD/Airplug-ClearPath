@@ -227,6 +227,8 @@ void Router::Private::receiveElectionMsg(ACLMessage& message)
         message.getReceiver() == siteID)
     {
         electionMng->processElectionAck(message);
+
+        return;
     }
 
     // Forward to other NETs

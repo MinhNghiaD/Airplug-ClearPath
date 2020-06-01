@@ -72,7 +72,7 @@ void ElectionManager::initElection(ElectionReason reason)
         request.setContent(content);
 
         // Broadcast election message
-        qDebug() << "initElection : send election request";
+        qDebug() << "ELECTION CANDIDATE :" << d->siteID << "candidate for election with reason:" << reason;
         emit signalSendElectionMessage(request);
     }
 }
@@ -86,7 +86,6 @@ void ElectionManager::processElectionRequest(ACLMessage& request)
 
     ElectionReason reason = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
 
-    qDebug() << "ElectionManager of" << d->siteID << "receives election request from " << candidate;
     if (d->ongoingElections.contains(reason))
     {
         // Already a candidate or a 2nd+ call of a non candidate
@@ -125,7 +124,6 @@ void ElectionManager::processElectionRequest(ACLMessage& request)
 
 void ElectionManager::processElectionAck(ACLMessage& ackMessage)
 {
-    qDebug() << "ElectionManager of" << d->siteID << "receive ack message from" << ackMessage.getSender();
     QJsonObject    content   = ackMessage.getContent();
     QString        candidate = content[QLatin1String("candidate")].toString();
     ElectionReason reason    = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
@@ -133,7 +131,7 @@ void ElectionManager::processElectionAck(ACLMessage& ackMessage)
     // If candidate currently voted by ack message is local site => increment nbFor
     // If candidate currently voted by ack message is not local site => increment nbAgains
     // Decrement nbWaitedResponses, if nbWaitedResponses = 0 => election finish
-    // if nbFor == nbApp => win election, send signal signalWinElection back to Router to give permission to do demanded task
+    // if nbFor == nbNeighbor => win election, send signal signalWinElection back to Router to give permission to do demanded task
     if (d->ongoingElections[reason].nbWaitedResponses == 0)
     {
         return;
@@ -153,6 +151,7 @@ void ElectionManager::processElectionAck(ACLMessage& ackMessage)
     // Le site élu a reçu tous les votes "Pour" de ses voisins
     if (d->ongoingElections[reason].nbFor == d->nbNeighbor)
     {
+        qDebug() << "ELECTION WIN :" << d->siteID << "win election for election reason :" << reason;
         emit signalWinElection(reason);
     }
 }
