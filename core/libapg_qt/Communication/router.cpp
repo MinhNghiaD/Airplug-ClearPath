@@ -215,15 +215,15 @@ void Router::Private::receiveElectionMsg (ACLMessage& message)
 {
     if (electionMng)
     {
-        // TODO ELECTION 11: process Election messages
+        // process Election messages
         switch (message.getPerformative())
         {
         case ACLMessage::ELECTION:
-
+            electionMng->processElectionRequest(message);
             break;
 
         case ACLMessage::FINISH_ELECTION:
-
+            electionMng->processFinishElection(message);
             break;
 
         case ACLMessage::ACK_ELECTION:
@@ -454,9 +454,17 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     connect(d->watchdog, &Watchdog::signalNetworkChanged,
             this,        &Router::slotUpdateNbApps, Qt::DirectConnection);
 
-    // TODO ELECTION 10: connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
+    // connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
+    connect(d->electionMng, &ElectionManager::signalSendElectionMessage,
+            this,           &Router::slotBroadcastNetwork, Qt::DirectConnection);
 
     // TODO ELECTION 18: connect signals of ElectionManager and LaiYangSnapshot with slot defined at TODO 15 16 17
+    connect(d->snapshot, &LaiYangSnapshot::signalRequestElection,
+            this, &Router::slotRequestElection, Qt::DirectConnection);
+    connect(d->snapshot, &LaiYangSnapshot::signalFinishElection,
+            this, &Router::slotFinishElection, Qt::DirectConnection);
+    connect(d->electionMng, &ElectionManager::signalWinElection,
+            this, &Router::slotWinElection, Qt::DirectConnection);
 
 }
 
@@ -531,17 +539,16 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->receiveMutexApproval(aclMessage, false);
                 break;
 
-            // TODO ELECTION 13 call Private::receiveElectionMsg to process election message
             case ACLMessage::ELECTION:
-
+                d->receiveElectionMsg(aclMessage);
                 break;
 
             case ACLMessage::ACK_ELECTION:
-
+                d->receiveElectionMsg(aclMessage);
                 break;
 
             case ACLMessage::FINISH_ELECTION:
-
+                d->receiveElectionMsg(aclMessage);
                 break;
 
             default:
@@ -605,6 +612,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
     d->snapshot->setNbOfNeighbor(nbSites - 1);
 
     // TODO ELECTION 9 : update nbNeighbor to electionMng when receive network update
+    d->electionMng->setNbOfNeighbor(nbSites - 1);
 
 }
 
@@ -613,29 +621,38 @@ void Router::slotRequestElection()
     // TODO ELECTION 15: find who is sender and request Election to electionMng with correspondant reason
     if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
     {
+        LaiYangSnapshot *snapshot = dynamic_cast<LaiYangSnapshot*>(sender());
+        Router *router = dynamic_cast<Router*>(snapshot->parent());
+        QString candidate = router->d->siteID;
+        QJsonObject array = {
+                    {"candidate", candidate},
+                    {"reason", ElectionManager::ElectionReason::Snapshot}
+                };
+        QJsonObject content = {{"content", array},};
 
+        ACLMessage request = ACLMessage(ACLMessage::ELECTION);
+        request.setContent(content);
+        d->electionMng->processElectionRequest(request);
     }
 }
 
 void Router::slotWinElection(ElectionManager::ElectionReason reason)
 {
-    // TODO ELECTION 16: win election => approve action
     switch (reason)
     {
-    case ElectionManager::ElectionReason::Snapshot:
-
-        break;
-    default:
-        break;
+        case ElectionManager::ElectionReason::Snapshot:
+            d->snapshot->init();
+            break;
+        default:
+            break;
     }
 }
 
 void Router::slotFinishElection()
 {
-    // TODO ELECTION 17: inform electionMng that the election is finished
     if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
     {
-
+        d->electionMng->finishElection(ElectionManager::ElectionReason::Snapshot);
     }
 }
 
