@@ -1,6 +1,7 @@
 #ifndef KD_TREE_H
 #define KD_TREE_H
 
+#include "kd_node.h"
 
 namespace ClearPath
 {
@@ -8,7 +9,16 @@ namespace ClearPath
 class KDTree
 {
 public:
-    KDTree();
+    explicit KDTree(int);
+    ~KDTree();
+
+public:
+    bool add(double*);
+    QHash<double, QVector<KDNode>> getClosestNeighbors(double*, double, int);
+
+private:
+    class Private;
+    Private* d;
 };
 
 }
