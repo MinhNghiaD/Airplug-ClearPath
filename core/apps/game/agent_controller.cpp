@@ -277,6 +277,7 @@ void AgentController::slotForwardMutex(const ACLMessage& message)
 
 void AgentController::slotEnterCriticalSection()
 {
+    // TODO: integrate an execution timer to estimate delay period
     ++(*m_clock);
 
     ACLMessage message(ACLMessage::INFORM);

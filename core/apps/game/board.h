@@ -6,7 +6,7 @@
  * Description : Board of game
  *
  * 2020 by Lucca Rawlyk
- * 2020 by Nghia Duong  <minhnghiaduong997@gmail.com>
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
  * ============================================================ */
 #ifndef BOARD_H

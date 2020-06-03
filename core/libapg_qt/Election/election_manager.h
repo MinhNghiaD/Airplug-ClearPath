@@ -69,10 +69,10 @@ public:
 public:
 
     /**
-     * @brief requestElection: take request from hosted site
+     * @brief initElection: take request from hosted site
      * @param reason
      */
-    void requestElection(ElectionReason reason);
+    void initElection(ElectionReason reason);
 
     /**
      * @brief finishElection: finish election informed by hosted site
@@ -97,13 +97,6 @@ public:
      * @param ackMessage
      */
     void processElectionAck(ACLMessage& ackMessage);
-
-    /**
-     * @brief processFinishElection: receive finish message from network
-     * @param finishMessage
-     */
-    void processFinishElection(ACLMessage& finishMessage);
-
 
 public:
 

@@ -3,9 +3,9 @@
 // Qt includes
 #include <QDebug>
 #include <QTimer>
+#include <QThread>
 
 // libapg include
-
 #include "watchdog.h"
 
 namespace AirPlug
@@ -211,40 +211,44 @@ void Router::Private::forwardPong(const ACLMessage& message, bool fromLocal)
 }
 
 
-void Router::Private::receiveElectionMsg (ACLMessage& message)
+void Router::Private::receiveElectionMsg(ACLMessage& message)
 {
-    if (electionMng)
+    if (electionMng == nullptr)
     {
-        // process Election messages
-        switch (message.getPerformative())
-        {
+        // Forward to other NETs
+        communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+
+        return;
+    }
+
+    ACLMessage::Performative performative = message.getPerformative();
+
+    if (performative          == ACLMessage::ACK_ELECTION &&
+        message.getReceiver() == siteID)
+    {
+        electionMng->processElectionAck(message);
+
+        return;
+    }
+
+    // Forward to other NETs
+    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
+
+    // process Election messages
+    switch (performative)
+    {
         case ACLMessage::ELECTION:
             electionMng->processElectionRequest(message);
             break;
 
         case ACLMessage::FINISH_ELECTION:
-            electionMng->processFinishElection(message);
-            break;
-
-        case ACLMessage::ACK_ELECTION:
-            if (message.getReceiver() == siteID)
-            {
-                electionMng->processElectionAck(message);
-
-                return;
-            }
-
+            electionMng->finishElection(static_cast<ElectionManager::ElectionReason>
+                                        (message.getContent()[QLatin1String("reason")].toInt()));
             break;
 
         default:
-            qWarning() << "Unknown performative";
-
             break;
-        }
     }
-
-    // Forward to other NETs
-    communicationMngr->send(message, QLatin1String("NET"), QLatin1String("NET"), Header::allHost);
 }
 
 
@@ -458,14 +462,8 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     connect(d->electionMng, &ElectionManager::signalSendElectionMessage,
             this,           &Router::slotBroadcastNetwork, Qt::DirectConnection);
 
-    // TODO ELECTION 18: connect signals of ElectionManager and LaiYangSnapshot with slot defined at TODO 15 16 17
-    connect(d->snapshot, &LaiYangSnapshot::signalRequestElection,
-            this, &Router::slotRequestElection, Qt::DirectConnection);
-    connect(d->snapshot, &LaiYangSnapshot::signalFinishElection,
-            this, &Router::slotFinishElection, Qt::DirectConnection);
     connect(d->electionMng, &ElectionManager::signalWinElection,
-            this, &Router::slotWinElection, Qt::DirectConnection);
-
+            this,           &Router::slotWinElection, Qt::DirectConnection);
 }
 
 Router::~Router()
@@ -487,6 +485,11 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
 
     connect(d->snapshot, &LaiYangSnapshot::signalSendSnapshotMessage,
             this,        &Router::slotBroadcastNetwork, Qt::DirectConnection);
+
+    connect(d->snapshot, &LaiYangSnapshot::signalRequestElection,
+            this,        &Router::slotRequestElection, Qt::DirectConnection);
+    connect(d->snapshot, &LaiYangSnapshot::signalFinishElection,
+            this,        &Router::slotFinishElection, Qt::DirectConnection);
 
     return true;
 }
@@ -543,11 +546,11 @@ void Router::slotReceiveMessage(Header header, Message message)
                 d->receiveElectionMsg(aclMessage);
                 break;
 
-            case ACLMessage::ACK_ELECTION:
+            case ACLMessage::FINISH_ELECTION:
                 d->receiveElectionMsg(aclMessage);
                 break;
 
-            case ACLMessage::FINISH_ELECTION:
+            case ACLMessage::ACK_ELECTION:
                 d->receiveElectionMsg(aclMessage);
                 break;
 
@@ -610,29 +613,16 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
 
     d->snapshot->setNbOfApp(nbApp);
     d->snapshot->setNbOfNeighbor(nbSites - 1);
-
-    // TODO ELECTION 9 : update nbNeighbor to electionMng when receive network update
     d->electionMng->setNbOfNeighbor(nbSites - 1);
-
 }
 
 void Router::slotRequestElection()
 {
-    // TODO ELECTION 15: find who is sender and request Election to electionMng with correspondant reason
+    // find who is sender and request Election to electionMng with correspondant reason
     if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
     {
-        LaiYangSnapshot *snapshot = dynamic_cast<LaiYangSnapshot*>(sender());
-        Router *router = dynamic_cast<Router*>(snapshot->parent());
-        QString candidate = router->d->siteID;
-        QJsonObject array = {
-                    {"candidate", candidate},
-                    {"reason", ElectionManager::ElectionReason::Snapshot}
-                };
-        QJsonObject content = {{"content", array},};
-
-        ACLMessage request = ACLMessage(ACLMessage::ELECTION);
-        request.setContent(content);
-        d->electionMng->processElectionRequest(request);
+        qDebug() << "call election for snapshot from" << d->siteID;
+        d->electionMng->initElection(ElectionManager::Snapshot);
     }
 }
 
