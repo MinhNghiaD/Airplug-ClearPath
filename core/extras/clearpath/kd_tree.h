@@ -15,15 +15,16 @@ public:
 /* === FUNCTIONS === */
 public:
     bool add(std::vector<double>);
-    QHash<double, QVector<KDNode>> getClosestNeighbors(std::vector<double>, double, int);
+    QHash<double, QVector<KDNode*>>& getClosestNeighbors(std::vector<double>, double, int);
 
 private:
     // If needed
     // class Private;
     // Private* d;
-    KDNode Root;
+
     int nbDimension;
-    QVector<KDNode> nodeVector;
+    KDNode* Root;
+    QVector<KDNode*> nodeVector;
 };
 
 }

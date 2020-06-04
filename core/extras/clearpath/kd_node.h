@@ -3,6 +3,8 @@
 
 #include <QMetaType>
 #include <QtGlobal>
+#include <QVector>
+#include <QHash>
 
 #include <vector>
 #include <math.h>
@@ -14,14 +16,16 @@ class KDNode
 {
 public:
     KDNode() = default;
-    explicit KDNode(std::vector<double>, int, int);
+    KDNode(std::vector<double>, int, int);
     ~KDNode();
 
 /* === FUNCTIONS === */
 public:
+    // TODO: Return KDNode& or KDNode* ?
     KDNode insert(std::vector<double>);
-    std::vector<double> getPosition();
-    double getClosestNeighbors(QHash<double, QVector<KDNode>>, std::vector<double>, double, int);
+
+    std::vector<double> getPosition() const;
+    double getClosestNeighbors(const QHash<double, QVector<KDNode>>&, std::vector<double>, double, int);
 
     static bool equal(std::vector<double> pos1, std::vector<double> pos2) {
         /*
@@ -50,7 +54,9 @@ public:
 
 private:
     void updateRange(std::vector<double>);
-    KDNode findParent(std::vector<double>, int, int);
+
+    // TODO: return KDNode& or KDNode* ?
+    KDNode findParent(std::vector<double>);
 
 private:
     // If needed
@@ -62,9 +68,9 @@ private:
     std::vector<double> position;
     std::vector<double> maxRange;
     std::vector<double> minRange;
-    KDNode Parent;
-    KDNode Left;
-    KDNode Right;
+    KDNode* Parent;
+    KDNode* Left;
+    KDNode* Right;
 };
 
 }
