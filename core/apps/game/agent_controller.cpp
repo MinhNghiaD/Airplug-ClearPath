@@ -137,6 +137,8 @@ void AgentController::slotReceiveMessage(Header header, Message message)
             {
                 d->synchronizer->processSYNCMessage(*aclMessage);
                 // TODO Application 2 : decode the content of message to update KD Tree in environment manager
+                // This message should have a field site ID, maxSpeed, position, velocity from sender's CollisionAvoidanceManager
+                // The field is the same as in TODO Application 4
 
             }
             else if (aclMessage->getPerformative() == ACLMessage::SYNC_ACK)
@@ -154,6 +156,11 @@ void AgentController::slotDoStep()
     // TODO Application 3: use CollisionAvoidanceManager to update position and move to the new position on the
 }
 
+void AgentController::slotSendMessage(ACLMessage& message)
+{
+    // TODO Application 4: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
+    // Put in QJsonObject and put it in the message (envelop) to send to NET
+}
 
 void AgentController::sendLocalSnapshot()
 {

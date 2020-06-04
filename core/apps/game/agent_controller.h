@@ -17,7 +17,7 @@
 
 // Local include
 #include "application_controller.h"
-
+#include "aclmessage.h"
 #include "board.h"
 
 using namespace AirPlug;
@@ -43,6 +43,7 @@ public:
 public:
 
     Q_SLOT void slotDoStep();
+    Q_SLOT void slotSendMessage(ACLMessage& message);
 
 private:
 
