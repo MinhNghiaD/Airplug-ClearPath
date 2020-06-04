@@ -18,7 +18,6 @@
 // Local include
 #include "application_controller.h"
 
-#include "ricart_lock.h"
 #include "board.h"
 
 using namespace AirPlug;
@@ -43,21 +42,16 @@ public:
 
 public:
 
-    Q_SLOT void slotSendMessage();
-
+    Q_SLOT void slotDoStep();
 
 private:
 
-    void receiveMutexRequest(const ACLMessage& request) const;
     void sendLocalSnapshot();
 
 private:
 
     // main notification handler
     Q_SLOT void slotReceiveMessage(Header, Message) override;
-    Q_SLOT void slotForwardMutex(const ACLMessage&);
-
-    Q_SLOT void slotEnterCriticalSection();
 
 private:
 

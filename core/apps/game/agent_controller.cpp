@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QThread>
 
+// Local include
+#include "synchronizer_base.h"
 
 using namespace AirPlug;
 
@@ -18,15 +20,14 @@ public:
     Private(Board* board)
         : //timer(nullptr),
           board(board),
-          nbSequence(0)
+          nbSequence(0),
+          synchronizer(nullptr)
     {
-        mutex         = new RicartLock();
     }
 
     ~Private()
     {
-        //delete timer;
-        delete mutex;
+        delete synchronizer;
     }
 
 public:
@@ -39,12 +40,11 @@ public:
 
     int         nbSequence;
 
-    RicartLock* mutex;
+    SynchronizerBase* synchronizer;
 };
 
 
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-
 AgentController::AgentController(Board* board, QObject* parent)
     : ApplicationController(QLatin1String("BAS"), parent),
       d(new Private(board))
@@ -60,17 +60,15 @@ AgentController::~AgentController()
 void AgentController::init(const QCoreApplication& app)
 {
     ApplicationController::init(app);
-
+/*
     if (m_optionParser.autoSend && m_optionParser.delay > 0)
     {
         // TODO handle auto play
     }
+*/
+    d->synchronizer = new SynchronizerBase(siteID());
+    // TODO Application 1 : setup synchronizer
 
-    connect(d->mutex, &RicartLock::signalResponse,
-            this,     &AgentController::slotForwardMutex, Qt::DirectConnection);
-
-    connect(d->mutex, &RicartLock::signalEnterRaceCondition,
-            this,     &AgentController::slotEnterCriticalSection, Qt::DirectConnection);
 
     // All Bas will subscribe to local NET
     m_communication->subscribeLocalHost(QLatin1String("NET"));
@@ -82,6 +80,13 @@ void AgentController::init(const QCoreApplication& app)
 
     sendMessage(pong, QString(), QString(), QString());
 
+
+
+    // wait for network is establish and init synchronizer
+    QThread::msleep(5);
+    d->synchronizer->init();
+
+/*
     // init local agent
     d->localAgent = new Agent(siteID(), AGENT_RADIUS);
     d->localAgent->init();
@@ -93,11 +98,7 @@ void AgentController::init(const QCoreApplication& app)
 
     // Broadcast agent initial state to others
     slotSendMessage();
-}
-
-void AgentController::slotSendMessage()
-{
-    d->mutex->trylock((*m_clock));
+*/
 }
 
 void AgentController::slotReceiveMessage(Header header, Message message)
@@ -117,33 +118,6 @@ void AgentController::slotReceiveMessage(Header header, Message message)
             ++(*m_clock);
 
             break;
-
-        case ACLMessage::REQUEST_MUTEX:
-            if (aclMessage->getTimeStamp()->getSiteID() != siteID())
-            {
-                receiveMutexRequest(*aclMessage);
-            }
-
-            break;
-
-        case ACLMessage::ACCEPT_MUTEX:
-            //qDebug() << "receive accept mutex" << aclMessage->getContent();
-
-            if (aclMessage->getContent()[QLatin1String("apps")].toArray().contains(m_clock->getSiteID()))
-            {
-                d->mutex->lock();
-            }
-
-            break;
-
-        case ACLMessage::REFUSE_MUTEX:
-            if (aclMessage->getContent()[QLatin1String("apps")].toArray().contains(m_clock->getSiteID()))
-            {
-                d->mutex->restart();
-            }
-
-            break;
-
         default:
             VectorClock* senderClock = aclMessage->getTimeStamp();
 
@@ -159,32 +133,27 @@ void AgentController::slotReceiveMessage(Header header, Message message)
                 m_clock->updateClock(*senderClock);
             }
 
-            // TODO: receive Agent message
-            QJsonObject contents = aclMessage->getContent();
-            qDebug() << siteID() << "receive state from" << aclMessage->getSender();
+            if (aclMessage->getPerformative() == ACLMessage::SYNC)
+            {
+                d->synchronizer->processSYNCMessage(*aclMessage);
+                // TODO Application 2 : decode the content of message to update KD Tree in environment manager
 
-            d->board->updateAgentState(State(contents));
+            }
+            else if (aclMessage->getPerformative() == ACLMessage::SYNC_ACK)
+            {
+                d->synchronizer->processACKMessage(*aclMessage);
+            }
 
             break;
     }
 }
 
-QJsonObject AgentController::captureLocalState() const
+void AgentController::slotDoStep()
 {
     ++(*m_clock);
-
-    QJsonObject applicationState;
-
-    // TODO capture game state
-
-    applicationState[QLatin1String("mutexQueue")]    = d->mutex->getPendingQueue();
-
-    QJsonObject localState;
-    localState[QLatin1String("options")]             = m_optionParser.convertToJson();
-    localState[QLatin1String("state")]               = applicationState;
-
-    return localState;
+    // TODO Application 3: use CollisionAvoidanceManager to update position and move to the new position on the
 }
+
 
 void AgentController::sendLocalSnapshot()
 {
@@ -199,42 +168,18 @@ void AgentController::sendLocalSnapshot()
     sendMessage(stateMessage, QString(), QString(), QString());
 }
 
-void AgentController::receiveMutexRequest(const ACLMessage& request) const
+QJsonObject AgentController::captureLocalState() const
 {
-    VectorClock* senderClock = request.getTimeStamp();
-
-    m_clock->updateClock(*senderClock);
-
-    d->mutex->receiveExternalRequest(*senderClock);
-}
-
-void AgentController::slotForwardMutex(const ACLMessage& message)
-{
-    // broadcast request to enter race condition
-    sendMessage(message, QString(), QString(), QString());
-}
-
-void AgentController::slotEnterCriticalSection()
-{
-    // TODO: integrate an execution timer to estimate delay period
     ++(*m_clock);
 
-    ACLMessage message(ACLMessage::INFORM);
+    QJsonObject applicationState;
+    // TODO Application 5: capture agent state
 
-    // attache clock to the message
-    message.setTimeStamp(*m_clock);
 
-    // TODO update all changes making since the last update to the network
-    d->localAgent->move();
-    QJsonObject contents = d->localAgent->getState().toJson();
+    QJsonObject localState;
+    localState[QLatin1String("options")] = m_optionParser.convertToJson();
+    localState[QLatin1String("state")]   = applicationState;
 
-    message.setContent(contents);
-    qDebug() << siteID() << "send state";
-
-    // TODO: get what, where, who from user interface
-    sendMessage(message, QString(), QString(), QString());
-
-    d->mutex->unlock();
+    return localState;
 }
-
 }
