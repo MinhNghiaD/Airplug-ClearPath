@@ -1,4 +1,5 @@
 #include "synchronizer_base.h"
+
 namespace AirPlug
 {
 class SynchronizerBase::Private
@@ -17,6 +18,7 @@ public:
 public:
 
     QString siteID;
+    QString initiator;
 };
 
 SynchronizerBase::SynchronizerBase(const QString& siteID)
@@ -33,16 +35,15 @@ SynchronizerBase::~SynchronizerBase()
 void SynchronizerBase::init()
 {
     ACLMessage message(ACLMessage::SYNC);
-    // set the name of base application in the content of the message and send a dummy message to NET to candidate
+    // send a dummy message to NET to candidate for initiator position of synchronous network
     QJsonObject content;
     content[QLatin1String("siteID")] = d->siteID;
     message.setContent(content);
-    message.setSender(d->siteID);
 
     emit signalSendMessage(message);
 }
 
-void SynchronizerBase::processMessage(ACLMessage& message)
+void SynchronizerBase::processACKMessage(ACLMessage& message)
 {
     // Process message from NET,
     // If the message is a SYNC_ACK message,
@@ -57,13 +58,26 @@ void SynchronizerBase::processMessage(ACLMessage& message)
         return;
     }
 
-    QJsonObject content;
-    ACLMessage answer (ACLMessage::SYNC);
-    content[QLatin1String("siteID")] = d->siteID;
-    answer.setContent(content);
+    QJsonObject content = message.getContent();
 
-    emit signalDoStep(answer);
+    // Only the first ACK message call by synchronizer init has this field
+    if (content.contains(QLatin1String("initiator")))
+    {
+        d->initiator = content[QLatin1String("initiator")].toString();
+
+        if (d->initiator != d->siteID)
+        {
+            // Ensure that only initiator does the first step
+            return;
+        }
+    }
+
+    emit signalDoStep();
 }
 
+void SynchronizerBase::processSYNCMessage(ACLMessage& message)
+{
+    // TODO SYNCHRONIZER 11:
+}
 
 }

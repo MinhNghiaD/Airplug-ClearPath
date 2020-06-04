@@ -41,40 +41,39 @@ SynchronizerControl::~SynchronizerControl()
     delete d;
 }
 
-// TODO :  integrate with election to choose an unique initiator
-void SynchronizerControl::init(const QString& initiator, const QString& initiatorSite)
+void SynchronizerControl::callElection(const QString& baseID)
+{
+    // save temporary this information before enter an election
+    d->initiator = baseID;
+    d->activated = true;
+    emit signalRequestElection();
+}
+
+// NOTE init can only be called when the host win the election
+void SynchronizerControl::init(const QString& initiatorSite)
 {
     // set initiator, nbWaitMsg and nbWaitAck
     // NOTE: nbWaitMsg is equal to the nbApps (nb total of Base applications) in the network, including itself
     //       nbWaitAck is equal to nbApps - 1 (not including initiator)
 
-    d->initiator     = initiator;
     d->initiatorSite = initiatorSite;
 
     d->nbWaitMsg = d->nbApps;
     d->nbWaitAck = d->nbApps - 1;
-    d->activated = true;
 
-    if (d->initiatorSite == d->siteID)
-    {
-        // NOTE : after initiated at Control level, it will give a permission to the base application who will be the initiator
-        // to send the first message of the next cycle of synchronous process
+    d->isInitiator = true;
 
-        d->isInitiator = true;
-        ACLMessage permission(ACLMessage::SYNC_ACK);
+    // NOTE : after initiated at Control level, it will give a permission to the base application
+    // who will be the initiator to send the first message of the next cycle of synchronous process
+    ACLMessage permission(ACLMessage::SYNC_ACK);
 
-        QJsonObject content;
-        content[QLatin1String("initiator")] = initiator;
+    QJsonObject content;
+    content[QLatin1String("initiator")] = d->initiator;
 
-        permission.setContent(content);
+    permission.setContent(content);
 
-        emit signalSendToApp(permission);
-    }
-}
+    emit signalSendToApp(permission);
 
-void SynchronizerControl::setNbOfApp(int nbApps)
-{
-    d->nbApps = nbApps;
 }
 
 // preprocess messages come from local base application before handing it to the rest of the network
@@ -88,11 +87,11 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
         // get siteID of the base application who send this message
         QString baseid = content[QLatin1String("siteID")].toString();
 
+        // Election can only be called by the first base message arrives
         if (! d->activated)
         {
-            // TODO call election here to init election process
-            // if the synchronization is not yet activated, call init() to activate
-            init(baseid, d->siteID);
+            // if the synchronization is not yet activated, call an election and candidate for initiator
+            callElection(baseid);
 
             // This message will not be continued to passed to the network
             return false;
@@ -167,5 +166,12 @@ void SynchronizerControl::processExternalMessage(ACLMessage& message)
             break;
     }
 }
+
+
+void SynchronizerControl::setNbOfApp(int nbApps)
+{
+    d->nbApps = nbApps;
+}
+
 
 }

@@ -56,6 +56,12 @@ public:
 public:
 
     /**
+     * @brief init: make local site become the initiator of the network
+     * Election will be used to elect one unique initiator per network
+     */
+    void init(const QString& initiatorSite);
+
+    /**
      * @brief processLocalMessage : process messages coming from local base application
      * @param message
      * @return true if message can be sent to Network
@@ -78,13 +84,15 @@ public:
     // Use for forwarding message from network to local base application
     Q_SIGNAL void signalSendToApp(ACLMessage& message);
 
+    // signal sent to router to request an election
+    Q_SIGNAL void signalRequestElection();
+    Q_SIGNAL void signalFinishElection();
+
 private:
 
-    /**
-     * @brief init: make local site become the initiator of the network
-     * Election will be used to elect one unique initiator per network
-     */
-    void init(const QString& initiator,const QString& initiatorSite);
+
+
+    void callElection(const QString& baseID);
 
 private:
 

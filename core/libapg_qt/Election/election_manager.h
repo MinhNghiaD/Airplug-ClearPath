@@ -59,6 +59,7 @@ public:
     enum ElectionReason
     {
         Snapshot = 0,
+        Synchronizer,
     };
 
 public:

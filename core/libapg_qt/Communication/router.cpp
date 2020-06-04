@@ -483,6 +483,9 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     connect(d->synchronizer, &SynchronizerControl::signalSendToApp,
             this,            &Router::slotBroadcastLocal, Qt::DirectConnection);
 
+    connect(d->synchronizer, &SynchronizerControl::signalRequestElection,
+            this,            &Router::slotRequestElection, Qt::DirectConnection);
+
     // connect signal signalSendElectionMessage from electionMng to slot slotBroadcastNetwork
     connect(d->electionMng, &ElectionManager::signalSendElectionMessage,
             this,           &Router::slotBroadcastNetwork, Qt::DirectConnection);
@@ -514,6 +517,7 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
 
     connect(d->snapshot, &LaiYangSnapshot::signalRequestElection,
             this,        &Router::slotRequestElection, Qt::DirectConnection);
+
     connect(d->snapshot, &LaiYangSnapshot::signalFinishElection,
             this,        &Router::slotFinishElection, Qt::DirectConnection);
 
@@ -653,14 +657,22 @@ void Router::slotRequestElection()
         qDebug() << "call election for snapshot from" << d->siteID;
         d->electionMng->initElection(ElectionManager::Snapshot);
     }
+    else if(dynamic_cast<SynchronizerControl*>(sender()) != nullptr)
+    {
+        qDebug() << "call election for synchronizer from" << d->siteID;
+        d->electionMng->initElection(ElectionManager::Synchronizer);
+    }
 }
 
 void Router::slotWinElection(ElectionManager::ElectionReason reason)
 {
     switch (reason)
     {
-        case ElectionManager::ElectionReason::Snapshot:
+        case ElectionManager::Snapshot:
             d->snapshot->init();
+            break;
+        case ElectionManager::Synchronizer:
+            d->synchronizer->init(d->siteID);
             break;
         default:
             break;
@@ -671,7 +683,11 @@ void Router::slotFinishElection()
 {
     if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
     {
-        d->electionMng->finishElection(ElectionManager::ElectionReason::Snapshot);
+        d->electionMng->finishElection(ElectionManager::Snapshot);
+    }
+    else if(dynamic_cast<SynchronizerControl*>(sender()) != nullptr)
+    {
+        d->electionMng->finishElection(ElectionManager::Synchronizer);
     }
 }
 

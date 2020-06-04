@@ -61,12 +61,13 @@ public:
      */
     void init();
 
-    void processMessage(ACLMessage& message);
+    void processACKMessage(ACLMessage& message);
+    void processSYNCMessage(ACLMessage& message);
 
 public:
 
     Q_SIGNAL void signalSendMessage(ACLMessage& message);
-    Q_SIGNAL void signalDoStep(ACLMessage& message);
+    Q_SIGNAL void signalDoStep();
 
 private:
 
