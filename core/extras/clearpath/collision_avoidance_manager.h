@@ -133,15 +133,15 @@ private:
     double     timeStep;
     int        maxNeighbors;
 
-    std::vector<double>   position;
-    std::vector<double>   destination;
-    std::vector<double>   velocity;
-    std::vector<double>   newVelocity;
-    std::vector<double>   preferenceVelocity;
+    std::vector<double> position;
+    std::vector<double> destination;
+    std::vector<double> velocity;
+    std::vector<double> newVelocity;
+    std::vector<double> preferenceVelocity;
 
     // constrain lines
-    QVector<Line> orcaLines;
-    KDTree*     obstaclesTree;
+    std::vector<Line>   orcaLines;
+    KDTree*             obstaclesTree;
 };
 
 }

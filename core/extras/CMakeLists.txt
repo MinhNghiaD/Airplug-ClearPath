@@ -3,7 +3,6 @@
 
 set(extras_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/clearpath/kd_node.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/clearpath/kd_tree.cpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/clearpath/line.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/clearpath/rvo.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/clearpath/collision_avoidance_manager.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/clearpath/environment_manager.cpp

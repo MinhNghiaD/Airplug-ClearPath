@@ -7,84 +7,52 @@
 // Qt includes
 #include <QVector>
 
-// Local include
-#include "line.h"
-
 namespace ClearPath
 {
+class Line
+{
+public:
+
+    explicit Line()
+    {
+    }
+
+    Line(const std::vector<double>& point, const std::vector<double>& direction)
+        : point(point),
+          direction(direction)
+    {
+        Q_ASSERT(point.size() != direction.size());
+    }
+
+    std::vector<double> point;
+    std::vector<double> direction;
+};
+
 
 class RVO
 {
 public:
-    RVO();
 
-    static double vectorProduct(const std::vector<double>& vector1, const std::vector<double>& vector2)
-    {
-        return std::inner_product(vector1.begin(), vector1.end(), vector2.begin(), 0.0);
-    }
+    static double vectorProduct(const std::vector<double>& vector1,
+                                const std::vector<double>& vector2);
 
-    static std::vector<double> vectorSubstract(const std::vector<double>& vector1, const std::vector<double>& vector2)
-    {
-        Q_ASSERT(vector1.size() == vector2.size());
-
-        std::vector<double> result;
-
-        for (size_t i = 0; i < vector1.size(); ++i)
-        {
-            result.push_back(vector1[i] - vector2[i]);
-        }
-
-        return result;
-    }
+    static std::vector<double> vectorSubstract(const std::vector<double>& vector1,
+                                               const std::vector<double>& vector2);
 
     /**
-     *
+     * @brief determinant of matrix from 2 2D-vectors
      * @param vector1
      * @param vector2
-     * @return determinant of matrix from 2 2D vectors
+     * @return
      */
-    static double det2D(const std::vector<double>& vector1, const std::vector<double>& vector2)
-    {
-        Q_ASSERT (vector1.size() == 2);
-        Q_ASSERT (vector1.size() == vector2.size());
-
-        return ((vector1[0] * vector2[1]) - (vector1[1] * vector2[0]));
-    }
+    static double det2D(const std::vector<double>& vector1,
+                        const std::vector<double>& vector2);
 
 
-    static std::vector<double> scalarProduct(std::vector<double> vector, double scalar)
-    {
-        for (size_t i = 0; i < vector.size(); ++i)
-        {
-            vector[i] *= scalar;
-        }
-
-        return vector;
-    }
+    static std::vector<double> scalarProduct(std::vector<double> vector, double scalar);
 
     /**
-     * Solves a one-dimensional linear program on a specified line subject to linear
-     * constraints defined by lines and a circular constraint.
-     *
-     * @param lines                Lines defining the linear constraints.
-     * @param lineNo               The specified line constraint.
-     * @param optimizationVelocity The optimization velocity.
-     * @param directionOptimal     True if the direction should be optimized.
-     * @return True if successful.
-     */
-    static bool avoidCollisionWithLine(QVector<Line> lines,
-                                       int lineID,
-                                       double maxSpeed,
-                                       std::vector<double> optimizationVelocity,
-                                       bool directionOptimal,
-                                       std::vector<double>& newVelocity)
-    {
-        // Prototype
-        return true;
-    }
-
-    /**
-     * Solves a two-dimensional linear program subject to linear constraints defined
+     * @brief Solves a two-dimensional linear program subject to linear constraints defined
      * by lines and a circular constraint.
      *
      * @param lines                Lines defining the linear constraints.
@@ -93,18 +61,14 @@ public:
      * @return The number of the line on which it fails, or the number of lines if
      *         successful.
      */
-    static int checkCollision(QVector<Line> lines,
-                              double    maxSpeed,
-                              std::vector<double>  optimizationVelocity,
-                              bool   directionOptimal,
-                              std::vector<double>& newVelocity)
-    {
-        // Prototype
-        return lines.size();
-    }
+    static int checkCollision(const std::vector<Line>&   lines,
+                              double                     maxSpeed,
+                              const std::vector<double>& optimizationVelocity,
+                              bool                       directionOptimal,
+                              std::vector<double>&       newVelocity);
 
     /**
-     * Solves a two-dimensional linear program subject to linear constraints defined
+     * @brief Solves a two-dimensional linear program subject to linear constraints defined
      * by lines and a circular constraint.
      *
      * @param numObstacleLines Count of obstacle lines.
@@ -115,15 +79,30 @@ public:
      *
      * @return new velocity
      */
-    static std::vector<double> collisionFreeVelocity(QVector<Line> lines,
-                                                     int      beginLine,
-                                                     double   maxSpeed,
-                                                     int      numObstacleLines,
-                                                     std::vector<double>& velocity)
-    {
-        // Prototype
-        return velocity;
-    }
+    static std::vector<double> collisionFreeVelocity(const std::vector<Line>& lines,
+                                                     int                      beginLine,
+                                                     double                   maxSpeed,
+                                                     int                      numObstacleLines,
+                                                     std::vector<double>&     velocity);
+
+private:
+
+    /**
+     * @brief Solves a one-dimensional linear program on a specified line subject to linear
+     * constraints defined by lines and a circular constraint.
+     *
+     * @param lines                Lines defining the linear constraints.
+     * @param lineNo               The specified line constraint.
+     * @param optimizationVelocity The optimization velocity.
+     * @param directionOptimal     True if the direction should be optimized.
+     * @return True if successful.
+     */
+    static bool avoidCollisionWithLine(const std::vector<Line>&   lines,
+                                       int                        lineID,
+                                       double                     maxSpeed,
+                                       const std::vector<double>& optimizationVelocity,
+                                       bool                       directionOptimal,
+                                       std::vector<double>&       newVelocity);
 
 private:
 
