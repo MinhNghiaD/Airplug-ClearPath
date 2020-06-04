@@ -51,7 +51,7 @@ public:
         return velocity;
     }
 
-    void addNeighborOrcaLine(QMap<double, QVector<KDNode>> neighbors)
+    void addNeighborOrcaLine(QMap<double, QVector<KDNode*>> neighbors)
     {
         // Prototype
     }
@@ -72,7 +72,7 @@ public:
         }
     }
 
-    QMap<double, QVector<KDNode>> getClosestNeighbors()
+    QMap<double, QVector<KDNode*>> getClosestNeighbors()
     {
         double searchRange = pow(neighborDistance, 2);
 

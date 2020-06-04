@@ -1,9 +1,6 @@
 #ifndef KD_TREE_H
 #define KD_TREE_H
 
-#include <QVector>
-#include <QMap>
-
 #include "kd_node.h"
 
 namespace ClearPath
@@ -13,16 +10,9 @@ class KDTree
 {
 public:
 
-    KDTree(int dim)
-    {
-        // Prototype
-    }
-/*
-    bool add(CollisionAvoidanceManager client)
-    {
-        return true;
-    }
-*/
+    explicit KDTree(int dim);
+    ~KDTree();
+
     /**
      *
      * @param position
@@ -30,29 +20,16 @@ public:
      * @param maxNbNeighbors
      * @return Map of N-nearest neighbors, sorted by distance
      */
-    QMap<double, QVector<KDNode>> getClosestNeighbors(const std::vector<double>& position, double sqRange, int maxNbNeighbors)
-    {
-        // Map of distance and nodes
-        QMap<double, QVector<KDNode>> closestNeighbors;
-        // Prototype
-        return closestNeighbors;
-    }
+    QMap<double, QVector<KDNode*> > getClosestNeighbors(const std::vector<double>& position, double sqRange, int maxNbNeighbors);
 
-    void update()
-    {
-        // Prototype
-    }
+    void update();
 
-/*
-    QVector<CollisionAvoidanceManager> getAgents()
-    {
-        return agents;
-    }
-*/
-    // Prototype
-    KDNode*                            root;
-    int                                nbDimension;
-    //QVector<CollisionAvoidanceManager> agents;
+    bool add(std::vector<double> position);
+
+private:
+
+    class Private;
+    Private* d;
 };
 
 }
