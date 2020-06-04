@@ -12,13 +12,18 @@ public:
     explicit KDTree(int);
     ~KDTree();
 
+/* === FUNCTIONS === */
 public:
-    bool add(double*);
-    QHash<double, QVector<KDNode>> getClosestNeighbors(double*, double, int);
+    bool add(std::vector<double>);
+    QHash<double, QVector<KDNode>> getClosestNeighbors(std::vector<double>, double, int);
 
 private:
-    class Private;
-    Private* d;
+    // If needed
+    // class Private;
+    // Private* d;
+    KDNode Root;
+    int nbDimension;
+    QVector<KDNode> nodeVector;
 };
 
 }

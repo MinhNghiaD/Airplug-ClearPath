@@ -13,39 +13,58 @@ namespace ClearPath
 class KDNode
 {
 public:
+    KDNode() = default;
     explicit KDNode(std::vector<double>, int, int);
     ~KDNode();
 
+/* === FUNCTIONS === */
 public:
     KDNode insert(std::vector<double>);
     std::vector<double> getPosition();
     double getClosestNeighbors(QHash<double, QVector<KDNode>>, std::vector<double>, double, int);
 
     static bool equal(std::vector<double> pos1, std::vector<double> pos2) {
-        if (std::size(pos1) != std::size(pos2)) return false;
+        /*
+        if (pos1.size() != pos2.size()) return false;
 
-        for (int k = 0; k < std::size(pos1); k++) {
+        for (int k = 0; k < pos1.size(); k++) {
             if (pos1[k] != pos2[k]) return false;
         }
 
         return true;
+        */
+        return pos1 == pos2;
     }
 
-    static double sqrDistance(std::vector<double>, std::vector<double>) {
-        if (std::size(pos1) != std::size(pos2)) return -1.;
+    static double sqrDistance(std::vector<double> pos1, std::vector<double> pos2) {
+        if (pos1.size() != pos2.size()) return -1.;
 
         double sum = 0.0;
 
-        for (int k = 0; k < std::size(pos1); k++) {
-            sum += pow(pos1[k] - pos2[k], 2);
+        for (auto x{pos1.cbegin()}, y{pos2.cbegin()}; x != pos1.end() && y != pos2.end(); x++, y++) {
+            sum += pow(x - y, 2);
         }
 
         return sum;
     }
 
 private:
-    class Private;
-    Private* d;
+    void updateRange(std::vector<double>);
+    KDNode findParent(std::vector<double>, int, int);
+
+private:
+    // If needed
+    // class Private;
+    // Private* d;
+
+    int splitAxis;
+    int nbDimension;
+    std::vector<double> position;
+    std::vector<double> maxRange;
+    std::vector<double> minRange;
+    KDNode Parent;
+    KDNode Left;
+    KDNode Right;
 };
 
 }

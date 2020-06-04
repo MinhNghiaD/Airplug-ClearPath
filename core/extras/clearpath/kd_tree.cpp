@@ -3,39 +3,31 @@
 namespace ClearPath
 {
 
-    class Q_DECL_HIDDEN KDTree::Private {
-    public:
-        Private(int dim): nbDimension(dim), Root(), nodeList(new QVector<KDNode>){}
-        ~Private(){}
+    /* === Main KDTree === */
+    KDTree::KDTree(int dim) : Root(nullptr){ }
 
-    public:
-       int nbDimension;
-       KDNode Root;
-       QVector<KDNode> nodeList;
-
-    };
-
-/* === Main KDTree === */
-KDTree::KDTree(int dim) : d(new Private(dim)){ }
-
-bool KDTree::add(double * position) {
-    if (d->Root == null) {
-        d->Root = new KDNode(position, 0, d->nbDimension);
-        d->nodeList.add(d->Root);
+    KDTree::~KDTree() {
+        delete d;
     }
-    else
-    {
-        KDNode pNode;
-        if ((pNode = d->Root.insert(position)) != nullptr) {
-            d->nodeList.add(pNode);
+
+    bool KDTree::add(std::vector<double> position) {
+        if (d->Root == NULL) {
+            d->Root = KDNode(position, 0, d->nbDimension);
+            d->nodeList.append(d->Root);
         }
+        else
+        {
+            KDNode pNode;
+            if ((pNode = d->Root.insert(position)) != NULL) {
+                d->nodeList.append(pNode);
+            }
+        }
+        return true;
     }
-    return true;
-}
 
-QHash<double, QVector<KDNode>> KDTree::getClosestNeighbors(double * position, double sqRange, int maxNbNeighbors) {
-    QHash<double, QVector<KDNode>> closestNeighbors = new QHash<double, QVector<KDNode>>();
-    sqRange = d->Root.getClosestNeighbors(closestNeighbors, position, sqRange, maxNbNeighbors);
-    return closestNeighbors;
-}
+    QHash<double, QVector<KDNode>> KDTree::getClosestNeighbors(std::vector<double> position, double sqRange, int maxNbNeighbors) {
+        QHash<double, QVector<KDNode>> closestNeighbors = new QHash<double, QVector<KDNode>>();
+        sqRange = d->Root.getClosestNeighbors(closestNeighbors, position, sqRange, maxNbNeighbors);
+        return closestNeighbors;
+    }
 }
