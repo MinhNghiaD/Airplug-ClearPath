@@ -2,10 +2,4 @@
 
 namespace ClearPath
 {
-
-KDTree::KDTree()
-{
-
-}
-
 }

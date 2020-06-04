@@ -18,12 +18,12 @@ class RVO
 public:
     RVO();
 
-    static double vectorProduct(std::vector<double> vector1, std::vector<double> vector2)
+    static double vectorProduct(const std::vector<double>& vector1, const std::vector<double>& vector2)
     {
         return std::inner_product(vector1.begin(), vector1.end(), vector2.begin(), 0.0);
     }
 
-    static std::vector<double> vectorSubstract(std::vector<double> vector1, std::vector<double> vector2)
+    static std::vector<double> vectorSubstract(const std::vector<double>& vector1, const std::vector<double>& vector2)
     {
         Q_ASSERT(vector1.size() == vector2.size());
 
@@ -43,7 +43,7 @@ public:
      * @param vector2
      * @return determinant of matrix from 2 2D vectors
      */
-    static double det2D(std::vector<double> vector1, std::vector<double> vector2)
+    static double det2D(const std::vector<double>& vector1, const std::vector<double>& vector2)
     {
         Q_ASSERT (vector1.size() == 2);
         Q_ASSERT (vector1.size() == vector2.size());
@@ -62,7 +62,6 @@ public:
         return vector;
     }
 
-private:
     /**
      * Solves a one-dimensional linear program on a specified line subject to linear
      * constraints defined by lines and a circular constraint.
