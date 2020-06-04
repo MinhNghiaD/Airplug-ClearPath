@@ -16,7 +16,7 @@
 
 #include "agent.h"
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class Board : public QGraphicsScene

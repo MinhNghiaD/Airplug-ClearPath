@@ -1,3 +1,14 @@
+/* ============================================================
+ *
+ * This file is a part of Airplug project
+ *
+ * Date        : 2020-6-4
+ * Description : Interface with clearpath algorithm for agents
+ *
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ *
+ * ============================================================ */
+
 #ifndef COLLISION_AVOIDANCE_MANAGER_H
 #define COLLISION_AVOIDANCE_MANAGER_H
 
@@ -27,6 +38,7 @@ public:
                               int    maxNeighbors,
                               KDTree* tree)
     {
+        // Prototype
     }
 
     std::vector<double> getPosition()
@@ -41,7 +53,7 @@ public:
 
     void addNeighborOrcaLine(QMap<double, QVector<KDNode>> neighbors)
     {
-
+        // Prototype
     }
 
 
@@ -95,9 +107,8 @@ public:
          */
         qsrand(QTime::currentTime().msec());
 
-        const double PI       = 3.14159265358979323846f;
-        const double angle    = qrand() / (RAND_MAX + 1.0) * 2 * PI;
-        const double distance = qrand() / (RAND_MAX + 1.0) * 1;
+        const double angle    = qrand() / (RAND_MAX) * 2 * M_PI;
+        const double distance = qrand() / (RAND_MAX) * 1;
 
         preferenceVelocity[0] += distance * cos(angle);
         preferenceVelocity[1] += distance * sin(angle);
@@ -110,6 +121,7 @@ public:
 
     bool reachedGoal()
     {
+        // Prototype
         return true;
     }
 

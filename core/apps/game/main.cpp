@@ -19,7 +19,7 @@
 #include "world.h"
 #include "agent_controller.h"
 
-using namespace GameApplication;
+using namespace ClearPathApplication;
 
 int main(int argc, char *argv[])
 {

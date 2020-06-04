@@ -22,15 +22,13 @@
 
 #include "constants.h"
 
-// TODO: change player shape to round
 // TODO: reorganize the code
-// TODO: get nb of player from Bas Controller and init board
 // TODO: update for each move
 // TODO: sync
 // TODO: Mode Auto
 // TODO: clearpath
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class Q_DECL_HIDDEN World::Private

@@ -20,7 +20,7 @@
 // local include
 #include "board.h"
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class World : public QGraphicsView

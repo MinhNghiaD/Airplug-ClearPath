@@ -21,7 +21,7 @@
 //local includes
 #include "state.h"
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class Agent : public QObject, public QGraphicsEllipseItem

@@ -8,7 +8,7 @@
 
 using namespace AirPlug;
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class Q_DECL_HIDDEN AgentController::Private
@@ -95,67 +95,6 @@ void AgentController::init(const QCoreApplication& app)
     slotSendMessage();
 }
 
-
-/*
-void AgentController::pause(bool b)
-{
-    m_optionParser.start = !b;
-
-    if (b)
-    {
-        slotDeactivateTimer();
-    }
-}
-*/
-
-/*
-
-void AgentController::slotActivateTimer(int period)
-{
-    if (! d->timer)
-    {
-        d->timer = new QTimer(this);
-
-        connect(d->timer, &QTimer::timeout,
-                    this, &AgentController::slotSendMessage);
-    }
-
-    m_optionParser.delay    = period;
-    m_optionParser.autoSend = true;
-
-    d->timer->start(period);
-
-    ++(*m_clock);
-}
-
-
-
-void AgentController::slotDeactivateTimer()
-{
-    m_optionParser.autoSend = false;
-    m_optionParser.delay    = 0;
-
-    if (d->timer)
-    {
-        d->timer->stop();
-    }
-
-    ++(*m_clock);
-}
-
-void AgentController::slotPeriodChanged(int period)
-{
-    m_optionParser.delay = period;
-
-    if (d->timer)
-    {
-        d->timer->setInterval(period);
-    }
-
-    ++(*m_clock);
-}
-
-*/
 void AgentController::slotSendMessage()
 {
     d->mutex->trylock((*m_clock));
@@ -297,6 +236,5 @@ void AgentController::slotEnterCriticalSection()
 
     d->mutex->unlock();
 }
-
 
 }

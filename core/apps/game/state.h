@@ -20,7 +20,7 @@
 //local includes
 #include "constants.h"
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class State

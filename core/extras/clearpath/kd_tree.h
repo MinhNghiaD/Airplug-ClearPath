@@ -15,6 +15,7 @@ public:
 
     KDTree(int dim)
     {
+        // Prototype
     }
 /*
     bool add(CollisionAvoidanceManager client)
@@ -33,19 +34,22 @@ public:
     {
         // Map of distance and nodes
         QMap<double, QVector<KDNode>> closestNeighbors;
-
+        // Prototype
         return closestNeighbors;
     }
 
     void update()
     {
+        // Prototype
     }
+
 /*
     QVector<CollisionAvoidanceManager> getAgents()
     {
         return agents;
     }
 */
+    // Prototype
     KDNode*                            root;
     int                                nbDimension;
     //QVector<CollisionAvoidanceManager> agents;

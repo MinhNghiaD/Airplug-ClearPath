@@ -23,7 +23,7 @@
 
 using namespace AirPlug;
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class AgentController: public ApplicationController
@@ -43,9 +43,6 @@ public:
 
 public:
 
-    //Q_SLOT void slotActivateTimer(int period);
-    //Q_SLOT void slotDeactivateTimer();
-    //Q_SLOT void slotPeriodChanged(int period);
     Q_SLOT void slotSendMessage();
 
 
