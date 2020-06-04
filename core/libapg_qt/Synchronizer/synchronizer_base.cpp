@@ -72,12 +72,22 @@ void SynchronizerBase::processACKMessage(ACLMessage& message)
         }
     }
 
+    // NOTE : after doStep, initiator will send a SYNC message to other sites with its current state to inform the new cycle
+    // other application, only send back an SYNC_ACK message to NET to forward back to initiator
     emit signalDoStep();
 }
 
 void SynchronizerBase::processSYNCMessage(ACLMessage& message)
 {
-    // TODO SYNCHRONIZER 11:
+    // TODO SYNCHRONIZER 13: Handle SYNC message come from the network
+    // check if SYNC has the field is initiator and update initiator id,
+    // if SYNC message from initiator => signal application to broadcast its state
+
+
+
+    // TODO SYNCHRONIZER 14:
+    // Update pass SYNC message to application to update shared data
+
 }
 
 }

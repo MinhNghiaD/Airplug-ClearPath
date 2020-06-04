@@ -73,18 +73,15 @@ void SynchronizerControl::init(const QString& initiatorSite)
     permission.setContent(content);
 
     emit signalSendToApp(permission);
-
+    emit signalFinishElection();
 }
 
 // preprocess messages come from local base application before handing it to the rest of the network
 bool SynchronizerControl::processLocalMessage(ACLMessage& message)
 {
-    // process only SYNC message
     if (message.getPerformative() == ACLMessage::SYNC)
     {
         QJsonObject content = message.getContent();
-
-        // get siteID of the base application who send this message
         QString baseid = content[QLatin1String("siteID")].toString();
 
         // Election can only be called by the first base message arrives
@@ -98,27 +95,38 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
         }
         else
         {
-            if (d->isInitiator)
+            if (d->isInitiator && (baseid == d->initiator))
             {
-                QJsonObject content = message.getContent();
-                content[QLatin1String("initiator")] = d->initiator;
-
+                content[QLatin1String("isInitiator")] = true;
                 message.setContent(content);
             }
 
             if (--(d->nbWaitMsg) == 0)
             {
-                // send ack to initiator
+                // send ack to base application to doStep
                 ACLMessage ack(ACLMessage::SYNC_ACK);
-
-                QJsonObject content;
-                content[QLatin1String("initiator")] = d->initiator;
-
-                ack.setContent(content);
-
                 emit signalSendToApp(ack);
             }
         }
+    }
+    else if (message.getPerformative() == ACLMessage::SYNC_ACK)
+    {
+        if (d->isInitiator)
+        {
+            d->nbWaitAck--;
+
+            if (d->nbWaitAck == 0)
+            {
+                emit signalSendToApp(message);
+            }
+        }
+        else
+        {
+            emit signalSendToNet(message);
+        }
+
+        // This message will not be continued to be colored by snapshot
+        return false;
     }
 
     return true;
@@ -129,32 +137,24 @@ void SynchronizerControl::processExternalMessage(ACLMessage& message)
     switch (message.getPerformative())
     {
         case ACLMessage::SYNC:
-            // TODO SYNCHRONIZER 5 : process SYNC messages come from network
-            // If SYNC message come from initiator, send a SYN_ACK message to local application to start the next cycle
-            // i.e: check the field "initiator" in the content of the message
-            // Decrement nbWaitMsg, then pass the message to application
-            // if nbWaitMsg reachs 0 -> send a SYNC_ACK message back to initiator by emit signal signalSendToNet
+            // process SYNC messages come from network
+            // TODO SYNCHRONIZER 12 : Pass the SYNC message to the local app to update state
 
-            if (message.getContent()["initiator"] == message.getSender())
+            d->activated = true;
+
+            if (--(d->nbWaitMsg) == 0)
             {
-                d->nbWaitMsg--;
-                emit signalSendToApp(message);
-                if (d->nbWaitMsg == 0)
-                {
-                    ACLMessage ack (ACLMessage::SYNC_ACK);
-                    ack.setReceiver(d->initiator);
-                    emit signalSendToNet(ack);
-                }
+                // send ack to base application to doStep
+                ACLMessage ack(ACLMessage::SYNC_ACK);
+                emit signalSendToApp(ack);
             }
 
             break;
         case ACLMessage::SYNC_ACK:
             if (d->isInitiator)
             {
-                // TODO SYNCHRONIZER 6 : decrement nbwaitAck, if nbwaitAck reaches 0,
-                // pass SYNC_ACK message to base initiator application to start the next cycle
-
                 d->nbWaitAck--;
+
                 if (d->nbWaitAck == 0)
                 {
                     emit signalSendToApp(message);
