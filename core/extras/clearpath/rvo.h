@@ -1,3 +1,15 @@
+/* ============================================================
+ *
+ * This file is a part of Airplug project
+ *
+ * Date        : 2020-5-25
+ * Description : Implement Linear programming optimization of Reciprocal Velocity Obstacles
+ *
+ * 2020 by Remi Besoin <remi.besoin@etu.utc.fr>
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ *
+ * ============================================================ */
+
 #ifndef RVO_H
 #define RVO_H
 

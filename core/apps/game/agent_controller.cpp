@@ -7,8 +7,11 @@
 
 // Local include
 #include "synchronizer_base.h"
+#include "collision_avoidance_manager.h"
+#include "environment_manager.h"
 
 using namespace AirPlug;
+using namespace ClearPath;
 
 namespace ClearPathApplication
 {
@@ -18,29 +21,31 @@ class Q_DECL_HIDDEN AgentController::Private
 public:
 
     Private(Board* board)
-        : //timer(nullptr),
-          board(board),
+        : board(board),
           nbSequence(0),
-          synchronizer(nullptr)
+          synchronizer(nullptr),
+          localAgent(nullptr),
+          environmentMngr(nullptr)
     {
     }
 
     ~Private()
     {
         delete synchronizer;
+        delete localAgent;
+        delete environmentMngr;
     }
 
 public:
 
-    //QTimer*     timer;
-
-    // all agents shared the same Map
     Board*      board;
-    Agent*      localAgent;
+    Agent*      guiAgent;
 
     int         nbSequence;
 
     SynchronizerBase* synchronizer;
+    CollisionAvoidanceManager* localAgent;
+    EnvironmentManager* environmentMngr;
 };
 
 
@@ -60,14 +65,12 @@ AgentController::~AgentController()
 void AgentController::init(const QCoreApplication& app)
 {
     ApplicationController::init(app);
-/*
-    if (m_optionParser.autoSend && m_optionParser.delay > 0)
-    {
-        // TODO handle auto play
-    }
-*/
+
     d->synchronizer = new SynchronizerBase(siteID());
-    // TODO Application 1 : setup synchronizer
+    // TODO Application 1 : setup synchronizer: connect 2 signals of synchronizer to corresponding slot
+
+
+    // TODO Application 2:  setup CollisionAvoidanceManager and EnvironmentManager
 
 
     // All Bas will subscribe to local NET
@@ -85,20 +88,6 @@ void AgentController::init(const QCoreApplication& app)
     // wait for network is establish and init synchronizer
     QThread::msleep(5);
     d->synchronizer->init();
-
-/*
-    // init local agent
-    d->localAgent = new Agent(siteID(), AGENT_RADIUS);
-    d->localAgent->init();
-
-    d->board->addAgent(siteID(), d->localAgent);
-
-    connect(d->localAgent, &Agent::signalStateChanged,
-            this,          &AgentController::slotSendMessage, Qt::DirectConnection);
-
-    // Broadcast agent initial state to others
-    slotSendMessage();
-*/
 }
 
 void AgentController::slotReceiveMessage(Header header, Message message)
@@ -136,9 +125,10 @@ void AgentController::slotReceiveMessage(Header header, Message message)
             if (aclMessage->getPerformative() == ACLMessage::SYNC)
             {
                 d->synchronizer->processSYNCMessage(*aclMessage);
-                // TODO Application 2 : decode the content of message to update KD Tree in environment manager
-                // This message should have a field site ID, maxSpeed, position, velocity from sender's CollisionAvoidanceManager
-                // The field is the same as in TODO Application 4
+
+                // TODO Application 3: decode the content of message to update KD Tree in environment manager
+                // decode the content of message to update KD Tree in environment manager
+                // NOTE: by using CollisionAvoidanceManager::getInfo
 
             }
             else if (aclMessage->getPerformative() == ACLMessage::SYNC_ACK)
@@ -153,7 +143,8 @@ void AgentController::slotReceiveMessage(Header header, Message message)
 void AgentController::slotDoStep()
 {
     ++(*m_clock);
-    // TODO Application 3: use CollisionAvoidanceManager to update position and move to the new position on the
+    // TODO Application 4: use CollisionAvoidanceManager to update position and move to the new position
+    // Send SYNC_ACK Message back to initiator
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
@@ -180,7 +171,8 @@ QJsonObject AgentController::captureLocalState() const
     ++(*m_clock);
 
     QJsonObject applicationState;
-    // TODO Application 5: capture agent state
+    // TODO Application 6: capture agent state
+    // NOTE: by using CollisionAvoidanceManager::captureState
 
 
     QJsonObject localState;

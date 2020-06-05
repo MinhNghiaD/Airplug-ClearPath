@@ -25,4 +25,3 @@ ENDMACRO()
 # add unit tests hear:
 LIBAPG_TOOLS_BUILD(test_message.cpp)
 LIBAPG_TOOLS_BUILD(test_clock.cpp)
-LIBAPG_TOOLS_BUILD(test_kdtree.cpp)
