@@ -6,6 +6,7 @@
  * Description : Awerbuch’s beta Synchronizer for a synchronous system, control part
  *
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ * 2020 by Mathieu Cocheteux <mathieu.cocheteux@etu.utc.fr>
  *
  * ============================================================ */
 

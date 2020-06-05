@@ -16,6 +16,8 @@
 #include <QTime>
 #include <QMap>
 #include <QtMath>
+#include <QJsonArray>
+#include <QJsonObject>
 
 // local include
 #include "rvo.h"
@@ -124,6 +126,85 @@ public:
         // Prototype
         return true;
     }
+
+    /**
+     * @brief setInfo : use for updating information of distance agent
+     * @param position
+     * @param velocity
+     * @param maxSpeed
+     */
+    bool setInfo(QJsonObject info)
+    {
+        bool success = false;
+        success = decodeVector(info[QLatin1String("position")].toArray(), position);
+        success = decodeVector(info[QLatin1String("velocity")].toArray(), velocity);
+
+        maxSpeed = info[QLatin1String("maxSpeed")].toDouble();
+
+        return success;
+    }
+
+    QJsonObject getInfo()
+    {
+        QJsonObject info;
+
+        info[QLatin1String("position")] = encodeVector(position);
+        info[QLatin1String("velocity")] = encodeVector(velocity);
+        info[QLatin1String("maxSpeed")] = maxSpeed;
+
+        return info;
+    }
+
+    QJsonObject captureState()
+    {
+        QJsonObject state;
+        /* TODO : capture:
+        double     timeHorizon;
+        double     maxSpeed;
+        double     neighborDistance;
+        double     timeStep;
+        int        maxNeighbors;
+
+        std::vector<double> position;
+        std::vector<double> destination;
+        std::vector<double> velocity;
+        std::vector<double> newVelocity;
+        std::vector<double> preferenceVelocity;
+        into QjsonObject in the same way as getInfo() for snapshot
+        */
+
+        return state;
+    }
+
+private:
+
+    static QJsonArray encodeVector(const std::vector<double>& vector)
+    {
+        QJsonArray array;
+
+        for (size_t i = 0; i < vector.size(); ++i)
+        {
+            array << vector[i];
+        }
+
+        return array;
+    }
+
+    static bool decodeVector(const QJsonArray& json, std::vector<double>& vector)
+    {
+        if (json.size() != vector.size())
+        {
+            return false;
+        }
+
+        for (int i = 0; i < vector.size(); ++i)
+        {
+            vector[i] = json[i].toDouble();
+        }
+
+        return true;
+    }
+
 
 private:
 

@@ -1,3 +1,15 @@
+/* ============================================================
+ *
+ * This file is a part of Airplug project
+ *
+ * Date        : 2020-5-25
+ * Description : KD-Tree partitions in space
+ *
+ * 2020 by Gaétan Carabetta <carabetta.gaetan at gmail dot com>
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ *
+ * ============================================================ */
+
 #ifndef KD_TREE_H
 #define KD_TREE_H
 

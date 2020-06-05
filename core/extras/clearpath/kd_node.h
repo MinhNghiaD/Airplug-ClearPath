@@ -1,3 +1,15 @@
+/* ============================================================
+ *
+ * This file is a part of Airplug project
+ *
+ * Date        : 2020-5-25
+ * Description : Node of KD-Tree
+ *
+ * 2020 by Gaétan Carabetta <carabetta.gaetan at gmail dot com>
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
+ *
+ * ============================================================ */
+
 #ifndef KD_NODE_H
 #define KD_NODE_H
 
