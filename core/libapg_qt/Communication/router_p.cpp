@@ -26,6 +26,14 @@ Router::Private::~Private()
 
 void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 {
+    if (synchronizer)
+    {
+        if (synchronizer->processLocalMessage(message))
+        {
+            return;
+        }
+    }
+
     // Broadcast to all other applications in same site first
     communicationMngr->send(message, QLatin1String("NET"), Header::allApp, Header::localHost);
 
@@ -58,6 +66,14 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     else
     {
         // TODO routing
+    }
+
+    if (synchronizer)
+    {
+        if (!synchronizer->processExternalMessage(message))
+        {
+            return;
+        }
     }
 
     QJsonObject contents = message.getContent();

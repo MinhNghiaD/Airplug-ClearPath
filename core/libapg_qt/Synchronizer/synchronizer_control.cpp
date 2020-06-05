@@ -37,7 +37,7 @@ SynchronizerControl::~SynchronizerControl()
     delete d;
 }
 
-void SynchronizerControl::processLocalMessage(ACLMessage& message)
+bool SynchronizerControl::processLocalMessage(ACLMessage& message)
 {
     ACLMessage::Performative performative = message.getPerformative();
 
@@ -49,12 +49,11 @@ void SynchronizerControl::processLocalMessage(ACLMessage& message)
         {
             callElection(content[QLatin1String("siteID")].toString());
 
-            return;
+            // stop to be routed
+            return false;
         }
 
         --(d->nbWaitMsg);
-
-        // TODO broadcast to local and to net
     }
     else if (performative == ACLMessage::SYNC_ACK)
     {
@@ -83,10 +82,16 @@ void SynchronizerControl::processLocalMessage(ACLMessage& message)
 
             emit signalSendToNet(message);
         }
+
+        // take different routes
+        return false;
     }
+
+    // continue to be broadcast to local and to net
+    return true;
 }
 
-void SynchronizerControl::processExternalMessage(ACLMessage& message)
+bool SynchronizerControl::processExternalMessage(ACLMessage& message)
 {
     ACLMessage::Performative performative = message.getPerformative();
 
@@ -100,11 +105,10 @@ void SynchronizerControl::processExternalMessage(ACLMessage& message)
             {
                 d->initiatorSite = message.getSender();
                 d->initiator     = message.getTimeStamp()->getSiteID();
+                d->nbWaitMsg     = d->nbApps;
                 d->activated     = true;
             }
         }
-
-        // TODO : forward SYNC to app
 
         --(d->nbWaitMsg);
 
@@ -135,7 +139,13 @@ void SynchronizerControl::processExternalMessage(ACLMessage& message)
                 emit signalSendToApp(permission);
             }
         }
+
+        // Take another route
+        return false;
     }
+
+    // Continue to be sent to app
+    return true;
 }
 
 void SynchronizerControl::setNbOfApp(int nbApps)
@@ -156,12 +166,11 @@ void SynchronizerControl::callElection(const QString& baseID)
     }
 }
 
-void SynchronizerControl::init(const QString& initiatorSite)
+void SynchronizerControl::init()
 {
     // This method is called when local site wins the election
 
-    //d->initiatorSite = initiatorSite;
-    //d->isInitiator = true;
+    d->initiatorSite = d->siteID;
     d->nbWaitMsg = d->nbApps;
     d->nbWaitAck = d->nbApps - 1;
 

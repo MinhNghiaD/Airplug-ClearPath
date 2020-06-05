@@ -25,7 +25,7 @@ class Q_DECL_HIDDEN Router::Private
 {
 public:
 
-    Private();
+    explicit Private();
     ~Private();
 
 public:

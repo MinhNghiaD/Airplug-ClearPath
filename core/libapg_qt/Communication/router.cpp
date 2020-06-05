@@ -231,7 +231,7 @@ void Router::slotWinElection(ElectionManager::ElectionReason reason)
             d->snapshot->init();
             break;
         case ElectionManager::Synchronizer:
-            d->synchronizer->init(d->siteID);
+            d->synchronizer->init();
             break;
         default:
             break;

@@ -60,19 +60,21 @@ public:
      * @brief init: make local site become the initiator of the network
      * Election will be used to elect one unique initiator per network
      */
-    void init(const QString& initiatorSite);
+    void init();
 
     /**
      * @brief processLocalMessage : process messages coming from local base application
      * @param message
+     * @return true if message can continue to be send, false when it takes a different route
      */
-    void processLocalMessage(ACLMessage& message);
+    bool processLocalMessage(ACLMessage& message);
 
     /**
      * @brief processExternalMessage : process messages coming from network
      * @param message
+     * @return true if message can continue to be send, false when it takes a different route
      */
-    void processExternalMessage(ACLMessage& message);
+    bool processExternalMessage(ACLMessage& message);
 
     void setNbOfApp(int nbApps);
 
