@@ -1,4 +1,3 @@
-
 /* ============================================================
  *
  * This file is a part of Airplug project
@@ -19,12 +18,11 @@
 // Local include
 #include "application_controller.h"
 
-#include "ricart_lock.h"
 #include "board.h"
 
 using namespace AirPlug;
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class AgentController: public ApplicationController
@@ -44,24 +42,16 @@ public:
 
 public:
 
-    //Q_SLOT void slotActivateTimer(int period);
-    //Q_SLOT void slotDeactivateTimer();
-    //Q_SLOT void slotPeriodChanged(int period);
-    Q_SLOT void slotSendMessage();
-
+    Q_SLOT void slotDoStep();
 
 private:
 
-    void receiveMutexRequest(const ACLMessage& request) const;
     void sendLocalSnapshot();
 
 private:
 
     // main notification handler
     Q_SLOT void slotReceiveMessage(Header, Message) override;
-    Q_SLOT void slotForwardMutex(const ACLMessage&);
-
-    Q_SLOT void slotEnterCriticalSection();
 
 private:
 

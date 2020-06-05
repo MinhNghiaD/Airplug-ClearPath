@@ -20,6 +20,9 @@ MainWindow::MainWindow(NetController* controller, QWidget *parent) :
     {
         qFatal("NET Controller is null");
     }
+
+    setWindowTitle(m_controller->siteID());
+
 }
 
 MainWindow::~MainWindow()

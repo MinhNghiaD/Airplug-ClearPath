@@ -11,7 +11,7 @@
 //local include
 #include "constants.h"
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class Q_DECL_HIDDEN Agent::Private

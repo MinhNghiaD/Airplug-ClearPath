@@ -6,6 +6,7 @@
  * Description : Agent view in the board
  *
  * 2020 by Lucca Rawlyk
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
  * ============================================================ */
 
@@ -20,7 +21,7 @@
 //local includes
 #include "state.h"
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class Agent : public QObject, public QGraphicsEllipseItem

@@ -6,6 +6,7 @@
  * Description : game world class
  *
  * 2020 by Lucca Rawlyk
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
  * ============================================================ */
 
@@ -19,7 +20,7 @@
 // local include
 #include "board.h"
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 class World : public QGraphicsView

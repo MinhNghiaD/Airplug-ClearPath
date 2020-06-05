@@ -3,7 +3,7 @@
 //qt includes
 //#include <QDebug>
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 
 State::State(const QString& siteID)

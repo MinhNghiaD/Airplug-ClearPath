@@ -36,7 +36,6 @@ int main(int argc, char *argv[])
         qDebug() << "------------------------- Start with GUI -------------------------------";
 
         mainWindow = new MainWindow(&controller);
-        mainWindow->setWindowTitle(QLatin1String("NET"));
 
         mainWindow->show();
     }

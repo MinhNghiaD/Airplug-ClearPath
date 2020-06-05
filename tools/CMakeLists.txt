@@ -17,9 +17,11 @@ MACRO(LIBAPG_TOOLS_BUILD)
 
     target_link_libraries(${_target}
                           apg
+                          extras
                           ${QT_LIBRARIES}
                          )
 ENDMACRO()
 
+# add unit tests hear:
 LIBAPG_TOOLS_BUILD(test_message.cpp)
 LIBAPG_TOOLS_BUILD(test_clock.cpp)

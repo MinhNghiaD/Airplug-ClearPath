@@ -9,7 +9,7 @@
 // local includes
 
 
-namespace GameApplication
+namespace ClearPathApplication
 {
 class Board::Private
 {
