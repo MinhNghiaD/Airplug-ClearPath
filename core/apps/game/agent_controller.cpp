@@ -68,9 +68,32 @@ void AgentController::init(const QCoreApplication& app)
 
     d->synchronizer = new SynchronizerBase(siteID());
     // TODO Application 1 : setup synchronizer: connect 2 signals of synchronizer to corresponding slot
+    connect(d->synchronizer, &SynchronizerBase::signalDoStep,
+            this, &AgentController::slotDoStep, Qt::DirectConnection);
+    connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
+            this, &AgentController::slotSendMessage, Qt::DirectConnection);
 
 
     // TODO Application 2:  setup CollisionAvoidanceManager and EnvironmentManager
+
+    // Agent State or std::vector<double>{0., 0.}
+    State agentState = d->guiAgent->getState();
+    double agentPosX = static_cast<double>(agentState.x);
+    double agentPosY = static_cast<double>(agentState.y);
+
+    d->localAgent = new CollisionAvoidanceManager(
+                        std::vector<double>{agentPosX, agentPosY},
+                        std::vector<double>{0., 0.},
+                        std::vector<double>{0., 0.},
+                        0.,
+                        0.,
+                        0.,
+                        0.,
+                        0,
+                        nullptr);
+
+    // EnvironmentManager Constructor isn't ready yet
+    // d->environmentMngr = new EnvironmentManager();
 
 
     // All Bas will subscribe to local NET
@@ -130,6 +153,18 @@ void AgentController::slotReceiveMessage(Header header, Message message)
                 // decode the content of message to update KD Tree in environment manager
                 // NOTE: by using CollisionAvoidanceManager::getInfo
 
+                QJsonObject content = aclMessage->getContent();
+                /*
+                Content might be extracted from aclMessage
+
+                info[QLatin1String("position")] = encodeVector(position);
+                info[QLatin1String("velocity")] = encodeVector(velocity);
+                info[QLatin1String("maxSpeed")] = maxSpeed;
+                */
+                QJsonObject info = d->localAgent->getInfo();
+
+                d->environmentMngr->setInfo("TODO", info);
+
             }
             else if (aclMessage->getPerformative() == ACLMessage::SYNC_ACK)
             {
@@ -145,12 +180,19 @@ void AgentController::slotDoStep()
     ++(*m_clock);
     // TODO Application 4: use CollisionAvoidanceManager to update position and move to the new position
     // Send SYNC_ACK Message back to initiator
+    ACLMessage message = ACLMessage(ACLMessage::SYNC_ACK);
+    sendMessage(message, QString(), QString(), QString());
+
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
 {
-    // TODO Application 4: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
+    // TODO Application 5: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
     // Put in QJsonObject and put it in the message (envelop) to send to NET
+    QJsonObject info = d->localAgent->getInfo();
+    ACLMessage message = ACLMessage(ACLMessage::SYNC_ACK);
+
+    sendMessage(message, QString(), QString(), QString());
 }
 
 void AgentController::sendLocalSnapshot()
