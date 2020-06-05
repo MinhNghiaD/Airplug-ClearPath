@@ -28,15 +28,15 @@ class CollisionAvoidanceManager
 {
 public:
 
-    CollisionAvoidanceManager(const std::vector<double>& position,
-                              const std::vector<double>& destination,
-                              const std::vector<double>& velocity,
-                              double timeHorizon,
-                              double timeStep,
-                              double maxSpeed,
-                              double neighborDistance,
-                              int    maxNeighbors,
-                              KDTree* tree)
+    explicit CollisionAvoidanceManager(const std::vector<double>& position,
+                                       const std::vector<double>& destination,
+                                       const std::vector<double>& velocity,
+                                       double timeHorizon,
+                                       double timeStep,
+                                       double maxSpeed,
+                                       double neighborDistance,
+                                       int    maxNeighbors,
+                                       KDTree* tree)
     {
         // Prototype
     }

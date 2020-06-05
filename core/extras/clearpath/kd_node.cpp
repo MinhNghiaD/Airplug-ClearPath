@@ -6,6 +6,9 @@
 // Qt include
 #include <QtMath>
 
+// Local include
+#include "collision_avoidance_manager.h"
+
 namespace ClearPath
 {
 
@@ -13,12 +16,13 @@ class Q_DECL_HIDDEN KDNode::Private
 {
 public:
 
-    Private(std::vector<double> nodePos, int splitAxis, int dimension)
-        : splitAxis(splitAxis),
+    Private(CollisionAvoidanceManager* agent, int splitAxis, int dimension)
+        : agent(agent),
+          splitAxis(splitAxis),
           nbDimension(dimension),
-          position(nodePos),
-          maxRange(nodePos),
-          minRange(nodePos),
+          position(agent->getPosition()),
+          maxRange(agent->getPosition()),
+          minRange(agent->getPosition()),
           Parent(nullptr),
           Left(nullptr),
           Right(nullptr)
@@ -29,9 +33,12 @@ public:
     {
         delete Left;
         delete Right;
+        delete agent;
     }
 
 public:
+
+    CollisionAvoidanceManager* agent;
 
     int splitAxis;
     int nbDimension;
@@ -58,11 +65,11 @@ double KDNode::sqrDistance(std::vector<double> pos1, std::vector<double> pos2)
     return sqrDistance;
 }
 
-KDNode::KDNode(const std::vector<double>& nodePos, int splitAxis, int dimension)
-    : d(new Private(nodePos, splitAxis, dimension))
+KDNode::KDNode(CollisionAvoidanceManager* agent, int splitAxis, int dimension)
+    : d(new Private(agent, splitAxis, dimension))
 {
     Q_ASSERT(splitAxis < dimension);
-    Q_ASSERT(nodePos.size() == dimension);
+    Q_ASSERT(agent->getPosition().size() == dimension);
 }
 
 KDNode::~KDNode()
@@ -70,8 +77,10 @@ KDNode::~KDNode()
     delete d;
 }
 
-KDNode* KDNode::insert(const std::vector<double>& nodePos)
+KDNode* KDNode::insert(CollisionAvoidanceManager* agent)
 {
+    std::vector<double> nodePos = agent->getPosition();
+
     if (nodePos.size() != d->nbDimension)
     {
         return nullptr;
@@ -84,7 +93,7 @@ KDNode* KDNode::insert(const std::vector<double>& nodePos)
         return nullptr;
     }
 
-    KDNode* newNode = new KDNode(nodePos,
+    KDNode* newNode = new KDNode(agent,
                                  ((parent->d->splitAxis + 1) % d->nbDimension),
                                  d->nbDimension);
     newNode->d->Parent = parent;
@@ -106,11 +115,15 @@ std::vector<double> KDNode::getPosition() const
     return d->position;
 }
 
+CollisionAvoidanceManager* KDNode::getAgent() const
+{
+    return d->agent;
+}
 
 double KDNode::getClosestNeighbors(QMap<double, QVector<KDNode*> >& neighborList,
-                                   std::vector<double> position,
-                                   double sqRange,
-                                   int maxNbNeighbors)
+                                   std::vector<double>              position,
+                                   double                           sqRange,
+                                   int                              maxNbNeighbors)
 {
     // add current node to the list
     double distanceToCurrentNode = sqrt(sqrDistance(position, d->position));

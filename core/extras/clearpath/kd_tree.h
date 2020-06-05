@@ -6,6 +6,8 @@
 namespace ClearPath
 {
 
+class CollisionAvoidanceManager;
+
 class KDTree
 {
 public:
@@ -24,7 +26,7 @@ public:
 
     void update();
 
-    bool add(std::vector<double> position);
+    bool add(const QString& name, CollisionAvoidanceManager* agent);
 
 private:
 
