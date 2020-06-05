@@ -17,6 +17,14 @@ public:
     ~Private()
     {
         delete Root;
+
+        QMap<QString, CollisionAvoidanceManager*>::iterator agent = agents.begin();
+
+        while (agent != agents.end())
+        {
+            delete agent.value();
+            agents.erase(agent);
+        }
     }
 
 public:
@@ -61,7 +69,12 @@ bool KDTree::add(const QString& name, CollisionAvoidanceManager* agent)
     return true;
 }
 
-QMap<double, QVector<KDNode*> > KDTree::getClosestNeighbors(const std::vector<double>& position, double sqRange, int maxNbNeighbors)
+QMap<QString, CollisionAvoidanceManager*> KDTree::getAgents() const
+{
+    return d->agents;
+}
+
+QMap<double, QVector<KDNode*> > KDTree::getClosestNeighbors(const std::vector<double>& position, double sqRange, int maxNbNeighbors) const
 {
     QMap<double, QVector<KDNode*> > closestNeighbors;
 
@@ -69,4 +82,19 @@ QMap<double, QVector<KDNode*> > KDTree::getClosestNeighbors(const std::vector<do
 
     return closestNeighbors;
 }
+
+void KDTree::update()
+{
+    // clean old tree and construct new one
+    delete d->Root;
+    d->Root = nullptr;
+
+    for (QMap<QString, CollisionAvoidanceManager*>::iterator agent  = d->agents.begin();
+                                                             agent != d->agents.end();
+                                                           ++agent)
+    {
+        add(agent.key(), agent.value());
+    }
+}
+
 }

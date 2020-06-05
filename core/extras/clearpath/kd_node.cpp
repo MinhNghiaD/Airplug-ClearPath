@@ -33,7 +33,6 @@ public:
     {
         delete Left;
         delete Right;
-        delete agent;
     }
 
 public:

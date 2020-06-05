@@ -22,11 +22,13 @@ public:
      * @param maxNbNeighbors
      * @return Map of N-nearest neighbors, sorted by distance
      */
-    QMap<double, QVector<KDNode*> > getClosestNeighbors(const std::vector<double>& position, double sqRange, int maxNbNeighbors);
+    QMap<double, QVector<KDNode*> > getClosestNeighbors(const std::vector<double>& position, double sqRange, int maxNbNeighbors) const;
 
     void update();
 
     bool add(const QString& name, CollisionAvoidanceManager* agent);
+
+    QMap<QString, CollisionAvoidanceManager*> getAgents() const;
 
 private:
 
