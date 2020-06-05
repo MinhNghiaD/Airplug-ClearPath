@@ -26,15 +26,6 @@ Router::Private::~Private()
 
 void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 {
-    if (synchronizer)
-    {
-        // control synchronized messages first
-        if (!synchronizer->processLocalMessage(message))
-        {
-            return;
-        }
-    }
-
     // Broadcast to all other applications in same site first
     communicationMngr->send(message, QLatin1String("NET"), Header::allApp, Header::localHost);
 
@@ -89,11 +80,6 @@ void Router::Private::forwardNetToApp(Header& header, ACLMessage& message)
     }
 
     message.setContent(contents);
-
-    if (synchronizer)
-    {
-        synchronizer->processExternalMessage(message);
-    }
 
     communicationMngr->send(message, QLatin1String("NET"), app, Header::localHost);
 }

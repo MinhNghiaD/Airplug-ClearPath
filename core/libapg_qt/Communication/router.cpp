@@ -6,9 +6,6 @@
 namespace AirPlug
 {
 
-/*------------------------------------------------------------ Router main functions ----------------------------------------------------------------------------------------*/
-
-
 Router::Router(CommunicationManager* communication, const QString& siteID)
     : QObject(nullptr),
       d(new Private())

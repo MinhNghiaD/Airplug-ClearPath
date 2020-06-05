@@ -68,6 +68,7 @@ public:
 public:
 
     Q_SIGNAL void signalSendMessage(ACLMessage& message);
+    Q_SIGNAL void signalSendState(ACLMessage& message);
     Q_SIGNAL void signalDoStep();
 
 private:

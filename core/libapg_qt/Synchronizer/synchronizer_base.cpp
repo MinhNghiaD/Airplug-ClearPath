@@ -7,7 +7,8 @@ class SynchronizerBase::Private
 public:
 
     explicit Q_DECL_HIDDEN Private(const QString& siteID)
-        : siteID(siteID)
+        : siteID(siteID),
+          isInitiator(false)
     {
     }
 
@@ -15,10 +16,25 @@ public:
     {
     }
 
+    bool filterACKMessage(QJsonObject content)
+    {
+        if (content[QLatin1String("forInitiator")].toBool())
+        {
+            if (content[QLatin1String("initiator")].toString() == siteID)
+            {
+                isInitiator = true;
+            }
+
+            return isInitiator;
+        }
+
+        return (! isInitiator);
+    }
+
 public:
 
     QString siteID;
-    QString initiator;
+    bool isInitiator;
 };
 
 SynchronizerBase::SynchronizerBase(const QString& siteID)
@@ -35,23 +51,33 @@ SynchronizerBase::~SynchronizerBase()
 void SynchronizerBase::init()
 {
     ACLMessage message(ACLMessage::SYNC);
-    // send a dummy message to NET to candidate for initiator position of synchronous network
     QJsonObject content;
     content[QLatin1String("siteID")] = d->siteID;
+    content[QLatin1String("init")]   = true;
     message.setContent(content);
 
+    // Dummy message doesn't need to have a clock
     emit signalSendMessage(message);
+}
+
+void SynchronizerBase::processSYNCMessage(ACLMessage& message)
+{
+    // TODO avoid roundback message
+    QJsonObject content = message.getContent();
+
+    if (content[QLatin1String("fromInitiator")].toBool())
+    {
+        ACLMessage newMessage(ACLMessage::SYNC);
+
+        emit signalSendState(newMessage);
+    }
 }
 
 void SynchronizerBase::processACKMessage(ACLMessage& message)
 {
     // Process message from NET,
-    // If the message is a SYNC_ACK message,
-    // prepare an ACLMessage of performative SYNC with the siteID as the first content, as an envelop,
     // then emit signalDoStep() to inform application to start the next cycle.
     // The application will use this envelop to send the message in the next cycle
-
-    // If not SYNC_ACK, do nothing
 
     if (message.getPerformative() != ACLMessage::SYNC_ACK)
     {
@@ -60,34 +86,21 @@ void SynchronizerBase::processACKMessage(ACLMessage& message)
 
     QJsonObject content = message.getContent();
 
-    // Only the first ACK message call by synchronizer init has this field
-    if (content.contains(QLatin1String("initiator")))
+    if(d->filterACKMessage(content))
     {
-        d->initiator = content[QLatin1String("initiator")].toString();
+        emit signalDoStep();
 
-        if (d->initiator != d->siteID)
+        if (d->isInitiator)
         {
-            // Ensure that only initiator does the first step
-            return;
+            ACLMessage newMessage(ACLMessage::SYNC);
+
+            QJsonObject newContent;
+            newContent[QLatin1String("fromInitiator")] = true;
+            newMessage.setContent(newContent);
+
+            emit signalSendState(newMessage);
         }
     }
-
-    // NOTE : after doStep, initiator will send a SYNC message to other sites with its current state to inform the new cycle
-    // other application, only send back an SYNC_ACK message to NET to forward back to initiator
-    emit signalDoStep();
-}
-
-void SynchronizerBase::processSYNCMessage(ACLMessage& message)
-{
-    // TODO SYNCHRONIZER 13: Handle SYNC message come from the network
-    // check if SYNC has the field is initiator and update initiator id,
-    // if SYNC message from initiator => signal application to broadcast its state
-
-
-
-    // TODO SYNCHRONIZER 14:
-    // Update pass SYNC message to application to update shared data
-
 }
 
 }

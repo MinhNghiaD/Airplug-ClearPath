@@ -17,17 +17,13 @@ public:
     }
 
 public:
-
+    bool activated;
     QString siteID;
-    // id of Base application who is the initaitor
     QString initiator;
-    // id of NET application who in charge of initiator
     QString initiatorSite;
-    bool    activated;
-    bool    isInitiator;
-    int     nbApps;
-    int     nbWaitMsg;
-    int     nbWaitAck;
+    int nbApps;
+    int nbWaitMsg;
+    int nbWaitAck;
 };
 
 SynchronizerControl::SynchronizerControl(const QString& siteID)
@@ -41,132 +37,106 @@ SynchronizerControl::~SynchronizerControl()
     delete d;
 }
 
-void SynchronizerControl::callElection(const QString& baseID)
+void SynchronizerControl::processLocalMessage(ACLMessage& message)
 {
-    // save temporary this information before enter an election
-    d->initiator = baseID;
-    d->activated = true;
-    emit signalRequestElection();
-}
+    ACLMessage::Performative performative = message.getPerformative();
 
-// NOTE init can only be called when the host win the election
-void SynchronizerControl::init(const QString& initiatorSite)
-{
-    // set initiator, nbWaitMsg and nbWaitAck
-    // NOTE: nbWaitMsg is equal to the nbApps (nb total of Base applications) in the network, including itself
-    //       nbWaitAck is equal to nbApps - 1 (not including initiator)
-
-    d->initiatorSite = initiatorSite;
-
-    d->nbWaitMsg = d->nbApps;
-    d->nbWaitAck = d->nbApps - 1;
-
-    d->isInitiator = true;
-
-    // NOTE : after initiated at Control level, it will give a permission to the base application
-    // who will be the initiator to send the first message of the next cycle of synchronous process
-    ACLMessage permission(ACLMessage::SYNC_ACK);
-
-    QJsonObject content;
-    content[QLatin1String("initiator")] = d->initiator;
-
-    permission.setContent(content);
-
-    emit signalSendToApp(permission);
-    emit signalFinishElection();
-}
-
-// preprocess messages come from local base application before handing it to the rest of the network
-bool SynchronizerControl::processLocalMessage(ACLMessage& message)
-{
-    if (message.getPerformative() == ACLMessage::SYNC)
+    if (performative == ACLMessage::SYNC)
     {
         QJsonObject content = message.getContent();
-        QString baseid = content[QLatin1String("siteID")].toString();
 
-        // Election can only be called by the first base message arrives
-        if (! d->activated)
+        if (content[QLatin1String("init")] == true)
         {
-            // if the synchronization is not yet activated, call an election and candidate for initiator
-            callElection(baseid);
+            callElection(content[QLatin1String("siteID")].toString());
 
-            // This message will not be continued to passed to the network
-            return false;
+            return;
         }
-        else
-        {
-            if (d->isInitiator && (baseid == d->initiator))
-            {
-                content[QLatin1String("isInitiator")] = true;
-                message.setContent(content);
-            }
 
-            if (--(d->nbWaitMsg) == 0)
-            {
-                // send ack to base application to doStep
-                ACLMessage ack(ACLMessage::SYNC_ACK);
-                emit signalSendToApp(ack);
-            }
-        }
+        --(d->nbWaitMsg);
+
+        // TODO broadcast to local and to net
     }
-    else if (message.getPerformative() == ACLMessage::SYNC_ACK)
+    else if (performative == ACLMessage::SYNC_ACK)
     {
-        if (d->isInitiator)
+        if (d->initiatorSite == d->siteID)
         {
-            d->nbWaitAck--;
+            // Initiator is in the same site
+            --(d->nbWaitAck);
 
             if (d->nbWaitAck == 0)
             {
-                emit signalSendToApp(message);
+                ACLMessage permission(ACLMessage::SYNC_ACK);
+
+                QJsonObject content;
+                content[QLatin1String("forInitiator")] = true;
+
+                permission.setContent(content);
+
+                // give permission to initiator
+                emit signalSendToApp(permission);
             }
         }
         else
         {
+            // Foward to initiator site
+            message.setReceiver(d->initiatorSite);
+
             emit signalSendToNet(message);
         }
-
-        // This message will not be continued to be colored by snapshot
-        return false;
     }
-
-    return true;
 }
 
 void SynchronizerControl::processExternalMessage(ACLMessage& message)
 {
-    switch (message.getPerformative())
+    ACLMessage::Performative performative = message.getPerformative();
+
+    QJsonObject content = message.getContent();
+
+    if (performative == ACLMessage::SYNC)
     {
-        case ACLMessage::SYNC:
-            // process SYNC messages come from network
-            // TODO SYNCHRONIZER 12 : Pass the SYNC message to the local app to update state
-
-            d->activated = true;
-
-            if (--(d->nbWaitMsg) == 0)
+        if (!d->activated)
+        {
+            if (content[QLatin1String("fromInitiator")].toBool())
             {
-                // send ack to base application to doStep
-                ACLMessage ack(ACLMessage::SYNC_ACK);
-                emit signalSendToApp(ack);
+                d->initiatorSite = message.getSender();
+                d->initiator     = message.getTimeStamp()->getSiteID();
+                d->activated     = true;
             }
+        }
 
-            break;
-        case ACLMessage::SYNC_ACK:
-            if (d->isInitiator)
+        // TODO : forward SYNC to app
+
+        --(d->nbWaitMsg);
+
+        if (d->nbWaitMsg)
+        {
+            ACLMessage permission(ACLMessage::SYNC_ACK);
+
+            // give the app permission to perform next step
+            emit signalSendToApp(permission);
+        }
+    }
+    else if (performative == ACLMessage::SYNC_ACK)
+    {
+        if(d->siteID == message.getReceiver())
+        {
+            --(d->nbWaitAck);
+
+            if (d->nbWaitAck == 0)
             {
-                d->nbWaitAck--;
+                ACLMessage permission(ACLMessage::SYNC_ACK);
 
-                if (d->nbWaitAck == 0)
-                {
-                    emit signalSendToApp(message);
-                }
+                QJsonObject content;
+                content[QLatin1String("forInitiator")] = true;
+
+                permission.setContent(content);
+
+                // give permission to initiator
+                emit signalSendToApp(permission);
             }
-
-            break;
-        default:
-            break;
+        }
     }
 }
-
 
 void SynchronizerControl::setNbOfApp(int nbApps)
 {
@@ -174,4 +144,39 @@ void SynchronizerControl::setNbOfApp(int nbApps)
 }
 
 
+void SynchronizerControl::callElection(const QString& baseID)
+{
+    if (!d->activated)
+    {
+        // save temporary this information before enter an election
+        d->initiator = baseID;
+        d->activated = true;
+
+        emit signalRequestElection();
+    }
+}
+
+void SynchronizerControl::init(const QString& initiatorSite)
+{
+    // This method is called when local site wins the election
+
+    //d->initiatorSite = initiatorSite;
+    //d->isInitiator = true;
+    d->nbWaitMsg = d->nbApps;
+    d->nbWaitAck = d->nbApps - 1;
+
+    // NOTE : after initiated at Control level, it will give a permission to the base application
+    // who will be the initiator to send the first message of the next cycle of synchronous process
+    ACLMessage permission(ACLMessage::SYNC_ACK);
+
+    QJsonObject content;
+    content[QLatin1String("forInitiator")] = true;
+    content[QLatin1String("initiator")]    = d->initiator;
+
+    permission.setContent(content);
+
+    emit signalSendToApp(permission);
+}
+
+// TODO : Handle finish election (after activated or at the end of sync)
 }
