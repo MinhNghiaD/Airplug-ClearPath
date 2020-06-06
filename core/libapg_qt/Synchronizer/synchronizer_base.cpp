@@ -1,5 +1,7 @@
 #include "synchronizer_base.h"
 
+#include <QDebug>
+
 namespace AirPlug
 {
 class SynchronizerBase::Private
@@ -58,6 +60,8 @@ void SynchronizerBase::init()
 
     // Dummy message doesn't need to have a clock
     emit signalSendMessage(message);
+
+    qDebug() << d->siteID << "call init sync";
 }
 
 void SynchronizerBase::processSYNCMessage(ACLMessage& message)
@@ -70,6 +74,8 @@ void SynchronizerBase::processSYNCMessage(ACLMessage& message)
         ACLMessage newMessage(ACLMessage::SYNC);
 
         emit signalSendState(newMessage);
+
+        qDebug() << d->siteID << "receive SYNC from initiator, send state message";
     }
 }
 
@@ -97,6 +103,8 @@ void SynchronizerBase::processACKMessage(ACLMessage& message)
             QJsonObject newContent;
             newContent[QLatin1String("fromInitiator")] = true;
             newMessage.setContent(newContent);
+
+            qDebug() << d->siteID <<"(initiator) send first message";
 
             emit signalSendState(newMessage);
         }

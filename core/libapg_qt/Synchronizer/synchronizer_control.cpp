@@ -1,4 +1,7 @@
 #include "synchronizer_control.h"
+
+#include <QDebug>
+
 namespace AirPlug
 {
 class SynchronizerControl::Private
@@ -30,6 +33,7 @@ SynchronizerControl::SynchronizerControl(const QString& siteID)
     : QObject(),
       d(new Private(siteID))
 {
+    setObjectName(QLatin1String("Synchronizer Control"));
 }
 
 SynchronizerControl::~SynchronizerControl()
@@ -53,6 +57,8 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
             return false;
         }
 
+        qDebug() << d->siteID << "pass SYNC to local apps";
+
         --(d->nbWaitMsg);
     }
     else if (performative == ACLMessage::SYNC_ACK)
@@ -73,6 +79,10 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
 
                 // give permission to initiator
                 emit signalSendToApp(permission);
+
+                d->nbWaitAck = d->nbApps - 1;
+
+                qDebug() << d->siteID << "initiator receives all ACK --> unlock";
             }
         }
         else
@@ -112,12 +122,16 @@ bool SynchronizerControl::processExternalMessage(ACLMessage& message)
 
         --(d->nbWaitMsg);
 
-        if (d->nbWaitMsg)
+        if (d->nbWaitMsg == 0)
         {
             ACLMessage permission(ACLMessage::SYNC_ACK);
 
             // give the app permission to perform next step
             emit signalSendToApp(permission);
+
+            d->nbWaitMsg = d->nbApps;
+
+            qDebug() << d->siteID << "collect all SYNC, give permission to local apps to do step";
         }
     }
     else if (performative == ACLMessage::SYNC_ACK)
@@ -137,6 +151,10 @@ bool SynchronizerControl::processExternalMessage(ACLMessage& message)
 
                 // give permission to initiator
                 emit signalSendToApp(permission);
+
+                d->nbWaitAck = d->nbApps - 1;
+
+                qDebug() << d->siteID << "initiator receives all ACK --> unlock";
             }
         }
 
@@ -163,12 +181,16 @@ void SynchronizerControl::callElection(const QString& baseID)
         d->activated = true;
 
         emit signalRequestElection();
+
+        qDebug() << d->initiator << "call election";
     }
 }
 
 void SynchronizerControl::init()
 {
     // This method is called when local site wins the election
+
+    qDebug() << d->siteID << "wins election and" << d->initiator << "becomes initiator of synchronous network";
 
     d->initiatorSite = d->siteID;
     d->nbWaitMsg = d->nbApps;
