@@ -1,0 +1,28 @@
+@startuml(id=rvoline)
+
+class ClearPath::Line {
+  +explicit Line()
+  +Line(const std::vector<double>&,\n\tconst std::vector<double>&)
+  ==ATTRIBUTES==
+  +std::vector<double> point
+  +std::vector<double> direction
+}
+
+@enduml
+
+@startuml(id=rvo)
+
+class ClearPath::RVO {
+  ==FUNCTIONS==
+  +{static} double vectorProduct(const std::vector<double>&,\n\tconst std::vector<double>&)
+  +{static} std::vector<double> vectorSubstract(const std::vector<double>&,\n\tstd::vector<double>&)
+  +{static} double det2D(const std::vector<double>&,\n\tstd::vector<double>&)
+  +{static} std::vector<double> scalarProduct(std::vector<double>, double)
+  +{static} int checkCollision(const std::vector<Line>&,\n\t double,\n\t const std::vector<double>&,\n\t bool,\n\t std::vector<double>&)
+  +{static} std::vector<double> collisionFreeVelocity(const std::vector<Line>&,\n\t int,\n\t double,\n\t int,\n\t std::vector<double>&)
+  -{static} bool avoidCollisionWithLine(std::vector<Line>&,\n\t int,\n\t double,\n\t const std::vector<double>&,\n\t bool,\n\t std::vector<double>&)
+  ==ATTRIBUTES==
+  -{static} const double EPSILON = 0.00001
+}
+
+@enduml

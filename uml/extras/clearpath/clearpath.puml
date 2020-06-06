@@ -1,0 +1,21 @@
+@startuml(id=clearpath)
+set namespaceSeparator ::
+
+!include CollisionAvoidanceManager.iuml
+
+!include EnvironmentManager.iuml
+
+!include KD.iuml!kdnode
+!include KD.iuml!kdtree
+!include KD.iuml!kdLinks
+
+!include RVO.iuml!rvo
+!include RVO.iuml!rvoline
+
+' Class links
+namespace ClearPath {
+  CollisionAvoidanceManager *---- KDTree
+  CollisionAvoidanceManager o---- Line
+}
+
+@enduml

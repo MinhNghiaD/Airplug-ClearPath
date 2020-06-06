@@ -1,0 +1,35 @@
+@startuml(id=cam)
+
+class ClearPath::CollisionAvoidanceManager {
+  +explicit CollisionAvoidanceManager(const std::vector<double>&\n\t, const std::vector<double>&\n\t, const std::vector<double>&\n\t, double, double, double, double, int, KDTree*)
+  ==FUNCTIONS==
+  +std::vector<double> getPosition()
+  +std::vector<double> getPosition()
+  +void addNeightborOrcaLine(QMap<double, QVector<KDNode*>>)
+  +void computeNewVelocity()
+  +QMap<double, QVector<KDNode*>> getClosestNeighbors()
+  +void update()
+  +void setPreferenceVelocity()
+  +void setDestination(std::vector<double>)
+  +bool reachedGoal()
+  +bool setInfo(QJsonObject)
+  +QJsonObject getInfo()
+  +QJsonObject captureState()
+  -{static} QJsonArray encodeVector(const std::vector<double>&)
+  -{static} bool decodeVector(const QJsonArray&, std::vector<double>&)
+  ==ATTRIBUTES==
+  double timeHorizon
+  double maxSpeed
+  double neighborDistance
+  double timeStep
+  int maxNeighbor
+  std::vector<double> position
+  std::vector<double> destination
+  std::vector<double> velocity
+  std::vector<double> newVelocity
+  std::vector<double> preferenceVelocity
+  std::vector<Line> orcaLine
+  KDTree* obstaclesTree
+}
+
+@enduml

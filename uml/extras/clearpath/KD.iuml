@@ -1,0 +1,70 @@
+@startuml(id=kdnode)
+
+class ClearPath::KDNode {
+  +explicit KDNode(CollisionAvoidanceManager*, int, int)
+  +~KDNode()
+  ==FUNCTIONS==
+  +KDNode* insert(CollisionAvoidanceManager*)
+  +std::vector<double> getPosition() const
+  +CollisionAvoidanceManager* getAgent() const
+  +double getClosestNeighbors(QMap<double,\n\tQVector<KDNode*>>&,\n\tstd::vector<double>, double, int)
+  +{static} double sqrDistance(std::vector<double>, std::vector<double>)
+  -void updateRange(std::vector<double>)
+  -KDnode* findParent(std::vector<double>)
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+class KDNode::Private {
+  +Private(CollisionAvoidanceManager*, int, int)
+  +~Private()
+  ==ATTRIBUTES==
+  +CollisionAvoidanceManager* agent
+  +int splitAxis
+  +int nbDimension
+  +std::vector<double> position
+  +std::vector<double> maxRange
+  +std::vector<double> minRange
+  +KDNode* Parent
+  +KDNode* Left
+  +KDNode* Right
+}
+
+@enduml
+
+@startuml(id=kdtree)
+
+class ClearPath::KDTree {
+  +explicit KDTree(int)
+  +~KDTree()
+  ==FUNCTIONS==
+  +QMap<double, QVector<KDNode*>> getClosestNeighbors(\n\t const std::vector<double>&, double, int) const
+  +void update()
+  +bool add(const QString&, CollisionAvoidanceManager*)
+  +QMap<QString, CollisionAvoidanceManager*> getAgents() const
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+class KDTree::Private {
+  +Private(int)
+  +~Private()
+  ==ATTRIBUTES==
+  +int nbDimension
+  +KDNode* Root
+  +QMap<QString, CollisionAvoidanceManager*> agents
+}
+
+@enduml
+
+@startuml(id=kdLinks)
+
+namespace ClearPath {
+  KDTree *----- KDNode
+  KDTree *----- KDTree::Private
+  KDNode *----- KDNode::Private
+}
+
+@enduml

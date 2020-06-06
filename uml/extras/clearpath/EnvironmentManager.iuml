@@ -1,0 +1,9 @@
+@startuml(id=envimanager)
+
+class ClearPath::EnvironmentManager {
+  +EnvironmentManager()
+  ==FUNCTIONS==
+  +bool setInfo(const QString&, const QJsonObject&)
+}
+
+@enduml
