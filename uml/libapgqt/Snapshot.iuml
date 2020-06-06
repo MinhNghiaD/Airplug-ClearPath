@@ -1,0 +1,69 @@
+@startuml(id=snapshotLaiyang)
+
+' ==== LaiYangSnapshot ====
+class Airplug::LaiYangSnapshot {
+  +explicit LaiYangSnapshot()
+  +~LaiYangSnapshot()
+  ==FUNCTIONS==
+  +void setNbOfApp(int)
+  +void setNbOfNeighbor(int)
+  +void callElection()
+  +void init()
+  +void colorMessage(QJsonObject&, int)
+  +bool getColor(QJsonObject&)
+  +bool processStateMessage(ACLMessage&, bool)
+  +bool processPrePostMessage(const ACLMessage&)
+  +ACLMessage encodePrepostMessage(const ACLMessage&)
+  +void finishSnapshot()
+  +bool processRecoveringMessage(const ACLMessage&)
+  +bool processReadyMessage(const ACLMessage&)
+  -void requestSnapShot()
+  -void saveSnapshot() const
+  ==SIGNALS==
+  +void signalRequestSnapshot(const Message&)
+  +void signalSendSnapshotMessage(ACLMessage&)
+  +void signalRequestElection()
+  +void signalFinishElection()
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+class LaiYangSnapshot::Private {
+  +Private()
+  +~Private()
+  ==FUNCTIONS==
+  +bool validateState(const QJsonObject&) const
+  +bool collectState(const QJsonObject&)
+  +bool verifyPrepost(const QJsonObject&, const QString&) const
+  +bool allStateColltected() const
+  +bool allPrepostCollected() const
+  +int nbCollectedPrepost() const
+  ==ATTRIBUTES==
+  +Status status
+  +bool initiator
+  +int msgCounter
+  +int nbWaitPrepost
+  +int nbApp
+  +int nbNeighbor
+  +int nbReadyNeighbor
+  +QHash<QString, QJsonObject> states
+  +QHash<QString, QVector<QJsonObject>> prepostMessage
+}
+
+enum LaiYangSnapshot::Status {
+  READY = 0
+  RECORDED
+  RECOVERING
+}
+
+@enduml
+
+@startuml(id=snapshotLinks)
+
+namespace Airplug {
+  LaiYangSnapshot *-- LaiYangSnapshot::Private
+  LaiYangSnapshot o-- LaiYangSnapshot::Status
+}
+
+@enduml

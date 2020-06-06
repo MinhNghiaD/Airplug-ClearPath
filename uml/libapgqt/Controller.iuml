@@ -1,0 +1,27 @@
+@startuml(id=controllerApplication)
+
+' ==== ApplicationController ====
+class Airplug::ApplicationController {
+  +explicit ApplicationController(const QString& siteID)
+  +~ApplicationController()
+  ==FUNCTIONS==
+  +virtual void init(const QCoreApplication& app)
+  +int getPeriod()
+  +bool hasGUI()
+  +bool isStarted()
+  +bool isAuto()
+  +Header::HeaderMode headerMode() const
+  +QString siteID() const
+  +virtual void sendMessage()
+  +static QString generatedSiteID()
+  +virtual QJsonObject captureLocalState() const
+  ==SLOTS==
+  +virtual void slotReceiveMessage()
+  ==ATTRIBUTES==
+  ~CommunicationManager* m_communication
+  ~OptionParser m_optionParser
+  ~VectorClock* m_clock
+  ~QThread* m_eventThread
+}
+
+@enduml

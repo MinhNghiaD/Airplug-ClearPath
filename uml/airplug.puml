@@ -1,0 +1,21 @@
+@startuml
+
+set namespaceSeparator ::
+
+namespace Airplug {
+  ' Nested Private class
+  Router *-- Router::Private
+  ElectionManager *-- ElectionManager::Private
+  Message *-- Message::Private
+  LaiYangSnapshot *-- LaiYangSnapshot::Private
+
+  ' Normal link
+  Router *-- ElectionManager
+
+  ' Heritage link
+  Message <|-- ACLMessage
+
+  ' Enum link
+}
+
+@enduml

@@ -1,0 +1,58 @@
+@startuml(id=electionElection)
+
+' ==== Election ====
+class Airplug::Election {
+  +explicit Election()
+  ==ATTRIBUTES==
+  +ElectionManager::ElectionReason reason
+  +QString candidate
+  +int nbFor
+  +int nbAgains
+  +int nbWaitedResponses
+}
+
+@enduml
+
+@startuml(id=electionManager)
+
+' ==== ElectionManager ====
+class Airplug::ElectionManager {
+  +explicit ElectionManager(const QString&)
+  +~ElectionManager()
+  ==FUNCTIONS==
+  +void requestElection(ElectionReason)
+  +void finishElection(ElectionReason)
+  +void setNbOfNeighbor(int)
+  +void processElectionRequest(ACLMessage&)
+  +void processElectionAck(ACLMessage&)
+  +void processFinishElection(ACLMessage&)
+  ==SIGNALS==
+  +void signalSendElectionMessage(Message&)
+  +void signalWinElection(ElectionReason)
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+class ElectionManager::Private {
+  +Private()
+  +~Private()
+  ==ATTRIBUTES==
+  QString siteID
+  int nbNeighbor
+  QHash<ElectionReason, Election> ongoingElection
+}
+
+enum ElectionManager::ElectionReason {
+  Snapshot = 0
+}
+
+@enduml
+
+@startuml(id=electionLinks)
+
+namespace Airplug {
+  ElectionManager *-- ElectionManager::Private
+}
+
+@enduml

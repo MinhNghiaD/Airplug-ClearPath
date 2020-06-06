@@ -1,0 +1,41 @@
+@startuml(id=clockVector)
+
+' ==== VectorClock ====
+class Airplug::VectorClock {
+  +explicit VectorClock(const QString& siteID)
+  +VectorClock(const QString& siteID, const QHash<QString, int>& vector)
+  +VectorClock(const QJsonObject& json)
+  +VectorClock(const VectorClock& other)
+  +~VectorClock()
+  ==FUNCTIONS==
+  +VectorClock operator=(const VectorClock& other)
+  +VectorClock operator++()
+  +VectorClock operator++(int)
+  +void updateClock(const VectorClock& other)
+  +bool operator<(const VectorClock& other) const
+  +QJsonObject convertToJson() const
+  +QString getSiteID() const
+  +int getValue(const QString& siteID) const
+  +QStringList siteLists() const
+  +int sum() const
+  +bool isGeneralSmallerThan(const VectorClock& other)
+  ==ATTRIBUTES==
+  -class VectorClock::Private
+  -VectorClock::Private* d
+}
+
+class VectorClock::Private {
+  +Private()
+  +~Private()
+  ==ATTRIBUTES==
+  +QHash<QString, int> localClock
+  +QString siteID
+}
+
+@enduml
+
+@startuml(id=clockLinks)
+
+Airplug::VectorClock *-- VectorClock::Private
+
+@enduml

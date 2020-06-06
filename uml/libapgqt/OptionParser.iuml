@@ -1,0 +1,30 @@
+@startuml(id=optionparser)
+
+' ==== OptionParser ====
+class Airplug::OptionParser {
+  +OptionParser()
+  +explicit OptionParser(const QCoreApplication&)
+  ==FUNCTIONS==
+  +void parseOptions(const QCoreApplication&)
+  +void showOption() const
+  +QJsonObject convertToJson() const
+  ==ATTRIBUTES==
+  +bool start
+  +bool debug
+  +bool nogui
+  +bool save
+  +bool safemode
+  +bool autoSend
+  +bool remote
+  +int verbose
+  +int delay
+  +QString mode
+  +QString ident
+  +QString source
+  +QString destination
+  +QString remoteHost
+  +int remotePort
+  +Header::HeaderMode headerMode
+}
+
+@enduml

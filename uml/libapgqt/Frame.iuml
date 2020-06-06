@@ -1,0 +1,134 @@
+@startuml(id=frameMessage)
+
+' ==== Message ====
+class Airplug::Message {
+  +explicit Message(const QString&)
+  +Message(const QHash<QString, QString>&)
+  +Message(const Message&)
+  +~Message()
+  ==FUNCTIONS==
+  +void operator=(const Message&)
+  +void parseText(const QString&)
+  +void parseTextWithKnownFields(const QString&)
+  +bool isKnownField(const QString&) const
+  +void addContent(const QString&, const QString&)
+  +QHash<QString, QString> getContents() const
+  +bool isEmpty() const
+  +void clear()
+  +QString getMessage() const
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+class Message::Private {
+  +Private()
+  +~Private()
+  ==ATTRIBUTES==
+  +char delimiter
+  +char equalChar
+  +QHash<QString, QString> content
+}
+
+@enduml
+
+@startuml(id=frameACL)
+
+' ==== ACLMessage ====
+class Airplug::ACLMessage {
+  +explicit ACLMessage(Performative)
+  +ACLMessage(const QString&)
+  +~ACLMessage()
+  ==FUNCTIONS==
+  +void setPerformative(Performative)
+  +void setContent(const QJsonObject&)
+  +void setTimeStamp(const VectorClock&)
+  +void setSender(const QString&)
+  +void setRecever(const QString&)
+  +void setNbSequence(int nbSequence)
+  +Performative getPerformative() const
+  +VectorClock* getTimeStamp() const
+  +QJsonObject getContent() const
+  +QString getSender() const
+  +QString getReceiver() const
+  +int getNbSequence() const
+  +QJsonObject toJsonObject() const
+}
+
+enum ACLMessage::Performative {
+  REQUEST = 0
+  INFORM
+  QUERY_IF
+  REFUSE
+  CONFIRM
+  UNKNOWN
+  PING
+  PONG
+  REQUEST_SNAPSHOT
+  INFORM_STATE
+  PREPOST_MESSAGE
+  SNAPSHOT_RECOVER
+  REQUEST_MUTEX
+  ACCEPT_MUTEX
+  REFUSE_MUTEX
+  ELECTION
+  ACK_ELECTION
+  FINISH_ELECTION
+}
+
+@enduml
+
+@startuml(id=frameHeader)
+
+' ==== Header ====
+class Airplug::Header {
+  +explicit Header(const QString&, const QString&, const QString&)
+  +Header(const Header&)
+  +~Header()
+  ==FUNCTIONS==
+  +void operator=(const Header&)
+  +void clear()
+  +bool isEmpty() const
+  +QString genereHeader(HeaderMode) const
+  +const QString& what() const
+  +const QString& who() const
+  +const QString& where() const
+  ==ATTRIBUTES==
+  +static const QString allApp = "ALL"
+  +static const QString localHost = "LCH"
+  +static const QString airHost = "AIR"
+  +static const QString allHost = "ALL"
+  -class Private
+  -Private* d
+}
+
+class Header::Private {
+  +Private()
+  +~Private()
+  ==ATTRIBUTES==
+  +QString what
+  +QString who
+  +QString where
+  +char delimiter
+}
+
+enum Header::HeaderMode {
+  What = 0
+  Who
+  Where
+}
+
+@enduml
+
+@startuml(id=frameLinks)
+
+namespace Airplug {
+  Message *-- Message::Private
+  Header *-- Header::Private
+
+  ' Enum link
+  ACLMessage o-- ACLMessage::Performative
+  Header o-- Header::HeaderMode
+}
+
+@enduml

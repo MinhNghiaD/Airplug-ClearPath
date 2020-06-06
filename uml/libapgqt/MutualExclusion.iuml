@@ -1,0 +1,40 @@
+@startuml(id=mutualexclusionRicart)
+
+' ==== RicartLock ====
+class Airplug::RicartLock {
+  +explicit RicartLock()
+  +~RicartLock()
+  ==FUNCTIONS==
+  +void trylock(const VectorClock&)
+  +void lock()
+  +void unlock()
+  +void restart()
+  +void receiveExternalRequest(const VectorClock&)
+  +QJsonArray getPendingQueue() const
+  ==SIGNALS==
+  +void signalResponse(const ACLMessage&)
+  +void signalEnterRaceCondition()
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+class RicartLock::Private {
+  +Private()
+  +~Private()
+  ==FUNCTIONS==
+  +bool isLessPriority(const VectorClock&) const
+  ==ATTRIBUTES==
+  VectorClock* clock
+  QStringList queue
+}
+
+@enduml
+
+@startuml(id=mutualexclusionLinks)
+
+namespace Airplug {
+  RicartLock *-- RicartLock::Private
+}
+
+@enduml

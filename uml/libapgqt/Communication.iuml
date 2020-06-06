@@ -1,0 +1,168 @@
+@startuml(id=communicationManager)
+
+' ==== CommunicationManager ====
+class Airplug::CommunicationManager {
+  +explicit CommunicationManager(const QString& what,\n\t const QString& who,\n\t const QString& where,\n\t Header::HeaderMode mode,\n\t QObject* parent)
+  +~VectorClock()
+  ==FUNCTIONS==
+  +void addStdTransporter()
+  +void addUdpTransporter()
+  +void setHeaderMode()
+  +void setSafeMode()
+  +void send()
+  +bool subscribe()
+  +bool subscribeLocalHost()
+  +bool subscribeAir()
+  +bool subscribeAll()
+  +bool unsubscribe()
+  +bool unsubscribeLocalHost()
+  +bool unsubscribeAir()
+  +bool unsubscribeAll()
+  +bool isSubscribed()
+  -Header fillSendingHeader()
+  -Header recoverReceivedHeader()
+  -bool filterMessage()
+  -bool validHeader()
+  ==SIGNALS==
+  void signalMessageReceived()
+  ==SLOTS==
+  void slotReceiveMessage()
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+enum CommunicationManager::ProtocolType {
+  StandardIO = 0
+  UDP
+}
+
+class CommunicationManager::Private {
+  +Private()
+  +~Private()
+  ==FUNCTIONS==
+  +bool validAppName()
+  +bool validZone()
+  +bool isAlphaNumeric()
+  ==ATTRIBUTES==
+  +Header::HeaderMode headerMode
+  +QString what
+  +QString who
+  +QString where
+  +bool safeMode
+  +QMap<QString, QStringList> subscriptions
+  +QMap<int, MessageTransporter*> protocols
+}
+@enduml
+
+@startuml(id=communicationRouter)
+
+' ==== Router ====
+class Airplug::Router {
+  +explicit Router(CommunicationManager*, const QString&)
+  +~Router()
+  ==FUNCTIONS==
+  +bool addSnapshot(LaiYangSnapshot*)
+  ==SLOTS==
+  +void slotReceiveMessage(Header, Message)
+  +void slotBroadcastLocal(const Message&)
+  +void slotBroadcastNetwork(ACLMessage&)
+  +void slotUpdateNbApps(int, int)
+  +void slotRequestElection()
+  +void slotWinElection(ElectionManager::ElectionReason)
+  +void slotFinishElection()
+  ==ATTRIBUTES==
+  -class Router::Private
+  -Router::Private* d
+}
+
+class Router::Private {
+  +Private()
+  +~Private()
+  ==FUNCTIONS==
+  +void forwardAppToNet(Header&, ACLMessage&)
+  +void forwardNetToApp(Header&, ACLMessage&)
+  +void forwardStateMessage(ACLMessage&, bool)
+  +void forwardPrepost(const ACLMessage&)
+  +void forwardRecover(const ACLMessage&)
+  +void forwardReady(const ACLMessage&)
+  +void forwardPing(const ACLMessage&)
+  +void forwardPong(const ACLMessage&, bool)
+  +void receiveElectionMsg(ACLMessage&)
+  +void receiveMutexRequest(ACLMessage&, bool)
+  +void receiveMutexApproval(ACLMessage&, bool)
+  +void refuseAllPendingRequest()
+  +bool isOldMessage(const ACLMessage&)
+  ==ATTRIBUTES==
+  CommunicationManager* communicationMngr
+  QString siteID
+  int nbSequence
+  int nbApp
+  LaiYangSnapshot* snapshot
+  Watchdog* watchdog
+  ElectionManager* electionMng
+  QHash<QString, int> localMutexWaitingList
+}
+@enduml
+
+@startuml(id=communicationSiteInfo)
+
+' ==== SiteInfo ====
+class Airplug::SiteInfo {
+  +SiteInfo()
+  +~SiteInfo()
+  ==FUNCTIONS==
+  +void setNbApp()
+  ==ATTRIBUTES==
+  +QString siteID
+  +int nbApp
+  +qint64 lastUpdate
+}
+@enduml
+
+@startuml(id=communicationWatchdog)
+
+' ==== Watchdog ====
+class Airplug::Watchdog {
+  +explicit Watchdog(const QString& siteID)
+  +~Watchdog()
+  ==FUNCTIONS==
+  +void receivePong()
+  +void receiveNetworkInfo()
+  +void broadcastInfo()
+  -void requestInfo()
+  ==SIGNALS==
+  +void signalNetworkChanged()
+  +void signalPingLocalApps()
+  +void signalSendInfo()
+  ==SLOTS==
+  -void slotUpdateNbApp()
+  -void eliminateDeprecatedInfo()
+  ==ATTRIBUTES==
+  -class Watchdog::Private
+  -Watchdog::Private* d
+}
+
+class Watchdog::Private {
+  +Private()
+  +~Private()
+  ==FUNCTIONS==
+  +int nbApp()
+  +bool containDeprecatedInfo()
+  ==ATTRIBUTES==
+  +SiteInfo localInfo
+  +int temporaryNbApp
+  +QHash<QString, SiteInfo> neighborsInfo
+}
+@enduml
+
+@startuml(id=communicationLinks)
+namespace Airplug {
+  CommunicationManager *----- CommunicationManager::Private
+  CommunicationManager *----- CommunicationManager::ProtocolType
+  Router *----- Router::Private
+  Watchdog *----- Watchdog::Private
+  SiteInfo -----o Watchdog::Private
+}
+
+@enduml

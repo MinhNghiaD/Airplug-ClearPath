@@ -1,0 +1,37 @@
+@startuml(id=libapgqt)
+set namespaceSeparator ::
+
+!include Clock.iuml!clockVector
+!include Clock.iuml!clockLinks
+
+!include Communication.iuml!CommunicationManager
+!include Communication.iuml!CommunicationRouter
+!include Communication.iuml!CommunicationSiteInfo
+!include Communication.iuml!CommunicationWatchdog
+!include Communication.iuml!CommunicationLinks
+
+!include Controller.iuml!controllerApplication
+
+!include Election.iuml!electionElection
+!include Election.iuml!electionManager
+!include Election.iuml!electionLinks
+
+!include Frame.iuml!frameMessage
+!include Frame.iuml!frameACL
+!include Frame.iuml!frameHeader
+!include Frame.iuml!frameLinks
+
+!include MutualExclusion.iuml!mutualexclusionRicart
+!include MutualExclusion.iuml!mutualexclusionLinks
+
+!include OptionParser.iuml
+
+!include Snapshot.iuml!snapshotLaiyang
+!include Snapshot.iuml!snapshotLinks
+
+!include Transporters.iuml!transportersMessage
+!include Transporters.iuml!transportersStd
+!include Transporters.iuml!transportersUdp
+!include Transporters.iuml!transportersLinks
+
+@enduml

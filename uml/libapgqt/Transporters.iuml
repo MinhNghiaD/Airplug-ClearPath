@@ -1,0 +1,82 @@
+@startuml(id=transportersMessage)
+
+' ==== MessageTransporter ====
+abstract class Airplug::MessageTransporter {
+  +explicit MessageTransporter(QObject*)
+  +~MessageTransporter()
+  ==FUNCTIONS==
+  +{abstract}virtual void sens(const QString&) = 0
+  ==SIGNALS==
+  +void signalMessageReceived(const QString&)
+  +void signalDisconnected()
+}
+
+enum MessageTransporter::UdpType {
+  UniCast = 0
+  MultiCast
+}
+
+@enduml
+
+@startuml(id=transportersStd)
+
+' ==== StdTransporter ====
+class Airplug::StdTransporter {
+  +explicit StdTransporter(QObject*)
+  +~StdTransporter()
+  ==FUNCTIONS==
+  +void send(const QString&) override
+  ==SLOTS==
+  -void slotMessageArrive()
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+class StdTransporter::Private {
+  +Private()
+  +~Private()
+  ==ATTRIBUTES==
+  +QSocketNotifier* notifier
+}
+
+@enduml
+
+@startuml(id=transportersUdp)
+
+' ==== UdpTransporter ====
+class Airplug::UdpTransporter {
+  +explicit UdpTransporter(const QString&, int, UdpType, QObject*)
+  +~UdpTransporter()
+  ==FUNCTIONS==
+  +void send(const QString&) override
+  ==SLOTS==
+  -void slotMessageArrive()
+  ==ATTRIBUTES==
+  -class Private
+  -Private* d
+}
+
+class UdpTransporter::Private {
+  +Private()
+  +~Private()
+  ==ATTRIBUTES==
+  +QUdpSocket* socket
+  +QHostAddress host
+  +int port
+}
+
+@enduml
+
+@startuml(id=transportersLinks)
+
+namespace Airplug {
+  MessageTransporter o-- MessageTransporter::UdpType
+  MessageTransporter <|- StdTransporter
+  MessageTransporter <|- UdpTransporter
+
+  StdTransporter *-- StdTransporter::Private
+  UdpTransporter *-- UdpTransporter::Private
+}
+
+@enduml
