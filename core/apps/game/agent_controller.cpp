@@ -68,7 +68,8 @@ void AgentController::init(const QCoreApplication& app)
 
     d->synchronizer = new SynchronizerBase(siteID());
     // TODO Application 1 : setup synchronizer: connect 2 signals of synchronizer to corresponding slot
-
+    connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
+            this,            &AgentController::slotSendMessage, Qt::DirectConnection);
 
     // TODO Application 2:  setup CollisionAvoidanceManager and EnvironmentManager
 
@@ -138,6 +139,7 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
     }
 }
 
+
 void AgentController::slotDoStep()
 {
     ++(*m_clock);
@@ -145,6 +147,12 @@ void AgentController::slotDoStep()
     // Send SYNC_ACK Message back to initiator
 }
 
+void AgentController::slotSendMessage(ACLMessage& message)
+{
+    ++(*m_clock);
+
+    sendMessage(message, QString(), QString(), QString());
+}
 
 void AgentController::sendLocalSnapshot()
 {
