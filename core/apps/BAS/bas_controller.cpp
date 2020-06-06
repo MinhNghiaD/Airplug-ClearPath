@@ -103,7 +103,7 @@ void BasController::slotActivateTimer(int period)
         d->timer = new QTimer(this);
 
         connect(d->timer, &QTimer::timeout,
-                    this, &BasController::slotSendMessage);
+                   this, &BasController::slotSendMessage);
     }
 
     m_optionParser.delay    = period;
@@ -171,8 +171,6 @@ void BasController::slotReceiveMessage(Header header, Message message)
             break;
 
         case ACLMessage::ACCEPT_MUTEX:
-            //qDebug() << "receive accept mutex" << aclMessage->getContent();
-
             if (aclMessage->getContent()[QLatin1String("apps")].toArray().contains(m_clock->getSiteID()))
             {
                 d->mutex->lock();

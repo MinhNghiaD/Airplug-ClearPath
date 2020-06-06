@@ -23,8 +23,8 @@ Router::Router(CommunicationManager* communication, const QString& siteID)
     d->electionMng       = new ElectionManager(siteID);
     d->synchronizer      = new SynchronizerControl(d->siteID);
 
-    connect(d->communicationMngr, SIGNAL(signalMessageReceived(Header, Message)),
-            this,                 SLOT(slotReceiveMessage(Header, Message)), Qt::DirectConnection);
+    connect(d->communicationMngr, &CommunicationManager::signalMessageReceived,
+            this,                 &Router::slotReceiveMessage, Qt::DirectConnection);
 
     connect(d->watchdog, &Watchdog::signalPingLocalApps,
             this,        &Router::slotBroadcastLocal, Qt::DirectConnection);
@@ -238,16 +238,10 @@ void Router::slotWinElection(ElectionManager::ElectionReason reason)
     }
 }
 
-void Router::slotFinishElection()
+void Router::slotFinishElection(ElectionManager::ElectionReason reason)
 {
-    if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
-    {
-        d->electionMng->finishElection(ElectionManager::Snapshot);
-    }
-    else if(dynamic_cast<SynchronizerControl*>(sender()) != nullptr)
-    {
-        d->electionMng->finishElection(ElectionManager::Synchronizer);
-    }
+    qDebug() << "election finish" << reason;
+    d->electionMng->finishElection(reason);
 }
 
 }

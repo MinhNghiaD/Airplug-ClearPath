@@ -50,8 +50,8 @@ void NetController::init(const QCoreApplication &app)
 {
     ApplicationController::init(app);
 
-    disconnect(m_communication, SIGNAL(signalMessageReceived(Header, Message)),
-               this,            SLOT(slotReceiveMessage(Header, Message)));
+    disconnect(m_communication, &CommunicationManager::signalMessageReceived,
+               this,            &NetController::slotReceiveMessage);
 
     d->router   = new Router(m_communication, m_clock->getSiteID());
     d->snapshot = new LaiYangSnapshot();

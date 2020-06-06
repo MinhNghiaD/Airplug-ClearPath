@@ -14,12 +14,12 @@
 
 //Qt includes
 #include <QString>
-#include <QObject>
+#include <QThread>
 
 namespace AirPlug
 {
 
-class MessageTransporter : public QObject
+class MessageTransporter : public QThread
 {
     Q_OBJECT
 public:
@@ -32,7 +32,7 @@ public:
 
 public:
 
-    explicit MessageTransporter(QObject* parent = nullptr);
+    explicit MessageTransporter();
     ~MessageTransporter();
 
     virtual void send(const QString& message) = 0;

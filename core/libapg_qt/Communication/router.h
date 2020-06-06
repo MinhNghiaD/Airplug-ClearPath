@@ -53,7 +53,7 @@ public:
 
     Q_SLOT void slotWinElection(ElectionManager::ElectionReason reason);
 
-    Q_SLOT void slotFinishElection();
+    Q_SLOT void slotFinishElection(ElectionManager::ElectionReason reason);
 private:
 
     class Private;

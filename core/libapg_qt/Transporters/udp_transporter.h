@@ -25,8 +25,7 @@ public:
 
     explicit UdpTransporter(const QString& host   = QLatin1String("0.0.0.0"),
                             int            port   = 7777,
-                            UdpType        type   = UniCast,
-                            QObject*       parent = nullptr);
+                            UdpType        type   = UniCast);
 
     ~UdpTransporter();
 

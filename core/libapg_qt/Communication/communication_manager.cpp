@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QMap>
 #include <QStringList>
-#include <QThread>
 
 // Local includes
 #include "std_transporter.h"
@@ -193,8 +192,6 @@ void CommunicationManager::send(const Message& message,
         Header header   = fillSendingHeader(what, who, where);
         QString package = header.generateHeader(d->headerMode) + message.getMessage();
 
-        // TODO: multiple data is put to pipe at the same time ==> only 1 signal emit and 1 message is handled
-        QThread::msleep(10);
         d->protocols[protocol]->send(package);
 
         if (save)

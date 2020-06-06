@@ -423,7 +423,7 @@ void LaiYangSnapshot::finishSnapshot()
         emit signalSendSnapshotMessage(inform);
 
         // Inform election for snapshot has finish
-        emit signalFinishElection();
+        emit signalFinishElection(ElectionManager::Snapshot);
 
         saveSnapshot();
     }

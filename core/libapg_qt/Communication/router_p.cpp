@@ -26,9 +26,10 @@ Router::Private::~Private()
 
 void Router::Private::forwardAppToNet(Header& header, ACLMessage& message)
 {
+
     if (synchronizer)
     {
-        if (synchronizer->processLocalMessage(message))
+        if (!synchronizer->processLocalMessage(message))
         {
             return;
         }

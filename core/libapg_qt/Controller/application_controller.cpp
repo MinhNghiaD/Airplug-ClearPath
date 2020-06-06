@@ -11,8 +11,7 @@ namespace AirPlug
 ApplicationController::ApplicationController(const QString& appName, QObject* parent)
     : QObject(parent),
       m_communication(nullptr),
-      m_clock(nullptr),
-      m_eventThread(new QThread())
+      m_clock(nullptr)
 {
     setObjectName(appName);
 }
@@ -21,10 +20,6 @@ ApplicationController::~ApplicationController()
 {
     delete m_communication;
     delete m_clock;
-
-    m_eventThread->quit();
-    m_eventThread->wait();
-    delete m_eventThread;
 }
 
 void ApplicationController::init(const QCoreApplication& app)
@@ -45,9 +40,6 @@ void ApplicationController::init(const QCoreApplication& app)
 
     m_communication->subscribeAir(m_optionParser.source);
 
-    connect(m_communication, &CommunicationManager::signalMessageReceived,
-            this,            &ApplicationController::slotReceiveMessage, Qt::DirectConnection);
-
     if (m_optionParser.remote)
     {
         m_communication->addUdpTransporter(m_optionParser.remoteHost,
@@ -59,9 +51,6 @@ void ApplicationController::init(const QCoreApplication& app)
         m_communication->addStdTransporter();
     }
 
-    m_communication->moveToThread(m_eventThread);
-    m_eventThread->start();
-
     QString siteID = m_optionParser.ident;
 
     if (siteID.isEmpty())
@@ -70,6 +59,9 @@ void ApplicationController::init(const QCoreApplication& app)
     }
 
     m_clock = new VectorClock(siteID);
+
+    connect(m_communication, &CommunicationManager::signalMessageReceived,
+            this,            &ApplicationController::slotReceiveMessage, Qt::DirectConnection);
 }
 
 void ApplicationController::sendMessage(const Message& message, const QString& what, const QString& who, const QString& where)

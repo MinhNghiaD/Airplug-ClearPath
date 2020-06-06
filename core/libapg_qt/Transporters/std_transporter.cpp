@@ -30,16 +30,17 @@ public:
     QSocketNotifier* notifier;
 };
 
-StdTransporter::StdTransporter(QObject* parent)
-    : MessageTransporter(parent),
+StdTransporter::StdTransporter()
+    : MessageTransporter(),
       d(new Private())
 {
-    setObjectName(QLatin1String("StandardIO Protocol"));
-
+    QObject::setObjectName(QLatin1String("StandardIO Protocol"));
+/*
     d->notifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read);
 
     connect(d->notifier, &QSocketNotifier::activated,
-            this,        &StdTransporter::slotMessageArrive, Qt::DirectConnection);
+            this,        &StdTransporter::slotMessageArrive, Qt::DirectConnection);*/
+
 }
 
 StdTransporter::~StdTransporter()
@@ -47,12 +48,24 @@ StdTransporter::~StdTransporter()
     delete d;
 }
 
+void StdTransporter::run()
+{
+    while(true)
+    {
+        std::string message;
+        std::getline(std::cin, message);
+
+        emit signalMessageReceived(QString::fromStdString(message));
+        // slow down to avoid flooding the channel
+        QThread::msleep(5);
+    }
+}
 
 void StdTransporter::send(const QString& message)
 {
     std::cout << message.toStdString() << std::endl;
 }
-
+/*
 void StdTransporter::slotMessageArrive()
 {
     std::string message;
@@ -60,5 +73,7 @@ void StdTransporter::slotMessageArrive()
 
     emit signalMessageReceived(QString::fromStdString(message));
 }
+*/
+
 
 }

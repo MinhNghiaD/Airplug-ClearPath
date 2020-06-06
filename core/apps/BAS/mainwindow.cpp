@@ -21,8 +21,8 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
         qFatal("BAS Controller is null");
     }
 
-    connect(m_controller, SIGNAL(signalSequenceChange(int)),
-            this,         SLOT(slotUpdateSequence(int)));
+    connect(m_controller, &BasController::signalSequenceChange,
+            this,         &MainWindow::slotUpdateSequence, Qt::DirectConnection);
 
     if (!m_controller->siteID().isEmpty())
     {
@@ -71,7 +71,7 @@ MainWindow::MainWindow(BasController* controller, QWidget *parent) :
     ui->nbSequence->setText("0");
 
     connect(m_controller, &BasController::signalMessageReceived,
-            this,         &MainWindow::slotShowReceivedMessage);
+            this,         &MainWindow::slotShowReceivedMessage, Qt::DirectConnection);
 
     pause(!m_controller->isStarted());
 }

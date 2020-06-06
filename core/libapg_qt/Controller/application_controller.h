@@ -14,7 +14,6 @@
 
 // Qt include
 #include <QObject>
-#include <QThread>
 
 // Local include
 #include "option_parser.h"
@@ -89,8 +88,6 @@ protected:
     OptionParser          m_optionParser;
 
     VectorClock*          m_clock;
-
-    QThread*              m_eventThread;
 };
 
 }
