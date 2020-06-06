@@ -93,8 +93,10 @@ public:
 
 private:
 
-
-
+    /**
+     * @brief callElection : call for new election from synchronizer
+     * @param baseID
+     */
     void callElection(const QString& baseID);
 
 private:

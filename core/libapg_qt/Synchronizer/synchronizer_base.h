@@ -62,9 +62,23 @@ public:
      */
     void init();
 
+    /**
+     * @brief isInitiator
+     * @return true if the host application is initiator of synchronous network
+     */
     bool isInitiator() const;
 
+    /**
+     * @brief processACKMessage : process SYNC_ACK message from NET which can give permission to perform next step
+     * @param message
+     */
     void processACKMessage(ACLMessage& message);
+
+    /**
+     * @brief processSYNCMessage : process SYNC message from NET,
+     * check if it's from initiator, if it is, prepare envelop then send signal to application to send out SYNC message
+     * @param message
+     */
     void processSYNCMessage(ACLMessage& message);
 
 public:

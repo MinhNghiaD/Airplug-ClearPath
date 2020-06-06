@@ -160,6 +160,7 @@ void AgentController::slotDoStep()
 
     if (! d->synchronizer->isInitiator())
     {
+        // NOTE initiator don't send ack messages
         ACLMessage ack(ACLMessage::SYNC_ACK);
         ack.setTimeStamp(*m_clock);
 
@@ -179,8 +180,11 @@ void AgentController::slotSendState(ACLMessage& message)
     // TODO Application 4: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
     // Put in QJsonObject and put it in the message (envelop) to send to NET
 
+
+
     message.setTimeStamp(++(*m_clock));
-    slotSendMessage(message);
+
+    sendMessage(message, QString(), QString(), QString());
 }
 
 void AgentController::sendLocalSnapshot()

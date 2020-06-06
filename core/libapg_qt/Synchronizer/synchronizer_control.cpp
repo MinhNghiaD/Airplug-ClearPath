@@ -38,6 +38,12 @@ SynchronizerControl::SynchronizerControl(const QString& siteID)
 
 SynchronizerControl::~SynchronizerControl()
 {
+    if (d->initiatorSite == d->siteID)
+    {
+        // TODO : Handle finish election (after activated or at the end of sync)
+        emit signalFinishElection(ElectionManager::Synchronizer);
+    }
+
     delete d;
 }
 
@@ -196,7 +202,6 @@ void SynchronizerControl::callElection(const QString& baseID)
 void SynchronizerControl::init()
 {
     // This method is called when local site wins the election
-
     //qDebug() << d->siteID << "wins election and" << d->initiator << "becomes initiator of synchronous network";
 
     d->initiatorSite = d->siteID;
@@ -215,6 +220,4 @@ void SynchronizerControl::init()
 
     emit signalSendToApp(permission);
 }
-
-// TODO : Handle finish election (after activated or at the end of sync)
 }
