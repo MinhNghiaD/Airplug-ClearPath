@@ -79,7 +79,7 @@ public:
      * slotReceiveMessage: main notification handler
      *
      */
-    Q_SLOT virtual void slotReceiveMessage(Header, Message) = 0;
+    Q_SLOT virtual void slotReceiveMessage(Header&, Message&) = 0;
 
 protected:
 

@@ -144,7 +144,7 @@ void BasController::slotSendMessage()
     d->mutex->trylock((*m_clock));
 }
 
-void BasController::slotReceiveMessage(Header header, Message message)
+void BasController::slotReceiveMessage(Header& header, Message& message)
 {
     ACLMessage* aclMessage = (static_cast<ACLMessage*>(&message));
 
@@ -165,6 +165,7 @@ void BasController::slotReceiveMessage(Header header, Message message)
         case ACLMessage::REQUEST_MUTEX:
             if (aclMessage->getTimeStamp()->getSiteID() != siteID())
             {
+                qDebug() << siteID() << "receive mutex request from" <<  aclMessage->getTimeStamp()->getSiteID() ;
                 receiveMutexRequest(*aclMessage);
             }
 
@@ -206,7 +207,7 @@ void BasController::slotReceiveMessage(Header header, Message message)
             d->sharedMessage = contents[QLatin1String("payload")].toString();
             //d->nbSequence    = contents[QLatin1String("nseq")].toInt();
 
-            emit signalMessageReceived(header, message);
+            emit signalMessageReceived(message);
             //emit signalSequenceChange(d->nbSequence);
 
             break;
@@ -280,7 +281,7 @@ void BasController::slotEnterCriticalSection()
     // TODO: get what, where, who from user interface
     sendMessage(message, QString(), QString(), QString());
 
-    emit signalMessageReceived(Header("NET", "BAS", Header::localHost), message);
+    emit signalMessageReceived(message);
     emit signalSequenceChange(d->nbSequence);
 
     d->mutex->unlock();

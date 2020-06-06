@@ -90,7 +90,7 @@ void AgentController::init(const QCoreApplication& app)
     d->synchronizer->init();
 }
 
-void AgentController::slotReceiveMessage(Header header, Message message)
+void AgentController::slotReceiveMessage(Header& header, Message& message)
 {
     ACLMessage* aclMessage = (static_cast<ACLMessage*>(&message));
 

@@ -97,7 +97,7 @@ const QString MainWindow::getSendMessage() const
 }
 
 // TODO receive message
-void MainWindow::slotShowReceivedMessage(Header header, Message message)
+void MainWindow::slotShowReceivedMessage(Message& message)
 {
     if (m_controller->isStarted())
     {

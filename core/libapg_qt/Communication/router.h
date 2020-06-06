@@ -37,7 +37,7 @@ public:
     /**
       * @brief slotReceiveMessage :  main event handler
       */
-    Q_SLOT void slotReceiveMessage(Header, Message);
+    Q_SLOT void slotReceiveMessage(Header&, Message&);
 
     /**
       * @brief slotBroadcastLocal : broadcast marker to local applications to take snapshot

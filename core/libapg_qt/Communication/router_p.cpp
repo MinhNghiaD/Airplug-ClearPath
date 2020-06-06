@@ -304,54 +304,44 @@ void Router::Private::receiveMutexRequest(ACLMessage& request, bool fromLocal)
 
 void Router::Private::receiveMutexApproval(ACLMessage& approval, bool fromLocal)
 {
-    QJsonArray           approvedApps = approval.getContent()[QLatin1String("apps")].toArray();
-    QJsonArray::iterator iter         = approvedApps.begin();
+    QJsonArray approvedApps = approval.getContent()[QLatin1String("apps")].toArray();
 
-    while (iter != approvedApps.end())
+    for (int i = 0; i < approvedApps.size(); ++i)
     {
-        if ( localMutexWaitingList.contains((*iter).toString()) )
+        QString app = approvedApps[i].toString();
+
+        if (localMutexWaitingList.contains(app))
         {
-            if (--localMutexWaitingList[(*iter).toString()] == 0)
+            qDebug() << app << "approved by" << approval.getSender();
+            localMutexWaitingList[app] -= 1;
+
+            if (localMutexWaitingList[app] == 0)
             {
                 // give permission to app
                 QJsonArray apps;
-                apps.append((*iter));
+                apps.append(app);
 
+                ACLMessage permission(ACLMessage::ACCEPT_MUTEX);
                 QJsonObject content;
                 content[QLatin1String("apps")] = apps;
-                approval.setContent(content);
+                permission.setContent(content);
 
-                communicationMngr->send(approval, QLatin1String("NET"), Header::allApp, Header::localHost);
+                communicationMngr->send(permission, QLatin1String("NET"), Header::allApp, Header::localHost);
 
-                localMutexWaitingList.remove((*iter).toString());
+                localMutexWaitingList.remove(app);
             }
-
-            //qDebug() << siteID << "waiting list" << localMutexWaitingList;
-            iter = approvedApps.erase(iter);
-        }
-        else
-        {
-            ++iter;
         }
     }
 
-    if (approvedApps.size() == 0)
-    {
-        return;
-    }
+    qDebug() << siteID << "waiting list" << localMutexWaitingList;
 
     if (fromLocal)
     {
+        qDebug() << siteID << "send aproval to" << approvedApps;
         // mark message ID
         approval.setSender(siteID);
         approval.setNbSequence(++nbSequence);
     }
-
-    // update list of approvedApps
-    QJsonObject content;
-    content[QLatin1String("apps")] = approvedApps;
-
-    approval.setContent(content);
 
     // forward to network
     communicationMngr->send(approval, QLatin1String("NET"), QLatin1String("NET"), Header::localHost);

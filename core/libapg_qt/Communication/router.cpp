@@ -85,7 +85,7 @@ bool Router::addSnapshot(LaiYangSnapshot* snapshot)
 
 
 // Main event handler
-void Router::slotReceiveMessage(Header header, Message message)
+void Router::slotReceiveMessage(Header& header, Message& message)
 {
     // cast message to ACL format
     ACLMessage aclMessage(*(static_cast<ACLMessage*>(&message)));

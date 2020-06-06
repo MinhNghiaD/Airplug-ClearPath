@@ -64,7 +64,7 @@ void NetController::takeSnapshot() const
     d->snapshot->callElection();
 }
 
-void NetController::slotReceiveMessage(Header, Message)
+void NetController::slotReceiveMessage(Header&, Message&)
 {
 }
 
