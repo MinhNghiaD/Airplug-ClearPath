@@ -186,9 +186,6 @@ void AgentController::slotDoStep()
     // TODO Application 4: use CollisionAvoidanceManager to update position and move to the new position
     // Send SYNC_ACK Message back to initiator
 
-
-    QThread::msleep(5000);
-
     qDebug() << siteID() << "do step";
 
     if (! d->synchronizer->isInitiator())
@@ -198,6 +195,10 @@ void AgentController::slotDoStep()
         ack.setTimeStamp(*m_clock);
 
         sendMessage(ack, QString(), QString(), QString());
+    }
+    else
+    {
+        QThread::msleep(50);
     }
 }
 
