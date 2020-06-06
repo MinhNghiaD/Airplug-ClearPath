@@ -43,7 +43,8 @@ public:
 public:
 
     Q_SLOT void slotDoStep();
-    Q_SLOT void slotSendMessage(ACLMessage&);
+    Q_SLOT void slotSendMessage(ACLMessage& message);
+    Q_SLOT void slotSendState(ACLMessage& message);
 
 private:
 

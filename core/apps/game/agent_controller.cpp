@@ -67,9 +67,15 @@ void AgentController::init(const QCoreApplication& app)
     ApplicationController::init(app);
 
     d->synchronizer = new SynchronizerBase(siteID());
-    // TODO Application 1 : setup synchronizer: connect 2 signals of synchronizer to corresponding slot
+
     connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
             this,            &AgentController::slotSendMessage, Qt::DirectConnection);
+
+    connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
+            this,            &AgentController::slotSendState, Qt::DirectConnection);
+
+    connect(d->synchronizer, &SynchronizerBase::signalDoStep,
+            this,            &AgentController::slotDoStep, Qt::DirectConnection);
 
     // TODO Application 2:  setup CollisionAvoidanceManager and EnvironmentManager
 
@@ -126,7 +132,9 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
             if (aclMessage->getPerformative() == ACLMessage::SYNC)
             {
                 d->synchronizer->processSYNCMessage(*aclMessage);
-                // TODO Application 3 : decode the content of message to update KD Tree in environment manager
+
+                // TODO Application 3: decode the content of message to update KD Tree in environment manager
+                // decode the content of message to update KD Tree in environment manager
                 // NOTE: by using CollisionAvoidanceManager::getInfo
 
             }
@@ -152,6 +160,14 @@ void AgentController::slotSendMessage(ACLMessage& message)
     ++(*m_clock);
 
     sendMessage(message, QString(), QString(), QString());
+}
+
+void AgentController::slotSendState(ACLMessage& message)
+{
+    // TODO Application 4: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
+    // Put in QJsonObject and put it in the message (envelop) to send to NET
+
+    slotSendMessage(message);
 }
 
 void AgentController::sendLocalSnapshot()
