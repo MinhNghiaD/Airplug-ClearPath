@@ -57,7 +57,7 @@ void StdTransporter::run()
 
         emit signalMessageReceived(QString::fromStdString(message));
         // slow down to avoid flooding the channel
-        QThread::msleep(5);
+        QThread::msleep(10);
     }
 }
 

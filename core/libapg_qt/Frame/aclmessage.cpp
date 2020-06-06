@@ -14,8 +14,18 @@ ACLMessage::ACLMessage(const QString& message)
 {
 }
 
+ACLMessage::ACLMessage(const ACLMessage& otherMessage)
+    : Message(otherMessage.getMessage())
+{
+}
+
 ACLMessage::~ACLMessage()
 {
+}
+
+void ACLMessage::operator = (const ACLMessage& otherMessage)
+{
+    parseText(otherMessage.getMessage());
 }
 
 void ACLMessage::setPerformative(Performative performative)
