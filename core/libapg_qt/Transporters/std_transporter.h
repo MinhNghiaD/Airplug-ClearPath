@@ -12,6 +12,8 @@
 #ifndef STD_TRANSPORTER_H
 #define STD_TRANSPORTER_H
 
+#include <QThread>
+
 #include "message_transporter.h"
 
 namespace AirPlug
@@ -23,14 +25,14 @@ class StdTransporter : public MessageTransporter
 
 public:
 
-    explicit StdTransporter(QObject* parent = nullptr);
+    explicit StdTransporter();
     ~StdTransporter();
 
     void send(const QString& message) override;
 
 private:
 
-    Q_SLOT void slotMessageArrive();
+    void run() override;
 
 private:
 

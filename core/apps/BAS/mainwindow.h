@@ -43,7 +43,7 @@ private:
 
 public slots:
 
-    void slotShowReceivedMessage(Header header, Message message);
+    void slotShowReceivedMessage(Message& message);
 
     void on_startButton_clicked();
 

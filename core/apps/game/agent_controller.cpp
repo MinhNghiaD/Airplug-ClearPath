@@ -51,7 +51,7 @@ public:
 
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 AgentController::AgentController(Board* board, QObject* parent)
-    : ApplicationController(QLatin1String("BAS"), parent),
+    : ApplicationController(QLatin1String("RVO"), parent),
       d(new Private(board))
 {
     setObjectName(QLatin1String("Agent Controller"));
@@ -67,19 +67,23 @@ void AgentController::init(const QCoreApplication& app)
     ApplicationController::init(app);
 
     d->synchronizer = new SynchronizerBase(siteID());
-    // TODO Application 1 : setup synchronizer: connect 2 signals of synchronizer to corresponding slot
-    connect(d->synchronizer, &SynchronizerBase::signalDoStep,
-            this, &AgentController::slotDoStep, Qt::DirectConnection);
-    connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
-            this, &AgentController::slotSendMessage, Qt::DirectConnection);
 
+    connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
+            this,            &AgentController::slotSendMessage, Qt::DirectConnection);
+
+    connect(d->synchronizer, &SynchronizerBase::signalSendState,
+            this,            &AgentController::slotSendState, Qt::DirectConnection);
+
+    connect(d->synchronizer, &SynchronizerBase::signalDoStep,
+            this,            &AgentController::slotDoStep, Qt::DirectConnection);
 
     // TODO Application 2:  setup CollisionAvoidanceManager and EnvironmentManager
 
     // Agent State or std::vector<double>{0., 0.}
-    State agentState = d->guiAgent->getState();
-    double agentPosX = static_cast<double>(agentState.x);
-    double agentPosY = static_cast<double>(agentState.y);
+    // NOTE: GUI later
+    //State agentState = d->guiAgent->getState();
+    double agentPosX = 0.0;
+    double agentPosY = 0.0;
 
     d->localAgent = new CollisionAvoidanceManager(
                         std::vector<double>{agentPosX, agentPosY},
@@ -109,11 +113,11 @@ void AgentController::init(const QCoreApplication& app)
 
 
     // wait for network is establish and init synchronizer
-    QThread::msleep(5);
+    QThread::msleep(5000);
     d->synchronizer->init();
 }
 
-void AgentController::slotReceiveMessage(Header header, Message message)
+void AgentController::slotReceiveMessage(Header& header, Message& message)
 {
     ACLMessage* aclMessage = (static_cast<ACLMessage*>(&message));
 
@@ -175,22 +179,44 @@ void AgentController::slotReceiveMessage(Header header, Message message)
     }
 }
 
+
 void AgentController::slotDoStep()
 {
     ++(*m_clock);
     // TODO Application 4: use CollisionAvoidanceManager to update position and move to the new position
     // Send SYNC_ACK Message back to initiator
-    ACLMessage message = ACLMessage(ACLMessage::SYNC_ACK);
-    sendMessage(message, QString(), QString(), QString());
 
+
+    QThread::msleep(5000);
+
+    qDebug() << siteID() << "do step";
+
+    if (! d->synchronizer->isInitiator())
+    {
+        // NOTE initiator don't send ack messages
+        ACLMessage ack(ACLMessage::SYNC_ACK);
+        ack.setTimeStamp(*m_clock);
+
+        sendMessage(ack, QString(), QString(), QString());
+    }
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
 {
-    // TODO Application 5: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
+    ++(*m_clock);
+
+    sendMessage(message, QString(), QString(), QString());
+}
+
+void AgentController::slotSendState(ACLMessage& message)
+{
+    // TODO Application 4: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
     // Put in QJsonObject and put it in the message (envelop) to send to NET
     QJsonObject info = d->localAgent->getInfo();
-    ACLMessage message = ACLMessage(ACLMessage::SYNC_ACK);
+    // NOTE message performative already prepared in message
+
+
+    message.setTimeStamp(++(*m_clock));
 
     sendMessage(message, QString(), QString(), QString());
 }

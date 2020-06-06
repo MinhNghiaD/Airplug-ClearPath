@@ -3,10 +3,12 @@
 namespace AirPlug
 {
 
-MessageTransporter::MessageTransporter(QObject* parent)
-    : QObject(parent)
+MessageTransporter::MessageTransporter()
+    : QThread()
 {
     setObjectName(QLatin1String("Protocol"));
+
+    start();
 }
 
 MessageTransporter::~MessageTransporter()

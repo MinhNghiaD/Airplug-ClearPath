@@ -53,7 +53,7 @@ signals:
 
     Q_SIGNAL void signalSequenceChange(int);
 
-    Q_SIGNAL void signalMessageReceived(Header, Message);
+    Q_SIGNAL void signalMessageReceived(Message&);
 
 private:
 
@@ -63,7 +63,7 @@ private:
 private:
 
     // main notification handler
-    Q_SLOT void slotReceiveMessage(Header, Message) override;
+    Q_SLOT void slotReceiveMessage(Header&, Message&) override;
     Q_SLOT void slotForwardMutex(const ACLMessage&);
 
     Q_SLOT void slotEnterCriticalSection();

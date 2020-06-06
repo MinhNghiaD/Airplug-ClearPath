@@ -16,5 +16,6 @@ set_target_properties(game PROPERTIES OUTPUT_NAME "game")
 
 target_link_libraries(game
                       apg
+                      extras
                       ${QT_LIBRARIES}
                      )

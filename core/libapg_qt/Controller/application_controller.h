@@ -14,7 +14,6 @@
 
 // Qt include
 #include <QObject>
-#include <QThread>
 
 // Local include
 #include "option_parser.h"
@@ -80,7 +79,7 @@ public:
      * slotReceiveMessage: main notification handler
      *
      */
-    Q_SLOT virtual void slotReceiveMessage(Header, Message) = 0;
+    Q_SLOT virtual void slotReceiveMessage(Header&, Message&) = 0;
 
 protected:
 
@@ -89,8 +88,6 @@ protected:
     OptionParser          m_optionParser;
 
     VectorClock*          m_clock;
-
-    QThread*              m_eventThread;
 };
 
 }

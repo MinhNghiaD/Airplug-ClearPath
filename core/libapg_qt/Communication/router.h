@@ -37,7 +37,7 @@ public:
     /**
       * @brief slotReceiveMessage :  main event handler
       */
-    Q_SLOT void slotReceiveMessage(Header, Message);
+    Q_SLOT void slotReceiveMessage(Header&, Message&);
 
     /**
       * @brief slotBroadcastLocal : broadcast marker to local applications to take snapshot
@@ -49,11 +49,11 @@ public:
 
     Q_SLOT void slotUpdateNbApps(int nbSites, int nbApp);
 
-    Q_SLOT void slotRequestElection();
+    Q_SLOT void slotRequestElection(ElectionManager::ElectionReason reason);
 
     Q_SLOT void slotWinElection(ElectionManager::ElectionReason reason);
 
-    Q_SLOT void slotFinishElection();
+    Q_SLOT void slotFinishElection(ElectionManager::ElectionReason reason);
 private:
 
     class Private;

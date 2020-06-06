@@ -44,6 +44,7 @@ public:
 
     Q_SLOT void slotDoStep();
     Q_SLOT void slotSendMessage(ACLMessage& message);
+    Q_SLOT void slotSendState(ACLMessage& message);
 
 private:
 
@@ -52,7 +53,7 @@ private:
 private:
 
     // main notification handler
-    Q_SLOT void slotReceiveMessage(Header, Message) override;
+    Q_SLOT void slotReceiveMessage(Header&, Message&) override;
 
 private:
 

@@ -86,7 +86,7 @@ private:
 
 public:
 
-    Q_SIGNAL void signalMessageReceived(const Header& header, const Message& message);
+    Q_SIGNAL void signalMessageReceived(Header& header, Message& message);
 
 private:
 

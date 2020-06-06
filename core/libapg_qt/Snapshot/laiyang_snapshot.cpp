@@ -124,7 +124,6 @@ bool LaiYangSnapshot::Private::verifyPrepost(const QJsonObject& originalMessage,
     VectorClock messageClock(originalMessage[QLatin1String("timestamp")].toObject());
 
     // verify pre-message, avoid post-post or post-pre for a conherent snapshot
-
     if (states.contains(sender))
     {
         QJsonObject jsonClock = states[sender];
@@ -197,7 +196,7 @@ LaiYangSnapshot::~LaiYangSnapshot()
 void LaiYangSnapshot::callElection()
 {
     // Demand router to start election for init snapshot
-    emit signalRequestElection();
+    emit signalRequestElection(ElectionManager::Snapshot);
 }
 
 void LaiYangSnapshot::init()
@@ -424,7 +423,7 @@ void LaiYangSnapshot::finishSnapshot()
         emit signalSendSnapshotMessage(inform);
 
         // Inform election for snapshot has finish
-        emit signalFinishElection();
+        emit signalFinishElection(ElectionManager::Snapshot);
 
         saveSnapshot();
     }
@@ -457,13 +456,14 @@ void LaiYangSnapshot::saveSnapshot() const
 
     QTextStream out(&file);
 
-    out << "//////////////////////////////////////////////////////////////////// Snapshot at " << QDateTime::currentDateTime().toLocalTime().toString(QLatin1String("h:m:s ap"))
+    out << "//////////////////////////////////////////////////////////////////// Snapshot at "
+        << QDateTime::currentDateTime().toLocalTime().toString(QLatin1String("h:m:s ap"))
         <<"////////////////////////////////////////////////////////////////////////\n";
 
     out << " --------------------------------------------------------------------- States------------------------------------------------------------ : \n";
     for (QHash<QString, QJsonObject>::const_iterator iter  = d->states.cbegin();
                                                      iter != d->states.cend();
-                                                     ++iter)
+                                                   ++iter)
     {
         out << "+ app = " << iter.key() << " : \n";
         out << QJsonDocument(iter.value()).toJson() << "\n";
@@ -472,7 +472,7 @@ void LaiYangSnapshot::saveSnapshot() const
     out << " ----------------------------------------------------------------- Prepost messages ------------------------------------------------------------ : \n";
     for (QHash<QString, QVector<QJsonObject> >::const_iterator iter  = d->prepostMessages.cbegin();
                                                                iter != d->prepostMessages.cend();
-                                                               ++iter)
+                                                             ++iter)
     {
         out << "+ sender = " << iter.key() << " : \n";
 

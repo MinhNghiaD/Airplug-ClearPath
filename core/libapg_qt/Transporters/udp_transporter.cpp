@@ -37,9 +37,8 @@ public:
 
 UdpTransporter::UdpTransporter(const QString& host,
                                int            port,
-                               UdpType        type,
-                               QObject*       parent)
-    : MessageTransporter(parent),
+                               UdpType        type)
+    : MessageTransporter(),
       d(new Private())
 {
     setObjectName(QLatin1String("UDP Protocol"));
@@ -77,11 +76,11 @@ UdpTransporter::UdpTransporter(const QString& host,
             break;
     }
 
-    connect(d->socket, SIGNAL(readyRead()),
-            this, SLOT(slotMessageArrive()));
+    connect(d->socket, &QUdpSocket::readyRead,
+            this, &UdpTransporter::slotMessageArrive, Qt::DirectConnection);
 
-    connect(d->socket, SIGNAL(disconnected()),
-            this, SIGNAL(signalDisconnected()));
+    connect(d->socket, &QUdpSocket::disconnected,
+            this,      &UdpTransporter::signalDisconnected, Qt::DirectConnection);
 }
 
 UdpTransporter::~UdpTransporter()

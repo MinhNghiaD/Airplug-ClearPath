@@ -53,25 +53,17 @@ Message::Message(const QHash<QString, QString>& contents)
 Message::Message(const Message& otherMessage)
     : d(new Private())
 {
-    d->content = QHash<QString, QString>(otherMessage.getContents());
-    d->content.detach();
-
-    d->delimiter = otherMessage.d->delimiter;
-    d->equalChar = otherMessage.d->equalChar;
+    parseText(otherMessage.getMessage());
 }
 
 Message::~Message()
 {
-    delete d;
+    //delete d;
 }
 
 void Message::operator = (const Message& otherMessage)
 {
-    d->content = QHash<QString, QString>(otherMessage.getContents());
-    d->content.detach();
-
-    d->delimiter = otherMessage.d->delimiter;
-    d->equalChar = otherMessage.d->equalChar;
+    parseText(otherMessage.getMessage());
 }
 
 void Message::parseText(const QString& text)

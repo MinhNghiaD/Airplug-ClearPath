@@ -26,6 +26,14 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("GAM");
 
+    Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    AgentController* controller = new AgentController(board);
+    controller->init(app);
+
+    return app.exec();
+    delete controller;
+    delete board;
+/*
     QThread* eventThread = new QThread();
 
     Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
@@ -54,4 +62,5 @@ int main(int argc, char *argv[])
     delete controller;
     delete view;
     delete board;
+*/
 }

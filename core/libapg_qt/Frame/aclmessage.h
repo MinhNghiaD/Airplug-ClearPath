@@ -65,10 +65,14 @@ public:
 
     explicit ACLMessage(Performative performative);
     ACLMessage(const QString& message);
+    //Copied constructor
+    ACLMessage(const ACLMessage& otherMessage);
 
     ~ACLMessage();
 
 public:
+
+    void operator = (const ACLMessage& otherMessage);
 
     void setPerformative(Performative performative);
     void setContent(const QJsonObject& content);

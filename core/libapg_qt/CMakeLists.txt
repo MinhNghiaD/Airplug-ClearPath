@@ -11,6 +11,7 @@ set(libapg_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/Frame/header.cpp
 
                 ${CMAKE_CURRENT_SOURCE_DIR}/Communication/communication_manager.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/Communication/router.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/Communication/router_p.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/Communication/watchdog.cpp
 
                 ${CMAKE_CURRENT_SOURCE_DIR}/OptionParser/option_parser.cpp
