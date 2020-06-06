@@ -18,6 +18,7 @@
 
 // Local includes
 #include "aclmessage.h"
+#include "election_manager.h"
 
 namespace AirPlug
 {
@@ -87,8 +88,8 @@ public:
     Q_SIGNAL void signalSendToApp(ACLMessage& message);
 
     // signal sent to router to request an election
-    Q_SIGNAL void signalRequestElection();
-    Q_SIGNAL void signalFinishElection();
+    Q_SIGNAL void signalRequestElection(ElectionManager::ElectionReason reason);
+    Q_SIGNAL void signalFinishElection(ElectionManager::ElectionReason reason);
 
 private:
 

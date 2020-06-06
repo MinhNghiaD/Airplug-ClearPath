@@ -208,19 +208,10 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
     d->electionMng->setNbOfNeighbor(nbSites - 1);
 }
 
-void Router::slotRequestElection()
+void Router::slotRequestElection(ElectionManager::ElectionReason reason)
 {
-    // find who is sender and request Election to electionMng with correspondant reason
-    if (dynamic_cast<LaiYangSnapshot*>(sender()) != nullptr)
-    {
-        qDebug() << "call election for snapshot from" << d->siteID;
-        d->electionMng->initElection(ElectionManager::Snapshot);
-    }
-    else if(dynamic_cast<SynchronizerControl*>(sender()) != nullptr)
-    {
-        qDebug() << "call election for synchronizer from" << d->siteID;
-        d->electionMng->initElection(ElectionManager::Synchronizer);
-    }
+    qDebug() << "init election with reason" << reason;
+    d->electionMng->initElection(reason);
 }
 
 void Router::slotWinElection(ElectionManager::ElectionReason reason)

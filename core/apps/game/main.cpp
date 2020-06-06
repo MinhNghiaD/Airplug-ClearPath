@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 
     Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
     AgentController* controller = new AgentController(board);
+    controller->init(app);
 
     return app.exec();
     delete controller;

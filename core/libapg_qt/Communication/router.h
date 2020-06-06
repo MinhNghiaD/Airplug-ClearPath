@@ -49,7 +49,7 @@ public:
 
     Q_SLOT void slotUpdateNbApps(int nbSites, int nbApp);
 
-    Q_SLOT void slotRequestElection();
+    Q_SLOT void slotRequestElection(ElectionManager::ElectionReason reason);
 
     Q_SLOT void slotWinElection(ElectionManager::ElectionReason reason);
 

@@ -71,7 +71,7 @@ void AgentController::init(const QCoreApplication& app)
     connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
             this,            &AgentController::slotSendMessage, Qt::DirectConnection);
 
-    connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
+    connect(d->synchronizer, &SynchronizerBase::signalSendState,
             this,            &AgentController::slotSendState, Qt::DirectConnection);
 
     connect(d->synchronizer, &SynchronizerBase::signalDoStep,
@@ -93,7 +93,7 @@ void AgentController::init(const QCoreApplication& app)
 
 
     // wait for network is establish and init synchronizer
-    QThread::msleep(5);
+    QThread::msleep(5000);
     d->synchronizer->init();
 }
 
@@ -154,9 +154,17 @@ void AgentController::slotDoStep()
     // TODO Application 4: use CollisionAvoidanceManager to update position and move to the new position
     // Send SYNC_ACK Message back to initiator
 
-    QThread::msleep(100);
+    QThread::msleep(5000);
 
     qDebug() << siteID() << "do step";
+
+    if (! d->synchronizer->isInitiator())
+    {
+        ACLMessage ack(ACLMessage::SYNC_ACK);
+        ack.setTimeStamp(*m_clock);
+
+        sendMessage(ack, QString(), QString(), QString());
+    }
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
@@ -171,6 +179,7 @@ void AgentController::slotSendState(ACLMessage& message)
     // TODO Application 4: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
     // Put in QJsonObject and put it in the message (envelop) to send to NET
 
+    message.setTimeStamp(++(*m_clock));
     slotSendMessage(message);
 }
 

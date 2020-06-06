@@ -137,7 +137,7 @@ public:
     Q_SIGNAL void signalRequestSnapshot(const Message& marker);           // send to BAS
     Q_SIGNAL void signalSendSnapshotMessage(ACLMessage& message);         // send to NET
 
-    Q_SIGNAL void signalRequestElection();
+    Q_SIGNAL void signalRequestElection(ElectionManager::ElectionReason reason);
     Q_SIGNAL void signalFinishElection(ElectionManager::ElectionReason reason);
 
 private:

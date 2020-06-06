@@ -57,9 +57,19 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
             return false;
         }
 
-        qDebug() << d->siteID << "pass SYNC to local apps";
-
         --(d->nbWaitMsg);
+
+        if (d->nbWaitMsg == 0)
+        {
+            ACLMessage permission(ACLMessage::SYNC_ACK);
+
+            // give the app permission to perform next step
+            emit signalSendToApp(permission);
+
+            d->nbWaitMsg = d->nbApps;
+
+            qDebug() << d->siteID << "collect all SYNC, give permission to local apps to do step";
+        }
     }
     else if (performative == ACLMessage::SYNC_ACK)
     {
@@ -109,15 +119,12 @@ bool SynchronizerControl::processExternalMessage(ACLMessage& message)
 
     if (performative == ACLMessage::SYNC)
     {
-        if (!d->activated)
+        if (content[QLatin1String("fromInitiator")].toBool())
         {
-            if (content[QLatin1String("fromInitiator")].toBool())
-            {
-                d->initiatorSite = message.getSender();
-                d->initiator     = message.getTimeStamp()->getSiteID();
-                d->nbWaitMsg     = d->nbApps;
-                d->activated     = true;
-            }
+            d->initiatorSite = message.getSender();
+            d->initiator     = message.getTimeStamp()->getSiteID();
+            d->nbWaitMsg     = d->nbApps;
+            d->activated     = true;
         }
 
         --(d->nbWaitMsg);
@@ -180,9 +187,9 @@ void SynchronizerControl::callElection(const QString& baseID)
         d->initiator = baseID;
         d->activated = true;
 
-        emit signalRequestElection();
+        emit signalRequestElection(ElectionManager::Synchronizer);
 
-        qDebug() << d->initiator << "call election";
+        //qDebug() << d->initiator << "call election from" << d->siteID;
     }
 }
 
@@ -190,7 +197,7 @@ void SynchronizerControl::init()
 {
     // This method is called when local site wins the election
 
-    qDebug() << d->siteID << "wins election and" << d->initiator << "becomes initiator of synchronous network";
+    //qDebug() << d->siteID << "wins election and" << d->initiator << "becomes initiator of synchronous network";
 
     d->initiatorSite = d->siteID;
     d->nbWaitMsg = d->nbApps;

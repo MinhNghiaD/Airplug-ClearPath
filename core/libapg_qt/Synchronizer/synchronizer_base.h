@@ -62,6 +62,8 @@ public:
      */
     void init();
 
+    bool isInitiator() const;
+
     void processACKMessage(ACLMessage& message);
     void processSYNCMessage(ACLMessage& message);
 

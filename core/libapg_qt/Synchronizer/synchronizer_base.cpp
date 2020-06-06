@@ -60,13 +60,21 @@ void SynchronizerBase::init()
 
     // Dummy message doesn't need to have a clock
     emit signalSendMessage(message);
+}
 
-    qDebug() << d->siteID << "call init sync";
+bool SynchronizerBase::isInitiator() const
+{
+    return d->isInitiator;
 }
 
 void SynchronizerBase::processSYNCMessage(ACLMessage& message)
 {
     // TODO avoid roundback message
+    if (d->isInitiator)
+    {
+        return;
+    }
+
     QJsonObject content = message.getContent();
 
     if (content[QLatin1String("fromInitiator")].toBool())

@@ -196,7 +196,7 @@ LaiYangSnapshot::~LaiYangSnapshot()
 void LaiYangSnapshot::callElection()
 {
     // Demand router to start election for init snapshot
-    emit signalRequestElection();
+    emit signalRequestElection(ElectionManager::Snapshot);
 }
 
 void LaiYangSnapshot::init()
