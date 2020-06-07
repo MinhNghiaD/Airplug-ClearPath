@@ -153,20 +153,23 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
             {
                 d->synchronizer->processSYNCMessage(*aclMessage);
 
-                // TODO Application 3: decode the content of message to update KD Tree in environment manager
-                // decode the content of message to update KD Tree in environment manager
+                // TODO Application 3:
+                // Decode the content of message to update KD Tree in environment manager
                 // NOTE: by using CollisionAvoidanceManager::getInfo
 
-                QJsonObject content = aclMessage->getContent();
                 /*
                 Content might be extracted from aclMessage
 
                 info[QLatin1String("position")] = encodeVector(position);
                 info[QLatin1String("velocity")] = encodeVector(velocity);
                 info[QLatin1String("maxSpeed")] = maxSpeed;
+
+                KDTree* obstaclesTree inside CollisionAvoidanceManager
                 */
+                QJsonObject content = aclMessage->getContent();
                 QJsonObject info = d->localAgent->getInfo();
 
+                // TODO Which name ?
                 d->environmentMngr->setInfo("TODO", info);
 
             }
@@ -185,7 +188,7 @@ void AgentController::slotDoStep()
     ++(*m_clock);
     // TODO Application 4: use CollisionAvoidanceManager to update position and move to the new position
     // Send SYNC_ACK Message back to initiator
-
+    d->localAgent->update();
 
     QThread::msleep(5000);
 
@@ -210,12 +213,14 @@ void AgentController::slotSendMessage(ACLMessage& message)
 
 void AgentController::slotSendState(ACLMessage& message)
 {
-    // TODO Application 4: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
+    // TODO Application 5:
+    // Collect maxSpeed, position, velocity from local CollisionAvoidanceManager
     // Put in QJsonObject and put it in the message (envelop) to send to NET
-    QJsonObject info = d->localAgent->getInfo();
     // NOTE message performative already prepared in message
+    QJsonObject info = d->localAgent->getInfo();
+    QJsonObject content = { {"content", info}, };
 
-
+    message.setContent(content);
     message.setTimeStamp(++(*m_clock));
 
     sendMessage(message, QString(), QString(), QString());
@@ -238,9 +243,9 @@ QJsonObject AgentController::captureLocalState() const
 {
     ++(*m_clock);
 
-    QJsonObject applicationState;
     // TODO Application 6: capture agent state
     // NOTE: by using CollisionAvoidanceManager::captureState
+    QJsonObject applicationState = d->localAgent->captureState();
 
 
     QJsonObject localState;
