@@ -36,7 +36,7 @@ public:
 public:
 
     QString siteID;
-    bool isInitiator;
+    bool    isInitiator;
 };
 
 SynchronizerBase::SynchronizerBase(const QString& siteID)
@@ -69,7 +69,6 @@ bool SynchronizerBase::isInitiator() const
 
 void SynchronizerBase::processSYNCMessage(ACLMessage& message)
 {
-    // TODO avoid roundback message
     if (d->isInitiator)
     {
         return;

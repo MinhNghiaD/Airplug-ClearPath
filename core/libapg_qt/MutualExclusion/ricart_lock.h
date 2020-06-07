@@ -39,16 +39,20 @@ public:
      */
     void lock();
 
-    /**
-     * @brief unlock : exit critical section
-     */
-    void unlock();
+
 
     void restart();
 
     void receiveExternalRequest(const VectorClock& requesterClock);
 
     QJsonArray getPendingQueue() const;
+
+public:
+
+    /**
+     * @brief unlock : exit critical section
+     */
+    Q_SLOT void unlock();
 
 public:
 

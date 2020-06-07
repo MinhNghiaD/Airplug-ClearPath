@@ -33,11 +33,6 @@ public:
 private:
 
     void run() override;
-
-private:
-
-    class Private;
-    Private* d;
 };
 
 }

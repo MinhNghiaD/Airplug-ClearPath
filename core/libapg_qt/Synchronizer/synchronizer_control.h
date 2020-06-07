@@ -13,9 +13,6 @@
 #ifndef SYNCHRONIZER_CONTROL_H
 #define SYNCHRONIZER_CONTROL_H
 
-// Qt includes
-#include <QObject>
-
 // Local includes
 #include "aclmessage.h"
 #include "election_manager.h"

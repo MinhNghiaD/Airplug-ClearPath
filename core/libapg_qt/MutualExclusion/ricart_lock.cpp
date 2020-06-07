@@ -1,7 +1,8 @@
 #include "ricart_lock.h"
 
+// Qt include
 #include <QDebug>
-
+#include <QTimer>
 namespace AirPlug
 {
 
@@ -10,13 +11,15 @@ class Q_DECL_HIDDEN RicartLock::Private
 public:
 
     Private()
-        : clock(nullptr)
+        : clock(nullptr),
+          timeout(new QTimer())
     {
     }
 
     ~Private()
     {
         delete clock;
+        delete timeout;
     }
 
 public:
@@ -27,6 +30,7 @@ public:
 
     VectorClock* clock;
     QStringList  queue;
+    QTimer*      timeout;
 };
 
 bool RicartLock::Private::isLessPriority(const VectorClock& requesterClock) const
@@ -49,6 +53,12 @@ RicartLock::RicartLock()
       d(new Private())
 {
     setObjectName(QLatin1String("Ricart Lock"));
+
+    // Timeout to prevent deadlock
+    d->timeout->setInterval(1000);
+    connect(d->timeout, &QTimer::timeout,
+            this,       &RicartLock::unlock, Qt::DirectConnection);
+
 }
 
 RicartLock::~RicartLock()
@@ -74,6 +84,8 @@ void RicartLock::trylock(const VectorClock& requesterClock)
     message.setTimeStamp(*(d->clock));
 
     emit signalResponse(message);
+
+    d->timeout->start();
 }
 
 void RicartLock::receiveExternalRequest(const VectorClock& requesterClock)

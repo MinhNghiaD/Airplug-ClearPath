@@ -469,7 +469,7 @@ void LaiYangSnapshot::saveSnapshot() const
         out << QJsonDocument(iter.value()).toJson() << "\n";
     }
 
-    out << " ----------------------------------------------------------------- Prepost messages ------------------------------------------------------------ : \n";
+    out << " ----------------------------------------------------------------- Prepost messages ------------------------------------------------------: \n";
     for (QHash<QString, QVector<QJsonObject> >::const_iterator iter  = d->prepostMessages.cbegin();
                                                                iter != d->prepostMessages.cend();
                                                              ++iter)

@@ -11,41 +11,14 @@
 namespace AirPlug
 {
 
-class Q_DECL_HIDDEN StdTransporter::Private
-{
-public:
-
-    Private()
-        : notifier(nullptr)
-    {
-    }
-
-    ~Private()
-    {
-        delete notifier;
-    }
-
-public:
-
-    QSocketNotifier* notifier;
-};
-
 StdTransporter::StdTransporter()
-    : MessageTransporter(),
-      d(new Private())
+    : MessageTransporter()
 {
     QObject::setObjectName(QLatin1String("StandardIO Protocol"));
-/*
-    d->notifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read);
-
-    connect(d->notifier, &QSocketNotifier::activated,
-            this,        &StdTransporter::slotMessageArrive, Qt::DirectConnection);*/
-
 }
 
 StdTransporter::~StdTransporter()
 {
-    delete d;
 }
 
 void StdTransporter::run()
@@ -65,15 +38,5 @@ void StdTransporter::send(const QString& message)
 {
     std::cout << message.toStdString() << std::endl;
 }
-/*
-void StdTransporter::slotMessageArrive()
-{
-    std::string message;
-    std::getline(std::cin, message);
-
-    emit signalMessageReceived(QString::fromStdString(message));
-}
-*/
-
 
 }

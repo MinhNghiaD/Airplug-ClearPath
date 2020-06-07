@@ -20,13 +20,15 @@ public:
     }
 
 public:
-    bool activated;
+
     QString siteID;
     QString initiator;
     QString initiatorSite;
-    int nbApps;
-    int nbWaitMsg;
-    int nbWaitAck;
+
+    bool activated;
+    int  nbApps;
+    int  nbWaitMsg;
+    int  nbWaitAck;
 };
 
 SynchronizerControl::SynchronizerControl(const QString& siteID)
@@ -67,9 +69,9 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
 
         if (d->nbWaitMsg == 0)
         {
+            // give the app permission to perform next step
             ACLMessage permission(ACLMessage::SYNC_ACK);
 
-            // give the app permission to perform next step
             emit signalSendToApp(permission);
 
             d->nbWaitMsg = d->nbApps;
@@ -220,4 +222,5 @@ void SynchronizerControl::init()
 
     emit signalSendToApp(permission);
 }
+
 }
