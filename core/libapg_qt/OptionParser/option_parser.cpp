@@ -110,6 +110,18 @@ void OptionParser::parseOptions(const QCoreApplication& app)
                                   QCoreApplication::translate("main", "app"));
     parser.addOption(destOption);
 
+    // dest option with value (--startpoint)
+    QCommandLineOption startOption("startpoint",
+                                   QCoreApplication::translate("main", "Starting point of agent"),
+                                   QCoreApplication::translate("main", "app"));
+    parser.addOption(startOption);
+
+    // dest option with value (--goals)
+    QCommandLineOption goalsOption("goals",
+                                   QCoreApplication::translate("main", "Destinations of agents"),
+                                   QCoreApplication::translate("main", "app"));
+    parser.addOption(goalsOption);
+
 
     // Process the actual command line arguments given by the user
     parser.process(app);
@@ -168,6 +180,42 @@ void OptionParser::parseOptions(const QCoreApplication& app)
     {
         headerMode = Header::HeaderMode::WhatWhoWhere;
     }
+
+    QString position = parser.value(startOption);
+
+    if (! position.isEmpty())
+    {
+        QStringList coordinate = position.split(',');
+
+        if (coordinate.size() != 2)
+        {
+            qFatal("Starting point of agent has to be in form <x,y>");
+        }
+
+        startPoint = {coordinate[0].toDouble(),coordinate[1].toDouble()};
+    }
+
+    position = parser.value(goalsOption);
+
+    if (! position.isEmpty())
+    {
+        QStringList coordinates = position.split(',');
+
+        if ((coordinates.size() % 2) == 1)
+        {
+            qFatal("Starting point of agent has to be in form <x,y,x,y,...>");
+        }
+
+        int i = 0;
+
+        while (i < coordinates.size())
+        {
+            goals.push_back({coordinates[i].toDouble(),coordinates[i + 1].toDouble()});
+
+            i += 2;
+        }
+    }
+
 }
 
 void OptionParser::showOption() const
@@ -204,6 +252,9 @@ void OptionParser::showOption() const
         default:
             qDebug() << "message format      :" << "what";
     }
+
+    qDebug() << "agent starting point:" << startPoint;
+    qDebug() << "agent goals         :" << goals;
 }
 
 QJsonObject OptionParser::convertToJson() const
