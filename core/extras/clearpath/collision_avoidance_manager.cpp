@@ -276,10 +276,9 @@ void CollisionAvoidanceManager::setPreferenceVelocity()
     /*
      * pivot a little to avoid deadlocks due to perfect symmetry.
      */
-    qsrand(QTime::currentTime().msec());
 
-    const double angle    = qrand() / (RAND_MAX) * 2 * M_PI;
-    const double distance = qrand() / (RAND_MAX) * 1;
+    const double angle    = std::rand() / (RAND_MAX) * 2 * M_PI;
+    const double distance = std::rand() / (RAND_MAX) * 1;
 
     d->preferenceVelocity[0] += distance * cos(angle);
     d->preferenceVelocity[1] += distance * sin(angle);
@@ -297,8 +296,10 @@ bool CollisionAvoidanceManager::reachedGoal(bool localAgent)
         {
             d->isFinished = false;
         }
-
-        d->isFinished = true;
+        else
+        {
+            d->isFinished = true;
+        }
     }
 
     return d->isFinished;

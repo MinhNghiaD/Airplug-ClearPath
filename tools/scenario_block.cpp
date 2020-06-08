@@ -51,7 +51,7 @@ bool reachedGoal(EnvironmentManager* environment)
                                                                    iter != agents.cend();
                                                                  ++iter)
     {
-        if (iter.value()->reachedGoal(true))
+        if (!(iter.value()->reachedGoal(true)))
         {
             return false;
         }
@@ -69,6 +69,8 @@ int main(int argc, char *argv[])
     {
         environment->update();
 
+        qDebug() << "Step" << (nbStep++);
+
         QMap<QString, CollisionAvoidanceManager*> agents = environment->getAgents();
 
         for (QMap<QString, CollisionAvoidanceManager*>::const_iterator iter  = agents.cbegin();
@@ -76,9 +78,9 @@ int main(int argc, char *argv[])
                                                                      ++iter)
         {
             iter.value()->update();
-        }
 
-        qDebug() << "Step" << (nbStep++);
+            qDebug() << iter.key() << "move to" << iter.value()->getPosition();
+        }
     }
     while (!reachedGoal(environment));
 }
