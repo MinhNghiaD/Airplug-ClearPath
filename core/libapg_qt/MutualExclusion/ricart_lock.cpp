@@ -55,7 +55,7 @@ RicartLock::RicartLock()
     setObjectName(QLatin1String("Ricart Lock"));
 
     // Timeout to prevent deadlock
-    d->timeout->setInterval(1000);
+    d->timeout->setInterval(2000);
     connect(d->timeout, &QTimer::timeout,
             this,       &RicartLock::unlock, Qt::DirectConnection);
 
@@ -134,10 +134,10 @@ void RicartLock::unlock()
         emit signalResponse(approval);
     }
 
-    delete d->clock;
-
-    d->clock = nullptr;
     d->queue.clear();
+
+    delete d->clock;
+    d->clock = nullptr;
 }
 
 void RicartLock::restart()
