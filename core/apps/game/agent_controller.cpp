@@ -1,7 +1,7 @@
 #include "agent_controller.h"
 
 // Qt includes
-#include <QTimer>
+//#include <QTimer>
 #include <QDebug>
 #include <QThread>
 
@@ -97,6 +97,7 @@ void AgentController::init(const QCoreApplication& app)
                         nullptr);
 
     // EnvironmentManager Constructor isn't ready yet
+    // EnvironmentManager is singleton ---> use init to initiate
     // d->environmentMngr = new EnvironmentManager();
 
 
@@ -153,21 +154,13 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
             {
                 d->synchronizer->processSYNCMessage(*aclMessage);
 
-                // TODO Application 3: decode the content of message to update KD Tree in environment manager
+                // decode the content of message to update KD Tree in environment manager
                 // decode the content of message to update KD Tree in environment manager
                 // NOTE: by using CollisionAvoidanceManager::getInfo
 
                 QJsonObject content = aclMessage->getContent();
-                /*
-                Content might be extracted from aclMessage
 
-                info[QLatin1String("position")] = encodeVector(position);
-                info[QLatin1String("velocity")] = encodeVector(velocity);
-                info[QLatin1String("maxSpeed")] = maxSpeed;
-                */
-                QJsonObject info = d->localAgent->getInfo();
-
-                d->environmentMngr->setInfo("TODO", info);
+                d->environmentMngr->setInfo(senderClock->getSiteID(), content[QLatin1String("info")].toObject());
 
             }
             else if (aclMessage->getPerformative() == ACLMessage::SYNC_ACK)
@@ -211,12 +204,12 @@ void AgentController::slotSendMessage(ACLMessage& message)
 
 void AgentController::slotSendState(ACLMessage& message)
 {
-    // TODO Application 4: collect maxSpeed, position, velocity from local CollisionAvoidanceManager
+    // collect maxSpeed, position, velocity from local CollisionAvoidanceManager
     // Put in QJsonObject and put it in the message (envelop) to send to NET
-    QJsonObject info = d->localAgent->getInfo();
-    // NOTE message performative already prepared in message
+    QJsonObject content = message.getContent();
+    content[QLatin1String("info")] = d->localAgent->getInfo();
 
-
+    message.setContent(content);
     message.setTimeStamp(++(*m_clock));
 
     sendMessage(message, QString(), QString(), QString());
