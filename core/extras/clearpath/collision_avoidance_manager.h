@@ -45,32 +45,20 @@ public:
 
 public:
 
+    /**
+     * @brief setDestination
+     * @param goal
+     */
+    void setDestination(std::vector<double> goal);
+
     std::vector<double> getPosition();
 
     std::vector<double> getVelocity();
 
     /**
-     * @brief Add lines that are neighbors to orcaLines
-     * @param KDNodes that are neighbors
-     */
-    void addNeighborOrcaLine(QMap<double, QVector<KDNode*>> neighbors);
-
-    /**
-     * @brief Refresh the neighbors list and update velocity
-     */
-    void computeNewVelocity();
-
-    QMap<double, QVector<KDNode*>> getClosestNeighbors();
-
-    /**
      * @brief Calculate a new velocity
      */
     void update();
-
-    /**
-     * @brief Calculate preferenceVelocity using the vectors position and destination
-     */
-    void setPreferenceVelocity();
 
     /**
      * @brief Indicates whether the goal has been reached
@@ -115,7 +103,27 @@ private:
      */
     static bool decodeVector(const QJsonArray& json, std::vector<double>& vector);
 
-    void setDestination(std::vector<double> goal);
+    /**
+     * @brief Calculate preferenceVelocity using the vectors position and destination
+     */
+    void setPreferenceVelocity();
+
+    /**
+     * @brief Add lines that are neighbors to orcaLines
+     * @param KDNodes that are neighbors
+     */
+    void addNeighborOrcaLine(QMap<double, QVector<KDNode*> > neighbors);
+
+    /**
+     * @brief Refresh the neighbors list and update velocity
+     */
+    void computeNewVelocity();
+
+    /**
+     * @brief getClosestNeighbors : search for N closest neighbors
+     * @return
+     */
+    QMap<double, QVector<KDNode*>> getClosestNeighbors();
 
 private:
 

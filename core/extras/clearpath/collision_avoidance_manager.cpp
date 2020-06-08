@@ -72,6 +72,18 @@ CollisionAvoidanceManager::~CollisionAvoidanceManager()
     delete d;
 }
 
+void CollisionAvoidanceManager::update()
+{
+    setPreferenceVelocity();
+    computeNewVelocity();
+
+    for (int i = 0; i < 2; ++i)
+    {
+        d->velocity[i]  = d->newVelocity[i];
+        d->position[i] += d->velocity[i] * d->timeStep;
+    }
+}
+
 std::vector<double> CollisionAvoidanceManager::getPosition()
 {
     return d->position;
@@ -80,6 +92,50 @@ std::vector<double> CollisionAvoidanceManager::getPosition()
 std::vector<double> CollisionAvoidanceManager::getVelocity()
 {
     return d->velocity;
+}
+
+void CollisionAvoidanceManager::setDestination(std::vector<double> goal)
+{
+    d->destination = goal;
+}
+
+bool CollisionAvoidanceManager::setInfo(QJsonObject info)
+{
+    bool success = false;
+    success = decodeVector(info[QLatin1String("position")].toArray(), d->position);
+    success = decodeVector(info[QLatin1String("velocity")].toArray(), d->velocity);
+
+    d->maxSpeed = info[QLatin1String("maxSpeed")].toDouble();
+
+    return success;
+}
+
+QJsonObject CollisionAvoidanceManager::getInfo()
+{
+    QJsonObject info;
+
+    info[QLatin1String("position")] = encodeVector(d->position);
+    info[QLatin1String("velocity")] = encodeVector(d->velocity);
+    info[QLatin1String("maxSpeed")] = d->maxSpeed;
+
+    return info;
+}
+
+QJsonObject CollisionAvoidanceManager::captureState()
+{
+    QJsonObject state;
+    state[QLatin1String("timeHorizon")]        = d->timeHorizon;
+    state[QLatin1String("maxSpeed")]           = d->maxSpeed;
+    state[QLatin1String("neighborDistance")]   = d->neighborDistance;
+    state[QLatin1String("timeStep")]           = d->timeStep;
+    state[QLatin1String("maxNeighbors")]       = d->maxNeighbors;
+    state[QLatin1String("position")]           = encodeVector(d->position);
+    state[QLatin1String("destination")]        = encodeVector(d->destination);
+    state[QLatin1String("velocity")]           = encodeVector(d->velocity);
+    state[QLatin1String("newVelocity")]        = encodeVector(d->newVelocity);
+    state[QLatin1String("preferenceVelocity")] = encodeVector(d->preferenceVelocity);
+
+    return state;
 }
 
 void CollisionAvoidanceManager::addNeighborOrcaLine(QMap<double, QVector<KDNode*> > neighbors)
@@ -194,17 +250,6 @@ QMap<double, QVector<KDNode*> > CollisionAvoidanceManager::getClosestNeighbors()
     return d->obstaclesTree->getClosestNeighbors(d->position, searchRange, d->maxNeighbors);
 }
 
-void CollisionAvoidanceManager::update()
-{
-    setPreferenceVelocity();
-    computeNewVelocity();
-
-    for (int i = 0; i < 2; ++i)
-    {
-        d->velocity[i]  = d->newVelocity[i];
-        d->position[i] += d->velocity[i] * d->timeStep;
-    }
-}
 
 void CollisionAvoidanceManager::setPreferenceVelocity()
 {
@@ -218,8 +263,8 @@ void CollisionAvoidanceManager::setPreferenceVelocity()
     }
 
     /*
-         * pivot a little to avoid deadlocks due to perfect symmetry.
-         */
+     * pivot a little to avoid deadlocks due to perfect symmetry.
+     */
     qsrand(QTime::currentTime().msec());
 
     const double angle    = qrand() / (RAND_MAX) * 2 * M_PI;
@@ -227,11 +272,6 @@ void CollisionAvoidanceManager::setPreferenceVelocity()
 
     d->preferenceVelocity[0] += distance * cos(angle);
     d->preferenceVelocity[1] += distance * sin(angle);
-}
-
-void CollisionAvoidanceManager::setDestination(std::vector<double> goal)
-{
-    d->destination = goal;
 }
 
 bool CollisionAvoidanceManager::reachedGoal()
@@ -246,45 +286,6 @@ bool CollisionAvoidanceManager::reachedGoal()
     }
 
     return true;
-}
-
-bool CollisionAvoidanceManager::setInfo(QJsonObject info)
-{
-    bool success = false;
-    success = decodeVector(info[QLatin1String("position")].toArray(), d->position);
-    success = decodeVector(info[QLatin1String("velocity")].toArray(), d->velocity);
-
-    d->maxSpeed = info[QLatin1String("maxSpeed")].toDouble();
-
-    return success;
-}
-
-QJsonObject CollisionAvoidanceManager::getInfo()
-{
-    QJsonObject info;
-
-    info[QLatin1String("position")] = encodeVector(d->position);
-    info[QLatin1String("velocity")] = encodeVector(d->velocity);
-    info[QLatin1String("maxSpeed")] = d->maxSpeed;
-
-    return info;
-}
-
-QJsonObject CollisionAvoidanceManager::captureState()
-{
-    QJsonObject state;
-    state[QLatin1String("timeHorizon")]        = d->timeHorizon;
-    state[QLatin1String("maxSpeed")]           = d->maxSpeed;
-    state[QLatin1String("neighborDistance")]   = d->neighborDistance;
-    state[QLatin1String("timeStep")]           = d->timeStep;
-    state[QLatin1String("maxNeighbors")]       = d->maxNeighbors;
-    state[QLatin1String("position")]           = encodeVector(d->position);
-    state[QLatin1String("destination")]        = encodeVector(d->destination);
-    state[QLatin1String("velocity")]           = encodeVector(d->velocity);
-    state[QLatin1String("newVelocity")]        = encodeVector(d->newVelocity);
-    state[QLatin1String("preferenceVelocity")] = encodeVector(d->preferenceVelocity);
-
-    return state;
 }
 
 QJsonArray CollisionAvoidanceManager::encodeVector(const std::vector<double>& vector)

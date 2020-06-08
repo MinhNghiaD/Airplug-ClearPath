@@ -5,97 +5,140 @@
  * Date        : 2020-6-4
  * Description : Environment controller of clearpath agents
  *
- * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>,
  * 2020 by Mathieu Cocheteux <mathieu at cocheteux dot eu>
+ * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>,
  *
  * ============================================================ */
 
 #ifndef ENVIRONMENT_MANAGER_H
 #define ENVIRONMENT_MANAGER_H
 
+// Qt include
 #include <QString>
 #include <QJsonObject>
-#include "kd_tree.h"
 #include <QVector>
-#include "collision_avoidance_manager.h"
 
+// local include
+#include "kd_tree.h"
+#include "collision_avoidance_manager.h"
 
 namespace ClearPath
 {
 
-    class EnvironmentManager
-    {
+class EnvironmentManager
+{
 
-    public:
+public:
 
-        // This function is used for updating information of distance agents
-        bool setInfo(const QString& name, const QJsonObject& info) const;
+    /**
+     * @brief init: construct environment with default parameters for agents
+     * @return
+     */
+    static EnvironmentManager* init();
 
+    /**
+     * @brief init: construct environment specified parameters for agents
+     * @param timeStep
+     * @param neighborDistance
+     * @param maxNeighbors
+     * @param timeHorizon
+     * @param radius
+     * @param maxSpeed
+     * @param velocity
+     * @return
+     */
+    static EnvironmentManager* init (double timeStep,
+                                     double neighborDistance,
+                                     int    maxNeighbors,
+                                     double timeHorizon,
+                                     double radius,
+                                     double maxSpeed,
+                                     QVector<double> velocity);
 
-        // construct environment with default parameters for agents
-        static EnvironmentManager* init();
+    /**
+     * @brief setInfo: update information of distance agents
+     * @param name
+     * @param info
+     * @return
+     */
+    bool setInfo(const QString& name, const QJsonObject& info) const;
 
-        // construct environment specified parameters for agents
-        static  EnvironmentManager* init (double timeStep,
-                                          double neighborDistance,
-                                          int    maxNeighbors,
-                                          double timeHorizon,
-                                          double radius,
-                                          double maxSpeed,
-                                          QVector<double> velocity);
+    /**
+     * @brief setTimeStep: setter for TimeStep value of environment
+     * @param period
+     */
+    void setTimeStep(double period);
 
-        // setter for TimeStep value of environment
-        void setTimeStep(double period);
+    /**
+     * @brief getInstance: returns the instance, if not initialized, creates it
+     * @return
+     */
+    static EnvironmentManager* getInstance();
 
-        // returns the instance, if not initialized, creates it
-        static EnvironmentManager* getInstance();
+    /**
+     * @brief getAgents
+     * @return the agents of the tree
+     */
+    QMap<QString, CollisionAvoidanceManager*> getAgents() const ;
 
-        // returns the agents of the tree
-        QMap<QString, CollisionAvoidanceManager*> getAgents() const ;
+    /**
+     * @brief getAgentRadius
+     * @return agent radius
+     */
+    double getAgentRadius() const;
 
-        // returns agent radius
-        double getAgentRadius() const;
+    /**
+     * @brief doStep: updates the tree and goes to the next timestep
+     */
+    void doStep();
 
-        // updates the tree and goes to the next timestep
-        void doStep();
+    /**
+     * @brief addAgent: add agent with specified parameters to the tree
+     * @param position
+     * @param destination
+     * @param velocity
+     * @param timeHorizon
+     * @param timeStep
+     * @param maxSpeed
+     * @param neighborDistance
+     * @param maxNeighbors
+     * @return
+     */
+    CollisionAvoidanceManager* addAgent(QVector<double> position,
+                                        QVector<double> destination,
+                                        QVector<double> velocity,
+                                        double timeHorizon,
+                                        double timeStep,
+                                        double maxSpeed,
+                                        double neighborDistance,
+                                        int    maxNeighbors);
 
-        // add agent with specified parameters to the tree
-        CollisionAvoidanceManager* addAgent(QVector<double> position,
-                                            QVector<double> destination,
-                                            QVector<double> velocity,
-                                            double timeHorizon,
-                                            double timeStep,
-                                            double maxSpeed,
-                                            double neighborDistance,
-                                            int    maxNeighbors);
+private:
 
+    EnvironmentManager();
 
-    private:
-        EnvironmentManager():globalTime(0),
-                             timeStep(0),
-                             obstaclesTree(2){
-        }
+    EnvironmentManager(double timeStep,
+                       double neighborDistance,
+                       int    maxNeighbors,
+                       double timeHorizon,
+                       double radius,
+                       double maxSpeed,
+                       QVector<double> velocity);
 
-        EnvironmentManager(double timeStep,
-                           double neighborDistance,
-                           int    maxNeighbors,
-                           double timeHorizon,
-                           double radius,
-                           double maxSpeed,
-                           QVector<double> velocity);
+private:
 
-        double   timeStep;
-        double   globalTime;
-        double   neighborDistance;
-        int      maxNeighbors;
-        double   timeHorizon;
-        double   radius;
-        double   maxSpeed;
-        QVector<double> velocity;
-        KDTree obstaclesTree;
-        static EnvironmentManager* instance;
+    double   timeStep;
+    double   globalTime;
+    double   neighborDistance;
+    int      maxNeighbors;
+    double   timeHorizon;
+    double   radius;
+    double   maxSpeed;
+    QVector<double> velocity;
+    KDTree obstaclesTree;
 
-    };
+    static EnvironmentManager* instance;
+};
 
 }
 #endif // ENVIRONMENT_MANAGER_H
