@@ -65,7 +65,7 @@ void AgentController::init(const QCoreApplication& app)
 {
     ApplicationController::init(app);
 
-    // All Bas will subscribe to local NET
+    // All local applications will subscribe to local NET
     m_communication->subscribeLocalHost(QLatin1String("NET"));
 
     ACLMessage pong(ACLMessage::PONG);
@@ -83,7 +83,7 @@ void AgentController::init(const QCoreApplication& app)
     d->environmentMngr  = EnvironmentManager::init(0.25, 15, 10, 5, 2, 2, {0, 0});
     d->localAgent       = d->environmentMngr->addAgent(siteID(), m_optionParser.startPoint, m_optionParser.goals.at(0));
 
-    d->synchronizer = new SynchronizerBase(siteID());
+    d->synchronizer     = new SynchronizerBase(siteID());
 
     connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
             this,            &AgentController::slotSendMessage, Qt::DirectConnection);
@@ -94,7 +94,7 @@ void AgentController::init(const QCoreApplication& app)
     connect(d->synchronizer, &SynchronizerBase::signalDoStep,
             this,            &AgentController::slotDoStep, Qt::DirectConnection);
 
-    // wait for network is establish and init synchronizer
+    // wait for network is stable to init synchronizer
     QThread::msleep(5000);
 
     d->synchronizer->init();
@@ -105,7 +105,9 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
 {
     ACLMessage* aclMessage = (static_cast<ACLMessage*>(&message));
 
-    switch (aclMessage->getPerformative())
+    ACLMessage::Performative performative = aclMessage->getPerformative();
+
+    switch (performative)
     {
         case ACLMessage::REQUEST_SNAPSHOT:
             sendLocalSnapshot();
@@ -122,7 +124,6 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
         default:
             VectorClock* senderClock = aclMessage->getTimeStamp();
 
-            // read sender's clock
             if (senderClock)
             {
                 if (senderClock->getSiteID() == m_clock->getSiteID())
@@ -134,7 +135,7 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
                 m_clock->updateClock(*senderClock);
             }
 
-            if (aclMessage->getPerformative() == ACLMessage::SYNC)
+            if (performative == ACLMessage::SYNC)
             {
                 d->synchronizer->processSYNCMessage(*aclMessage);
 
@@ -143,11 +144,10 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
 
                 if (senderClock && content.contains(QLatin1String("info")))
                 {
-                    //qDebug() << siteID() << "reveice infor from" << senderClock->getSiteID();
                     d->environmentMngr->setInfo(senderClock->getSiteID(), content[QLatin1String("info")].toObject());
                 }
             }
-            else if (aclMessage->getPerformative() == ACLMessage::SYNC_ACK)
+            else if (performative == ACLMessage::SYNC_ACK)
             {
                 d->synchronizer->processACKMessage(*aclMessage);
             }
@@ -159,7 +159,7 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
 void AgentController::slotDoStep()
 {
     ++(*m_clock);
-
+/*
     QMap<QString, CollisionAvoidanceManager*> agents = d->environmentMngr->getAgents();
 
     for (QMap<QString, CollisionAvoidanceManager*>::const_iterator iter  = agents.cbegin();
@@ -168,7 +168,7 @@ void AgentController::slotDoStep()
     {
         qDebug() << siteID() << ": " << iter.key() << "position:" << iter.value()->getPosition();
     }
-
+*/
     d->environmentMngr->update();
     d->localAgent->update();
     ++d->nbStep;
@@ -185,6 +185,7 @@ void AgentController::slotDoStep()
     }
     else
     {
+        // time step
         QThread::msleep(5000);
     }
 }
