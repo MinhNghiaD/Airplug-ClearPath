@@ -5,6 +5,7 @@
  * Date        : 2020-6-4
  * Description : Interface with clearpath algorithm for agents
  *
+ * 2020 by Remi Besoin <remi.besoin@etu.utc.fr>
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
  * ============================================================ */
@@ -38,94 +39,44 @@ public:
                                        double maxSpeed,
                                        double neighborDistance,
                                        int    maxNeighbors,
-                                       KDTree* tree)
-    {
-        // Prototype
-    }
+                                       KDTree* tree);
 
-    std::vector<double> getPosition()
-    {
-        return position;
-    }
+    ~CollisionAvoidanceManager();
 
-    std::vector<double> getVelocity()
-    {
-        return velocity;
-    }
+public:
 
-    void addNeighborOrcaLine(QMap<double, QVector<KDNode*>> neighbors)
-    {
-        // Prototype
-    }
+    std::vector<double> getPosition();
 
+    std::vector<double> getVelocity();
 
-    void computeNewVelocity()
-    {
-        orcaLines.clear();
+    /**
+     * @brief Add lines that are neighbors to orcaLines
+     * @param KDNodes that are neighbors
+     */
+    void addNeighborOrcaLine(QMap<double, QVector<KDNode*>> neighbors);
 
-        addNeighborOrcaLine(getClosestNeighbors());
+    /**
+     * @brief Refresh the neighbors list and update velocity
+     */
+    void computeNewVelocity();
 
-        int lineFail = RVO::checkCollision(orcaLines, maxSpeed, preferenceVelocity, false, newVelocity);
+    QMap<double, QVector<KDNode*>> getClosestNeighbors();
 
-        if (lineFail < orcaLines.size())
-        {
-            // start optimizing from the first collision
-            newVelocity = RVO::collisionFreeVelocity(orcaLines, lineFail, maxSpeed, 0, newVelocity);
-        }
-    }
+    /**
+     * @brief Calculate a new velocity
+     */
+    void update();
 
-    QMap<double, QVector<KDNode*>> getClosestNeighbors()
-    {
-        double searchRange = pow(neighborDistance, 2);
+    /**
+     * @brief Calculate preferenceVelocity using the vectors position and destination
+     */
+    void setPreferenceVelocity();
 
-        return obstaclesTree->getClosestNeighbors(position, searchRange, maxNeighbors);
-    }
-
-    void update()
-    {
-        setPreferenceVelocity();
-        computeNewVelocity();
-
-        for (int i = 0; i < 2; ++i)
-        {
-            velocity[i]  = newVelocity[i];
-            position[i] += velocity[i] * timeStep;
-        }
-    }
-
-    void setPreferenceVelocity()
-    {
-        preferenceVelocity = RVO::vectorSubstract(destination, position);
-
-        double absSqrGoalVector = RVO::vectorProduct(preferenceVelocity, preferenceVelocity);
-
-        if (absSqrGoalVector > 1)
-        {
-            preferenceVelocity = RVO::scalarProduct(preferenceVelocity, 1/sqrt(absSqrGoalVector));
-        }
-
-        /*
-         * pivot a little to avoid deadlocks due to perfect symmetry.
-         */
-        qsrand(QTime::currentTime().msec());
-
-        const double angle    = qrand() / (RAND_MAX) * 2 * M_PI;
-        const double distance = qrand() / (RAND_MAX) * 1;
-
-        preferenceVelocity[0] += distance * cos(angle);
-        preferenceVelocity[1] += distance * sin(angle);
-    }
-
-    void setDestination(std::vector<double> goal)
-    {
-        destination = goal;
-    }
-
-    bool reachedGoal()
-    {
-        // Prototype
-        return true;
-    }
+    /**
+     * @brief Indicates whether the goal has been reached
+     * @return If distance to destination is superior to 400 then return false, else return true
+     */
+    bool reachedGoal();
 
     /**
      * @brief setInfo : use for updating information of distance agent
@@ -133,96 +84,43 @@ public:
      * @param velocity
      * @param maxSpeed
      */
-    bool setInfo(QJsonObject info)
-    {
-        bool success = false;
-        success = decodeVector(info[QLatin1String("position")].toArray(), position);
-        success = decodeVector(info[QLatin1String("velocity")].toArray(), velocity);
+    bool setInfo(QJsonObject info);
 
-        maxSpeed = info[QLatin1String("maxSpeed")].toDouble();
+    /**
+     * @brief Get main informations about the CollisionAvoidanceManager
+     * @return A QJsonObject containing position, velocity and maxspeed
+     */
+    QJsonObject getInfo();
 
-        return success;
-    }
-
-    QJsonObject getInfo()
-    {
-        QJsonObject info;
-
-        info[QLatin1String("position")] = encodeVector(position);
-        info[QLatin1String("velocity")] = encodeVector(velocity);
-        info[QLatin1String("maxSpeed")] = maxSpeed;
-
-        return info;
-    }
-
-    QJsonObject captureState()
-    {
-        QJsonObject state;
-        /* TODO : capture:
-        double     timeHorizon;
-        double     maxSpeed;
-        double     neighborDistance;
-        double     timeStep;
-        int        maxNeighbors;
-
-        std::vector<double> position;
-        std::vector<double> destination;
-        std::vector<double> velocity;
-        std::vector<double> newVelocity;
-        std::vector<double> preferenceVelocity;
-        into QjsonObject in the same way as getInfo() for snapshot
-        */
-
-        return state;
-    }
+    /**
+     * @brief Capture the state of the CollisionAvoidanceManager
+     * @return A QJsonObject containing every informations about the CollisionAvoidanceManager
+     */
+    QJsonObject captureState();
 
 private:
 
-    static QJsonArray encodeVector(const std::vector<double>& vector)
-    {
-        QJsonArray array;
+    /**
+     * @brief encodeVector
+     * @param vector
+     * @return
+     */
+    static QJsonArray encodeVector(const std::vector<double>& vector);
 
-        for (size_t i = 0; i < vector.size(); ++i)
-        {
-            array << vector[i];
-        }
+    /**
+     * @brief decodeVector
+     * @param json
+     * @param vector
+     * @return true if decoded sucessfully
+     */
+    static bool decodeVector(const QJsonArray& json, std::vector<double>& vector);
 
-        return array;
-    }
-
-    static bool decodeVector(const QJsonArray& json, std::vector<double>& vector)
-    {
-        if (json.size() != vector.size())
-        {
-            return false;
-        }
-
-        for (int i = 0; i < vector.size(); ++i)
-        {
-            vector[i] = json[i].toDouble();
-        }
-
-        return true;
-    }
-
+    void setDestination(std::vector<double> goal);
 
 private:
 
-    double     timeHorizon;
-    double     maxSpeed;
-    double     neighborDistance;
-    double     timeStep;
-    int        maxNeighbors;
-
-    std::vector<double> position;
-    std::vector<double> destination;
-    std::vector<double> velocity;
-    std::vector<double> newVelocity;
-    std::vector<double> preferenceVelocity;
-
-    // constrain lines
-    std::vector<Line>   orcaLines;
-    KDTree*             obstaclesTree;
+    class Private;
+    Private* d;
 };
 
 }
