@@ -1,9 +1,6 @@
 #include "rvo.h"
 
 #include <math.h>
-#include <stdlib.h>
-#include <algorithm>
-#include <stdexcept>
 
 namespace ClearPath
 {
@@ -175,16 +172,12 @@ int RVO::checkCollision(const std::vector<Line>&   lines,
         // Verify Linear constraint
         if (det2D(lines.at(lineID).direction, vectorSubstract(lines.at(lineID).point, newVelocity)) > 0.0)
         {
-            // There will be collision with lineID, try to compute new velocity to avoid
-            // collision
-
-            // in Java : final Double[] tempResult = newVelocity.clone();
+            // There will be collision with lineID, try to compute new velocity to avoid collision
             const std::vector<double> tempResult = newVelocity;
 
             if (!avoidCollisionWithLine(lines, lineID, maxSpeed, optimizationVelocity, directionOptimal, newVelocity))
             {
-                // If can not find another result that satisfy an obstacle i => return the id of
-                // obstacle where it fails
+                // If can not find another result that satisfy an obstacle i => return the id of obstacle where it fails
                 newVelocity = tempResult;
 
                 break;
@@ -254,7 +247,6 @@ std::vector<double> RVO::collisionFreeVelocity(const std::vector<Line>& lines,
                     }
                 }
 
-                // final double[] direction = vectorSubstract(lines.get(j).direction, lines.get(i).direction);
                 std::vector<double> direction = vectorSubstract(lines.at(j).direction, lines.at(i).direction);
 
                 double directionNorm = sqrt(vectorProduct(direction, direction));
@@ -264,7 +256,6 @@ std::vector<double> RVO::collisionFreeVelocity(const std::vector<Line>& lines,
                 projectedLines.push_back(Line(point, direction));
             }
 
-            // en Java : final double[len_velocity] tempResult;
             const std::vector<double> tempResult = velocity;
 
             const std::vector<double> optimizationVelocity = { -lines.at(i).direction[1], lines.at(i).direction[0] };
