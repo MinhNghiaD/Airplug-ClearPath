@@ -80,10 +80,9 @@ void SynchronizerBase::processSYNCMessage(ACLMessage& message)
     if (content[QLatin1String("fromInitiator")].toBool())
     {
         ACLMessage newMessage(ACLMessage::SYNC);
+        qDebug() << d->siteID << "receive SYNC from initiator, send state message";
 
         emit signalSendState(newMessage);
-
-        qDebug() << d->siteID << "receive SYNC from initiator, send state message";
     }
 }
 

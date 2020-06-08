@@ -34,7 +34,9 @@ EnvironmentManager* EnvironmentManager::instance = nullptr;
 EnvironmentManager *EnvironmentManager::init()
 {
     if (instance)
+    {
         delete instance;
+    }
 
     instance = new EnvironmentManager();
 
@@ -50,7 +52,9 @@ EnvironmentManager* EnvironmentManager::init(double timeStep,
                                              std::vector<double> velocity)
 {
     if (instance)
+    {
         delete instance;
+    }
 
     instance = new EnvironmentManager(timeStep,
                                       neighborDistance,
@@ -141,23 +145,7 @@ CollisionAvoidanceManager* EnvironmentManager::addAgent(const QString& id,
                                                         std::vector<double> position,
                                                         std::vector<double> destination)
 {
-    addAgent(id, position, destination, d->velocity, d->timeHorizon, d->timeStep, d->maxSpeed, d->neighborDistance, d->maxNeighbors);
-}
-
-CollisionAvoidanceManager* EnvironmentManager::addAgent(const QString& id,
-                                                        CollisionAvoidanceManager* agent)
-{
-    if (agent == nullptr)
-    {
-        return nullptr;
-    }
-
-    if(d->obstaclesTree.add(id, agent))
-    {
-        return agent;
-    }
-
-    return nullptr;
+    return addAgent(id, position, destination, d->velocity, d->timeHorizon, d->timeStep, d->maxSpeed, d->neighborDistance, d->maxNeighbors);
 }
 
 void EnvironmentManager::update()

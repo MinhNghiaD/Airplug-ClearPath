@@ -122,9 +122,6 @@ public:
                                         std::vector<double> position,
                                         std::vector<double> destination);
 
-    CollisionAvoidanceManager* addAgent(const QString& id,
-                                        CollisionAvoidanceManager* agent);
-
 private:
 
     explicit EnvironmentManager();

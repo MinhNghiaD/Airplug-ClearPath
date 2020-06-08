@@ -65,6 +65,26 @@ void AgentController::init(const QCoreApplication& app)
 {
     ApplicationController::init(app);
 
+    // All Bas will subscribe to local NET
+    m_communication->subscribeLocalHost(QLatin1String("NET"));
+
+    ACLMessage pong(ACLMessage::PONG);
+    QJsonObject content;
+    content[QLatin1String("isNew")] = true;
+    pong.setContent(content);
+
+    sendMessage(pong, QString(), QString(), QString());
+
+    // TODO init GUI
+    //State agentState = d->guiAgent->getState();
+    double agentPosX = 0.0;
+    double agentPosY = 0.0;
+
+    d->environmentMngr  = EnvironmentManager::init(0.25, 15, 10, 5, 2, 2, {0, 0});
+    d->localAgent       = d->environmentMngr->addAgent(siteID(), m_optionParser.startPoint, m_optionParser.goals.at(0));
+
+    // wait for network is establish and init synchronizer
+    QThread::msleep(5000);
     d->synchronizer = new SynchronizerBase(siteID());
 
     connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
@@ -76,41 +96,9 @@ void AgentController::init(const QCoreApplication& app)
     connect(d->synchronizer, &SynchronizerBase::signalDoStep,
             this,            &AgentController::slotDoStep, Qt::DirectConnection);
 
-    // TODO init GUI
-    //State agentState = d->guiAgent->getState();
-    double agentPosX = 0.0;
-    double agentPosY = 0.0;
-
-    // TODO
-    d->localAgent = new CollisionAvoidanceManager(
-                        std::vector<double>{agentPosX, agentPosY},
-                        std::vector<double>{0., 0.},
-                        std::vector<double>{0., 0.},
-                        0.,
-                        0.,
-                        0.,
-                        0.,
-                        0,
-                        nullptr);
-
-    d->environmentMngr = EnvironmentManager::init(0.25, 15, 10, 5, 2, 2, {0, 0});
-
-    // All Bas will subscribe to local NET
-    m_communication->subscribeLocalHost(QLatin1String("NET"));
-
-    ACLMessage pong(ACLMessage::PONG);
-    QJsonObject content;
-    content[QLatin1String("isNew")] = true;
-    pong.setContent(content);
-
-    sendMessage(pong, QString(), QString(), QString());
-
-
-
-    // wait for network is establish and init synchronizer
-    QThread::msleep(5000);
     d->synchronizer->init();
 }
+
 
 void AgentController::slotReceiveMessage(Header& header, Message& message)
 {
@@ -129,6 +117,7 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
             ++(*m_clock);
 
             break;
+
         default:
             VectorClock* senderClock = aclMessage->getTimeStamp();
 
@@ -151,7 +140,11 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
                 // decode the content of message to update KD Tree in environment manager
                 QJsonObject content = aclMessage->getContent();
 
-                d->environmentMngr->setInfo(senderClock->getSiteID(), content[QLatin1String("info")].toObject());
+                if (senderClock && content.contains(QLatin1String("info")))
+                {
+                    //qDebug() << siteID() << "reveice infor from" << senderClock->getSiteID();
+                    d->environmentMngr->setInfo(senderClock->getSiteID(), content[QLatin1String("info")].toObject());
+                }
             }
             else if (aclMessage->getPerformative() == ACLMessage::SYNC_ACK)
             {
@@ -162,20 +155,25 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
     }
 }
 
-
 void AgentController::slotDoStep()
 {
     ++(*m_clock);
+/*
+    QMap<QString, CollisionAvoidanceManager*> agents = d->environmentMngr->getAgents();
 
+    for (QMap<QString, CollisionAvoidanceManager*>::const_iterator iter  = agents.cbegin();
+                                                                   iter != agents.cend();
+                                                                 ++iter)
+    {
+        qDebug() << siteID() << ": " << iter.key() << "position:" << iter.value()->getPosition();
+    }
+*/
     d->environmentMngr->update();
     d->localAgent->update();
 
+    qDebug() << siteID() << "do Step";
+
     // TODO update position in GUI
-
-    QThread::msleep(5000);
-
-    qDebug() << siteID() << "do step";
-
     if (! d->synchronizer->isInitiator())
     {
         // NOTE initiator don't send ack messages
@@ -186,20 +184,20 @@ void AgentController::slotDoStep()
     }
     else
     {
-        QThread::msleep(50);
+        QThread::msleep(5000);
     }
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
 {
-    ++(*m_clock);
+    message.setTimeStamp(++(*m_clock));
 
     sendMessage(message, QString(), QString(), QString());
 }
 
 void AgentController::slotSendState(ACLMessage& message)
 {
-    // collect maxSpeed, position, velocity from local CollisionAvoidanceManager
+    // share local state to construct shared memory
     QJsonObject content = message.getContent();
     content[QLatin1String("info")] = d->localAgent->getInfo();
 
@@ -235,4 +233,5 @@ QJsonObject AgentController::captureLocalState() const
 
     return localState;
 }
+
 }
