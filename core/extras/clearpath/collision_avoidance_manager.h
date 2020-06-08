@@ -14,14 +14,11 @@
 #define COLLISION_AVOIDANCE_MANAGER_H
 
 //Qt include
-#include <QTime>
 #include <QMap>
-#include <QtMath>
 #include <QJsonArray>
 #include <QJsonObject>
 
 // local include
-#include "rvo.h"
 #include "kd_tree.h"
 
 namespace ClearPath

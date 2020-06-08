@@ -1,6 +1,13 @@
 #include "collision_avoidance_manager.h"
 
+// std incldue
 #include <math.h>
+
+// Qt include
+#include <QTime>
+
+// Local include
+#include "rvo.h"
 
 namespace ClearPath
 {
