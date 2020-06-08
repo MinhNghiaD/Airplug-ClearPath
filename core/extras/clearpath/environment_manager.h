@@ -53,6 +53,10 @@ public:
                                      double radius,
                                      double maxSpeed,
                                      std::vector<double> velocity);
+    /**
+     * @brief clean : delete old instant
+     */
+    static void clean();
 
     /**
      * @brief setInfo: update information of distance agents
@@ -116,7 +120,7 @@ public:
 
 private:
 
-    EnvironmentManager();
+    explicit EnvironmentManager();
 
     EnvironmentManager(double timeStep,
                        double neighborDistance,
@@ -126,17 +130,12 @@ private:
                        double maxSpeed,
                        std::vector<double> velocity);
 
+    ~EnvironmentManager();
+
 private:
 
-    double   timeStep;
-    double   globalTime;
-    double   neighborDistance;
-    int      maxNeighbors;
-    double   timeHorizon;
-    double   radius;
-    double   maxSpeed;
-    std::vector<double> velocity;
-    KDTree obstaclesTree;
+    class Private;
+    Private* d;
 
     static EnvironmentManager* instance;
 };

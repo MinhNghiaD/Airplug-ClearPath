@@ -3,42 +3,33 @@
 namespace ClearPath
 {
 
-EnvironmentManager* EnvironmentManager::instance = nullptr;
-
-
-CollisionAvoidanceManager * EnvironmentManager::addAgent(const QString& id,
-                                                         std::vector<double> position,
-                                                         std::vector<double> destination,
-                                                         std::vector<double> velocity,
-                                                         double timeHorizon,
-                                                         double timeStep,
-                                                         double maxSpeed,
-                                                         double neighborDistance,
-                                                         int maxNeighbors)
+class Q_DECL_HIDDEN EnvironmentManager::Private
 {
-    CollisionAvoidanceManager *agent = new CollisionAvoidanceManager( position,
-                                                                      destination,
-                                                                      velocity,
-                                                                      timeHorizon,
-                                                                      timeStep,
-                                                                      maxSpeed,
-                                                                      neighborDistance,
-                                                                      maxNeighbors,
-                                                                      &obstaclesTree);
+public:
 
-    if(obstaclesTree.add(id, agent))
+    Private()
+        : obstaclesTree(KDTree(2))
     {
-        return agent;
     }
 
-    return nullptr;
-}
+    ~Private()
+    {
+    }
 
-QMap<QString, CollisionAvoidanceManager *> EnvironmentManager::getAgents() const
-{
-    return obstaclesTree.getAgents();
-}
+public:
 
+    double   timeStep;
+    double   globalTime;
+    double   neighborDistance;
+    int      maxNeighbors;
+    double   timeHorizon;
+    double   radius;
+    double   maxSpeed;
+    std::vector<double> velocity;
+    KDTree obstaclesTree;
+};
+
+EnvironmentManager* EnvironmentManager::instance = nullptr;
 
 EnvironmentManager *EnvironmentManager::init()
 {
@@ -49,7 +40,6 @@ EnvironmentManager *EnvironmentManager::init()
 
     return instance;
 }
-
 
 EnvironmentManager* EnvironmentManager::init(double timeStep,
                                              double neighborDistance,
@@ -73,6 +63,91 @@ EnvironmentManager* EnvironmentManager::init(double timeStep,
     return instance;
 }
 
+void EnvironmentManager::clean()
+{
+    delete instance;
+    instance = nullptr;
+}
+
+EnvironmentManager *EnvironmentManager::getInstance()
+{
+    // NOTE instance needs to be init properly
+    Q_ASSERT(instance != nullptr);
+
+    return instance;
+}
+
+EnvironmentManager::EnvironmentManager()
+    : d(new Private())
+{
+    d->globalTime = 0;
+    d->timeStep   = 0;
+}
+
+EnvironmentManager::EnvironmentManager(double timeStep,
+                                       double neighborDistance,
+                                       int maxNeighbors,
+                                       double timeHorizon,
+                                       double radius,
+                                       double maxSpeed,
+                                       std::vector<double> velocity)
+    : d(new Private())
+{
+    // set default parameters
+    d->timeStep         = timeStep;
+    d->globalTime       = 0;
+    d->neighborDistance = neighborDistance;
+    d->maxNeighbors     = maxNeighbors;
+    d->timeHorizon      = timeHorizon;
+    d->radius           = radius;
+    d->maxSpeed         = maxSpeed;
+    d->velocity         = velocity;
+}
+
+EnvironmentManager::~EnvironmentManager()
+{
+    delete d;
+}
+
+CollisionAvoidanceManager * EnvironmentManager::addAgent(const QString& id,
+                                                         std::vector<double> position,
+                                                         std::vector<double> destination,
+                                                         std::vector<double> velocity,
+                                                         double timeHorizon,
+                                                         double timeStep,
+                                                         double maxSpeed,
+                                                         double neighborDistance,
+                                                         int maxNeighbors)
+{
+    CollisionAvoidanceManager *agent = new CollisionAvoidanceManager( position,
+                                                                      destination,
+                                                                      velocity,
+                                                                      timeHorizon,
+                                                                      timeStep,
+                                                                      maxSpeed,
+                                                                      neighborDistance,
+                                                                      maxNeighbors,
+                                                                      &(d->obstaclesTree));
+
+    if(d->obstaclesTree.add(id, agent))
+    {
+        return agent;
+    }
+
+    return nullptr;
+}
+
+void EnvironmentManager::doStep()
+{
+    d->obstaclesTree.update();
+    d->globalTime += d->timeStep;
+}
+
+QMap<QString, CollisionAvoidanceManager *> EnvironmentManager::getAgents() const
+{
+    return d->obstaclesTree.getAgents();
+}
+
 bool EnvironmentManager::setInfo(const QString &name, const QJsonObject &info) const
 {
     if (!getAgents().contains(name))
@@ -83,57 +158,14 @@ bool EnvironmentManager::setInfo(const QString &name, const QJsonObject &info) c
     return true;
 }
 
-
-EnvironmentManager *EnvironmentManager::getInstance()
-{
-    // NOTE instance needs to be init properly
-    Q_ASSERT(instance != nullptr);
-
-    return instance;
-}
-
 void EnvironmentManager::setTimeStep(double period)
 {
-    timeStep = period;
-}
-
-EnvironmentManager::EnvironmentManager()
-    : globalTime(0),
-      timeStep(0),
-      obstaclesTree(2)
-{
-}
-
-
-EnvironmentManager::EnvironmentManager(double timeStep,
-                                       double neighborDistance,
-                                       int maxNeighbors,
-                                       double timeHorizon,
-                                       double radius,
-                                       double maxSpeed,
-                                       std::vector<double> velocity)
-    : timeStep(timeStep),
-      globalTime(0),
-      neighborDistance(neighborDistance),
-      maxNeighbors(maxNeighbors),
-      timeHorizon(timeHorizon),
-      radius(radius),
-      maxSpeed(maxSpeed),
-      velocity(velocity),
-      obstaclesTree(2)
-{
-}
-
-
-void EnvironmentManager::doStep()
-{
-    obstaclesTree.update();
-    globalTime += timeStep;
+    d->timeStep = period;
 }
 
 double EnvironmentManager::getAgentRadius() const
 {
-    return radius;
+    return d->radius;
 }
 
 }

@@ -33,7 +33,7 @@ public:
     {
         delete synchronizer;
         delete localAgent;
-        delete environmentMngr;
+        EnvironmentManager::clean();
     }
 
 public:
