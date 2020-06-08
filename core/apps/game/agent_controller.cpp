@@ -83,8 +83,6 @@ void AgentController::init(const QCoreApplication& app)
     d->environmentMngr  = EnvironmentManager::init(0.25, 15, 10, 5, 2, 2, {0, 0});
     d->localAgent       = d->environmentMngr->addAgent(siteID(), m_optionParser.startPoint, m_optionParser.goals.at(0));
 
-    // wait for network is establish and init synchronizer
-    QThread::msleep(5000);
     d->synchronizer = new SynchronizerBase(siteID());
 
     connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
@@ -95,6 +93,9 @@ void AgentController::init(const QCoreApplication& app)
 
     connect(d->synchronizer, &SynchronizerBase::signalDoStep,
             this,            &AgentController::slotDoStep, Qt::DirectConnection);
+
+    // wait for network is establish and init synchronizer
+    QThread::msleep(5000);
 
     d->synchronizer->init();
 }
@@ -158,7 +159,7 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
 void AgentController::slotDoStep()
 {
     ++(*m_clock);
-/*
+
     QMap<QString, CollisionAvoidanceManager*> agents = d->environmentMngr->getAgents();
 
     for (QMap<QString, CollisionAvoidanceManager*>::const_iterator iter  = agents.cbegin();
@@ -167,10 +168,10 @@ void AgentController::slotDoStep()
     {
         qDebug() << siteID() << ": " << iter.key() << "position:" << iter.value()->getPosition();
     }
-*/
+
     d->environmentMngr->update();
     d->localAgent->update();
-
+    ++d->nbStep;
     qDebug() << siteID() << "do Step";
 
     // TODO update position in GUI
