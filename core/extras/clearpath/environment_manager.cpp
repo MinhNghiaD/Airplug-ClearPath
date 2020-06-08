@@ -137,6 +137,13 @@ CollisionAvoidanceManager * EnvironmentManager::addAgent(const QString& id,
     return nullptr;
 }
 
+CollisionAvoidanceManager* EnvironmentManager::addAgent(const QString& id,
+                                                        std::vector<double> position,
+                                                        std::vector<double> destination)
+{
+    addAgent(id, position, destination, d->velocity, d->timeHorizon, d->timeStep, d->maxSpeed, d->neighborDistance, d->maxNeighbors);
+}
+
 void EnvironmentManager::update()
 {
     d->obstaclesTree.update();

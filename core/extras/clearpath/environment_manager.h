@@ -81,7 +81,7 @@ public:
      * @brief getAgents
      * @return the agents of the tree
      */
-    QMap<QString, CollisionAvoidanceManager*> getAgents() const ;
+    QMap<QString, CollisionAvoidanceManager*> getAgents() const;
 
     /**
      * @brief getAgentRadius
@@ -116,6 +116,11 @@ public:
                                         double maxSpeed,
                                         double neighborDistance,
                                         int    maxNeighbors);
+
+
+    CollisionAvoidanceManager* addAgent(const QString& id,
+                                        std::vector<double> position,
+                                        std::vector<double> destination);
 
 private:
 
