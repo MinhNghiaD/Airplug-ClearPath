@@ -5,6 +5,7 @@
  * Date        : 2020-6-4
  * Description : Interface with clearpath algorithm for agents
  *
+ * 2020 by Remi Besoin <remi.besoin@etu.utc.fr>
  * 2020 by Nghia Duong <minhnghiaduong997 at gmail dot com>
  *
  * ============================================================ */
@@ -40,6 +41,10 @@ public:
                                        int    maxNeighbors,
                                        KDTree* tree);
 
+    ~CollisionAvoidanceManager();
+
+public:
+
     std::vector<double> getPosition();
 
     std::vector<double> getVelocity();
@@ -66,8 +71,6 @@ public:
      * @brief Calculate preferenceVelocity using the vectors position and destination
      */
     void setPreferenceVelocity();
-
-    void setDestination(std::vector<double> goal);
 
     /**
      * @brief Indicates whether the goal has been reached
@@ -112,24 +115,12 @@ private:
      */
     static bool decodeVector(const QJsonArray& json, std::vector<double>& vector);
 
+    void setDestination(std::vector<double> goal);
 
 private:
 
-    double     timeHorizon;
-    double     maxSpeed;
-    double     neighborDistance;
-    double     timeStep;
-    int        maxNeighbors;
-
-    std::vector<double> position;
-    std::vector<double> destination;
-    std::vector<double> velocity;
-    std::vector<double> newVelocity;
-    std::vector<double> preferenceVelocity;
-
-    // constrain lines
-    std::vector<Line>   orcaLines;
-    KDTree*             obstaclesTree;
+    class Private;
+    Private* d;
 };
 
 }
