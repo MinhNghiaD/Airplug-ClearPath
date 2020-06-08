@@ -202,7 +202,6 @@ void AgentController::slotSendMessage(ACLMessage& message)
 void AgentController::slotSendState(ACLMessage& message)
 {
     // collect maxSpeed, position, velocity from local CollisionAvoidanceManager
-    // Put in QJsonObject and put it in the message (envelop) to send to NET
     QJsonObject content = message.getContent();
     content[QLatin1String("info")] = d->localAgent->getInfo();
 

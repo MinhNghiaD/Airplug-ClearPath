@@ -59,9 +59,10 @@ public:
 
     /**
      * @brief Indicates whether the goal has been reached
+     * @param localAgent : local agent or distance agent
      * @return If distance to destination is superior to 400 then return false, else return true
      */
-    bool reachedGoal();
+    bool reachedGoal(bool localAgent = false);
 
     /**
      * @brief setInfo : use for updating information of distance agent

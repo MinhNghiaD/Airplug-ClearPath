@@ -31,6 +31,7 @@ public:
           maxSpeed(maxSpeed),
           neighborDistance(neighborDistance),
           maxNeighbors(maxNeighbors),
+          isFinished(false),
           obstaclesTree(tree)
     {
     }
@@ -41,17 +42,18 @@ public:
 
 public:
 
-    double timeHorizon;
-    double maxSpeed;
-    double neighborDistance;
-    double timeStep;
-    int    maxNeighbors;
-
     std::vector<double> position;
     std::vector<double> destination;
     std::vector<double> velocity;
     std::vector<double> newVelocity;
     std::vector<double> preferenceVelocity;
+
+    double timeHorizon;
+    double maxSpeed;
+    double neighborDistance;
+    double timeStep;
+    int    maxNeighbors;
+    bool   isFinished;
 
     // constrain lines
     std::vector<Line>   orcaLines;
@@ -112,7 +114,8 @@ bool CollisionAvoidanceManager::setInfo(QJsonObject info)
     success = decodeVector(info[QLatin1String("position")].toArray(), d->position);
     success = decodeVector(info[QLatin1String("velocity")].toArray(), d->velocity);
 
-    d->maxSpeed = info[QLatin1String("maxSpeed")].toDouble();
+    d->maxSpeed   = info[QLatin1String("maxSpeed")].toDouble();
+    d->isFinished = info[QLatin1String("finished")].toBool();
 
     return success;
 }
@@ -124,6 +127,7 @@ QJsonObject CollisionAvoidanceManager::getInfo()
     info[QLatin1String("position")] = encodeVector(d->position);
     info[QLatin1String("velocity")] = encodeVector(d->velocity);
     info[QLatin1String("maxSpeed")] = d->maxSpeed;
+    info[QLatin1String("finished")] = d->isFinished;
 
     return info;
 }
@@ -281,18 +285,23 @@ void CollisionAvoidanceManager::setPreferenceVelocity()
     d->preferenceVelocity[1] += distance * sin(angle);
 }
 
-bool CollisionAvoidanceManager::reachedGoal()
+bool CollisionAvoidanceManager::reachedGoal(bool localAgent)
 {
-    std::vector<double> distanceToGoal = RVO::vectorSubstract(d->position, d->destination);
-
-    const double sqrDistance = RVO::vectorProduct(distanceToGoal, distanceToGoal);
-
-    if (sqrDistance > 400)
+    if (localAgent)
     {
-        return false;
+        std::vector<double> distanceToGoal = RVO::vectorSubstract(d->position, d->destination);
+
+        const double sqrDistance = RVO::vectorProduct(distanceToGoal, distanceToGoal);
+
+        if (sqrDistance > 400)
+        {
+            d->isFinished = false;
+        }
+
+        d->isFinished = true;
     }
 
-    return true;
+    return d->isFinished;
 }
 
 QJsonArray CollisionAvoidanceManager::encodeVector(const std::vector<double>& vector)

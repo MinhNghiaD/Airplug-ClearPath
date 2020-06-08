@@ -148,14 +148,24 @@ QMap<QString, CollisionAvoidanceManager *> EnvironmentManager::getAgents() const
     return d->obstaclesTree.getAgents();
 }
 
-bool EnvironmentManager::setInfo(const QString &name, const QJsonObject &info) const
+void EnvironmentManager::setInfo(const QString &name, const QJsonObject &info) const
 {
     if (!getAgents().contains(name))
-        return false;
+    {
+        CollisionAvoidanceManager *agent = new CollisionAvoidanceManager( {0, 0},
+                                                                          {0, 0},
+                                                                          {0, 0},
+                                                                          d->timeHorizon,
+                                                                          d->timeStep,
+                                                                          d->maxSpeed,
+                                                                          d->neighborDistance,
+                                                                          d->maxNeighbors,
+                                                                          &(d->obstaclesTree));
+
+        d->obstaclesTree.add(name, agent);
+    }
 
     getAgents()[name]->setInfo(info);
-
-    return true;
 }
 
 void EnvironmentManager::setTimeStep(double period)

@@ -62,9 +62,8 @@ public:
      * @brief setInfo: update information of distance agents
      * @param name
      * @param info
-     * @return
      */
-    bool setInfo(const QString& name, const QJsonObject& info) const;
+    void setInfo(const QString& name, const QJsonObject& info) const;
 
     /**
      * @brief setTimeStep: setter for TimeStep value of environment
