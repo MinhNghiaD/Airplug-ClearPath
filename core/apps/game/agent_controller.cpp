@@ -22,7 +22,7 @@ public:
 
     Private(Board* board)
         : board(board),
-          nbSequence(0),
+          nbStep(0),
           synchronizer(nullptr),
           localAgent(nullptr),
           environmentMngr(nullptr)
@@ -32,7 +32,6 @@ public:
     ~Private()
     {
         delete synchronizer;
-        delete localAgent;
         EnvironmentManager::clean();
     }
 
@@ -41,7 +40,7 @@ public:
     Board*      board;
     Agent*      guiAgent;
 
-    int         nbSequence;
+    int         nbStep;
 
     SynchronizerBase* synchronizer;
     CollisionAvoidanceManager* localAgent;
@@ -77,8 +76,7 @@ void AgentController::init(const QCoreApplication& app)
     connect(d->synchronizer, &SynchronizerBase::signalDoStep,
             this,            &AgentController::slotDoStep, Qt::DirectConnection);
 
-    // Agent State or std::vector<double>{0., 0.}
-    // NOTE: GUI later
+    // TODO init GUI
     //State agentState = d->guiAgent->getState();
     double agentPosX = 0.0;
     double agentPosY = 0.0;
