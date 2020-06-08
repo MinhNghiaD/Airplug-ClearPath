@@ -16,7 +16,6 @@
 // Qt include
 #include <QString>
 #include <QJsonObject>
-#include <QVector>
 
 // local include
 #include "kd_tree.h"
@@ -53,7 +52,7 @@ public:
                                      double timeHorizon,
                                      double radius,
                                      double maxSpeed,
-                                     QVector<double> velocity);
+                                     std::vector<double> velocity);
 
     /**
      * @brief setInfo: update information of distance agents
@@ -94,6 +93,7 @@ public:
 
     /**
      * @brief addAgent: add agent with specified parameters to the tree
+     * @param id
      * @param position
      * @param destination
      * @param velocity
@@ -104,9 +104,10 @@ public:
      * @param maxNeighbors
      * @return
      */
-    CollisionAvoidanceManager* addAgent(QVector<double> position,
-                                        QVector<double> destination,
-                                        QVector<double> velocity,
+    CollisionAvoidanceManager* addAgent(const QString& id,
+                                        std::vector<double> position,
+                                        std::vector<double> destination,
+                                        std::vector<double> velocity,
                                         double timeHorizon,
                                         double timeStep,
                                         double maxSpeed,
@@ -123,7 +124,7 @@ private:
                        double timeHorizon,
                        double radius,
                        double maxSpeed,
-                       QVector<double> velocity);
+                       std::vector<double> velocity);
 
 private:
 
@@ -134,7 +135,7 @@ private:
     double   timeHorizon;
     double   radius;
     double   maxSpeed;
-    QVector<double> velocity;
+    std::vector<double> velocity;
     KDTree obstaclesTree;
 
     static EnvironmentManager* instance;
