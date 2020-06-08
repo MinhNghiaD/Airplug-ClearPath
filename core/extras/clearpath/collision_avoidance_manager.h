@@ -108,7 +108,7 @@ private:
      * @brief decodeVector
      * @param json
      * @param vector
-     * @return
+     * @return true if decoded sucessfully
      */
     static bool decodeVector(const QJsonArray& json, std::vector<double>& vector);
 

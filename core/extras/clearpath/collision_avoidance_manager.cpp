@@ -6,14 +6,14 @@ namespace ClearPath
 {
 
     CollisionAvoidanceManager::CollisionAvoidanceManager(const std::vector<double>& position,
-                                       const std::vector<double>& destination,
-                                       const std::vector<double>& velocity,
-                                       double timeHorizon,
-                                       double timeStep,
-                                       double maxSpeed,
-                                       double neighborDistance,
-                                       int    maxNeighbors,
-                                       KDTree* tree)
+                                                         const std::vector<double>& destination,
+                                                         const std::vector<double>& velocity,
+                                                         double timeHorizon,
+                                                         double timeStep,
+                                                         double maxSpeed,
+                                                         double neighborDistance,
+                                                         int    maxNeighbors,
+                                                         KDTree* tree)
         : position(position),
           destination(destination),
           velocity(velocity),
@@ -25,7 +25,6 @@ namespace ClearPath
           obstaclesTree(tree),
           orcaLines(std::vector<Line>())
     {
-        // Prototype
     }
 
     std::vector<double> CollisionAvoidanceManager::getPosition()
@@ -38,7 +37,7 @@ namespace ClearPath
         return velocity;
     }
 
-    void CollisionAvoidanceManager::addNeighborOrcaLine(QMap<double, QVector<KDNode*>> neighbors)
+    void CollisionAvoidanceManager::addNeighborOrcaLine(QMap<double, QVector<KDNode*> > neighbors)
     {
         const double invTimeHorizon = 1 / timeHorizon;
 
@@ -46,35 +45,32 @@ namespace ClearPath
         {
             for (KDNode* node : neighbors.value(key))
             {
-
                 CollisionAvoidanceManager* neighbor = node->getAgent();
 
                 const std::vector<double> relativePosition = RVO::vectorSubstract(neighbor->getPosition(), position);
                 const std::vector<double> relativeVelocity = RVO::vectorSubstract(velocity, neighbor->getVelocity());
 
-                const double distSq = RVO::vectorProduct(relativePosition, relativePosition);
-                const double combinedmaxSpeed = maxSpeed + neighbor->maxSpeed;
+                const double distSq             = RVO::vectorProduct(relativePosition, relativePosition);
+                const double combinedmaxSpeed   = maxSpeed + neighbor->maxSpeed;
                 const double combinedmaxSpeedSq = pow(combinedmaxSpeed, 2);
 
-                std::vector<double> p1(2);
-                std::vector<double> p2(2);
-                Line line(p1, p2);
+                Line line(std::vector<double>(2), std::vector<double>(2));
                 std::vector<double> u(2);
 
                 if (distSq > combinedmaxSpeedSq)
                 {
                     /* No collision. */
                     const std::vector<double> w = RVO::vectorSubstract(relativeVelocity,
-                            RVO::scalarProduct(relativePosition, invTimeHorizon));
+                                                  RVO::scalarProduct(relativePosition, invTimeHorizon));
                     /* Vector from cutoff center to relative velocity. */
                     const double wLengthSq = RVO::vectorProduct(w, w);
 
                     const double dotProduct1 = RVO::vectorProduct(w, relativePosition);
 
-                    if ((dotProduct1 < 0.0f) && (pow(dotProduct1, 2) > (combinedmaxSpeedSq * wLengthSq)))
+                    if ((dotProduct1 < 0.0) && (pow(dotProduct1, 2) > (combinedmaxSpeedSq * wLengthSq)))
                     {
                         /* Project on cut-off circle. */
-                        const double wLength = sqrt(wLengthSq);
+                        const double wLength            = sqrt(wLengthSq);
                         const std::vector<double> unitW = RVO::scalarProduct(w, 1 / wLength);
 
                         line.direction[0] = unitW[1];
@@ -111,9 +107,10 @@ namespace ClearPath
                     const double invTimeStep = 1.0 / timeStep;
 
                     /* Vector from cutoff center to relative velocity. */
-                    const std::vector<double> w = RVO::vectorSubstract(relativeVelocity, RVO::scalarProduct(relativePosition, invTimeStep));
+                    const std::vector<double> w = RVO::vectorSubstract(relativeVelocity,
+                                                                       RVO::scalarProduct(relativePosition, invTimeStep));
 
-                    const double wLength = sqrt(RVO::vectorProduct(w, w));
+                    const double wLength            = sqrt(RVO::vectorProduct(w, w));
                     const std::vector<double> unitW = RVO::scalarProduct(w, 1 / wLength);
 
                     line.direction[0] =  unitW[1];
@@ -145,7 +142,7 @@ namespace ClearPath
         }
     }
 
-    QMap<double, QVector<KDNode*>> CollisionAvoidanceManager::getClosestNeighbors()
+    QMap<double, QVector<KDNode*> > CollisionAvoidanceManager::getClosestNeighbors()
     {
         double searchRange = pow(neighborDistance, 2);
 
@@ -231,16 +228,17 @@ namespace ClearPath
     QJsonObject CollisionAvoidanceManager::captureState()
     {
         QJsonObject state;
-        state[QLatin1String("timeHorizon")] = timeHorizon;
-        state[QLatin1String("maxSpeed")] = maxSpeed;
-        state[QLatin1String("neighborDistance")] = neighborDistance;
-        state[QLatin1String("timeStep")] = timeStep;
-        state[QLatin1String("maxNeighbors")] = maxNeighbors;
-        state[QLatin1String("position")] = encodeVector(position);
-        state[QLatin1String("destination")] = encodeVector(destination);
-        state[QLatin1String("velocity")] = encodeVector(velocity);
-        state[QLatin1String("newVelocity")] = encodeVector(newVelocity);
+        state[QLatin1String("timeHorizon")]        = timeHorizon;
+        state[QLatin1String("maxSpeed")]           = maxSpeed;
+        state[QLatin1String("neighborDistance")]   = neighborDistance;
+        state[QLatin1String("timeStep")]           = timeStep;
+        state[QLatin1String("maxNeighbors")]       = maxNeighbors;
+        state[QLatin1String("position")]           = encodeVector(position);
+        state[QLatin1String("destination")]        = encodeVector(destination);
+        state[QLatin1String("velocity")]           = encodeVector(velocity);
+        state[QLatin1String("newVelocity")]        = encodeVector(newVelocity);
         state[QLatin1String("preferenceVelocity")] = encodeVector(preferenceVelocity);
+
         return state;
     }
 
