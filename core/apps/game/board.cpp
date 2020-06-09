@@ -37,8 +37,8 @@ public:
     QRgb color;
 };
 
-Board::Board(qreal x, qreal y, qreal width, qreal height)
-    : QGraphicsScene(x, y, width, height),
+Board::Board()
+    : QGraphicsScene(0, 0, VIEW_WIDTH, VIEW_HEIGHT),
       d(new Private())
 {
 }

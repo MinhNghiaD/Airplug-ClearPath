@@ -26,7 +26,7 @@ class Board : public QGraphicsScene
 {
 public:
 
-    Board(qreal x, qreal y, qreal width, qreal height);
+    Board();
     ~Board();
 
 public:

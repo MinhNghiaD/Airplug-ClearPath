@@ -20,8 +20,8 @@ class Q_DECL_HIDDEN AgentController::Private
 {
 public:
 
-    Private(Board* board)
-        : board(board),
+    Private()
+        : board(nullptr),
           nbStep(0),
           synchronizer(nullptr),
           localAgent(nullptr),
@@ -31,6 +31,7 @@ public:
 
     ~Private()
     {
+        delete board;
         delete synchronizer;
         EnvironmentManager::clean();
     }
@@ -48,9 +49,9 @@ public:
 
 
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-AgentController::AgentController(Board* board, QObject* parent)
+AgentController::AgentController(QObject* parent)
     : ApplicationController(QLatin1String("RVO"), parent),
-      d(new Private(board))
+      d(new Private())
 {
     setObjectName(QLatin1String("Agent Controller"));
 }
@@ -74,10 +75,10 @@ void AgentController::init(const QCoreApplication& app)
 
     sendMessage(pong, QString(), QString(), QString());
 
-    // TODO init GUI
-    //State agentState = d->guiAgent->getState();
-    double agentPosX = 0.0;
-    double agentPosY = 0.0;
+    if (hasGUI())
+    {
+        d->board = new Board();
+    }
 
     d->environmentMngr  = EnvironmentManager::init(0.25, 15, 10, 5, 2, 2, {0, 0});
     d->localAgent       = d->environmentMngr->addAgent(siteID(), m_optionParser.startPoint, m_optionParser.goals.at(0));
@@ -158,16 +159,19 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
 void AgentController::slotDoStep()
 {
     ++(*m_clock);
-/*
-    QMap<QString, CollisionAvoidanceManager*> agents = d->environmentMngr->getAgents();
 
-    for (QMap<QString, CollisionAvoidanceManager*>::const_iterator iter  = agents.cbegin();
-                                                                   iter != agents.cend();
-                                                                 ++iter)
+    if (hasGUI())
     {
-        qDebug() << siteID() << ": " << iter.key() << "position:" << iter.value()->getPosition();
+        QMap<QString, CollisionAvoidanceManager*> agents = d->environmentMngr->getAgents();
+
+        for (QMap<QString, CollisionAvoidanceManager*>::const_iterator iter  = agents.cbegin();
+                                                                       iter != agents.cend();
+                                                                     ++iter)
+        {
+            d->board->updateAgentState(iter.key(), iter.value()->getPosition());
+        }
     }
-*/
+
     d->environmentMngr->update();
     d->localAgent->update();
     ++d->nbStep;
@@ -225,14 +229,16 @@ QJsonObject AgentController::captureLocalState() const
 {
     ++(*m_clock);
 
-    // capture agent state
-    QJsonObject applicationState = d->localAgent->captureState();
-
     QJsonObject localState;
     localState[QLatin1String("options")] = m_optionParser.convertToJson();
-    localState[QLatin1String("state")]   = applicationState;
+    localState[QLatin1String("state")]   = d->localAgent->captureState();
 
     return localState;
+}
+
+Board* AgentController::getBoard() const
+{
+    return d->board;
 }
 
 }

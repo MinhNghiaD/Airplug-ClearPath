@@ -12,6 +12,7 @@
 
 //Qt includes
 #include <QApplication>
+#include <QGraphicsView>
 #include <QThread>
 #include <QDebug>
 
@@ -25,41 +26,31 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("GAM");
 
-    Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
-    AgentController* controller = new AgentController(board);
+    AgentController* controller = new AgentController();
     controller->init(app);
 
-    return app.exec();
-    delete controller;
-    delete board;
-/*
-    QThread* eventThread = new QThread();
+    Board* board = controller->getBoard();
+    QGraphicsView* view = nullptr;
 
-    Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
 
-    AgentController* controller = new AgentController(board);
-    controller->moveToThread(eventThread);
-    eventThread->start();
-    controller->init(app);
-
-    World* view = nullptr;
-
-    if (controller->hasGUI())
+    if (board)
     {
-        qDebug() << "------------------------- Start with GUI -------------------------------";
-
-        view = new World(app, board);
+        view = new QGraphicsView(board);
         view->show();
     }
 
     return app.exec();
+    delete view;
+    delete controller;
+/*
+    QThread* eventThread = new QThread();
+
+    controller->moveToThread(eventThread);
+    eventThread->start();
 
     eventThread->quit();
     eventThread->wait();
 
     delete eventThread;
-    delete controller;
-    delete view;
-    delete board;
 */
 }
