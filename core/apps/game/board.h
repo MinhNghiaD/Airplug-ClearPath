@@ -26,14 +26,17 @@ class Board : public QGraphicsScene
 {
 public:
 
-    Board();
+    Board(QObject* parent = nullptr);
     ~Board();
 
 public:
 
     void addAgent(const QString& siteID);
-    void addAgent(const QString& siteID, QGraphicsEllipseItem* agent);
     void updateAgentState(const QString& siteID, std::vector<double> position);
+
+private:
+
+    Q_SLOT void slotUpdateScene();
 
 private:
 

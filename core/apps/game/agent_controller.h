@@ -39,7 +39,7 @@ public:
     //void pause(bool b);
 
     QJsonObject captureLocalState() const override;
-    Board* getBoard() const;
+    void setBoard(Board* board);
 
 public:
 

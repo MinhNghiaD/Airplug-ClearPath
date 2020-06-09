@@ -1,7 +1,6 @@
 #include "agent_controller.h"
 
 // Qt includes
-//#include <QTimer>
 #include <QDebug>
 #include <QThread>
 
@@ -31,16 +30,15 @@ public:
 
     ~Private()
     {
-        delete board;
         delete synchronizer;
         EnvironmentManager::clean();
     }
 
 public:
 
-    Board*      board;
+    Board* board;
 
-    int         nbStep;
+    int nbStep;
 
     SynchronizerBase* synchronizer;
     CollisionAvoidanceManager* localAgent;
@@ -74,11 +72,6 @@ void AgentController::init(const QCoreApplication& app)
     pong.setContent(content);
 
     sendMessage(pong, QString(), QString(), QString());
-
-    if (hasGUI())
-    {
-        d->board = new Board();
-    }
 
     d->environmentMngr  = EnvironmentManager::init(0.25, 15, 10, 5, 2, 2, {0, 0});
     d->localAgent       = d->environmentMngr->addAgent(siteID(), m_optionParser.startPoint, m_optionParser.goals.at(0));
@@ -160,7 +153,7 @@ void AgentController::slotDoStep()
 {
     ++(*m_clock);
 
-    if (hasGUI())
+    if (d->board)
     {
         QMap<QString, CollisionAvoidanceManager*> agents = d->environmentMngr->getAgents();
 
@@ -175,9 +168,7 @@ void AgentController::slotDoStep()
     d->environmentMngr->update();
     d->localAgent->update();
     ++d->nbStep;
-    qDebug() << siteID() << "do Step";
 
-    // TODO update position in GUI
     if (! d->synchronizer->isInitiator())
     {
         // NOTE initiator don't send ack messages
@@ -189,8 +180,10 @@ void AgentController::slotDoStep()
     else
     {
         // time step
-        QThread::msleep(5000);
+        QThread::msleep(FRAME_PERIOD_MS);
     }
+
+    qDebug() << siteID() << "do Step";
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
@@ -236,9 +229,9 @@ QJsonObject AgentController::captureLocalState() const
     return localState;
 }
 
-Board* AgentController::getBoard() const
+void AgentController::setBoard(Board* board)
 {
-    return d->board;
+    d->board = board;
 }
 
 }

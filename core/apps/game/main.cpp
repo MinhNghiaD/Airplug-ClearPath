@@ -29,19 +29,23 @@ int main(int argc, char *argv[])
     AgentController* controller = new AgentController();
     controller->init(app);
 
-    Board* board = controller->getBoard();
+    Board* board = nullptr;
     QGraphicsView* view = nullptr;
 
 
-    if (board)
+    if (controller->hasGUI())
     {
+        board = new Board();
+        controller->setBoard(board);
         view = new QGraphicsView(board);
         view->show();
     }
 
+
     return app.exec();
-    delete view;
     delete controller;
+    delete view;
+    delete board;
 /*
     QThread* eventThread = new QThread();
 

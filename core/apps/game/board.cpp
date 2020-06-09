@@ -2,8 +2,9 @@
 
 // Qt includes
 //#include <QRectF>
-
+#include <QTimer>
 #include <QHash>
+#include <QPair>
 #include <QDebug>
 
 namespace ClearPathApplication
@@ -15,36 +16,36 @@ public:
     Private()
         : color(5)
     {
+        timer.setInterval(FRAME_PERIOD_MS);
     }
 
     ~Private()
     {
-        QHash<QString, QGraphicsEllipseItem*>::iterator iter = agentItems.begin();
-
-        while (iter != agentItems.end())
-        {
-            delete iter.value();
-            iter = agentItems.erase(iter);
-        }
     }
 
 public:
 
     // TODO create border and static obstacles
     //QRectF          border;
-
-    QHash<QString, QGraphicsEllipseItem*> agentItems;
     QRgb color;
+    QTimer timer;
+
+    QHash<QString, QPair<QGraphicsEllipseItem*, std::vector<double> > > agentItems;
 };
 
-Board::Board()
-    : QGraphicsScene(0, 0, VIEW_WIDTH, VIEW_HEIGHT),
+Board::Board(QObject* parent)
+    : QGraphicsScene(0, 0, VIEW_WIDTH, VIEW_HEIGHT, parent),
       d(new Private())
 {
+    connect(&(d->timer), &QTimer::timeout,
+            this,        &Board::slotUpdateScene, Qt::DirectConnection);
+
+    d->timer.start();
 }
 
 Board::~Board()
 {
+    clear();
     delete d;
 }
 
@@ -57,29 +58,41 @@ void Board::addAgent(const QString& siteID)
         newAgent->setBrush(QBrush( Qt::GlobalColor(d->color) ));
         d->color += 5;
 
-        addAgent(siteID, newAgent);
+        d->agentItems[siteID].first = newAgent;
+
+        qDebug() << "add gui for agent" << siteID;
     }
-}
-
-void Board::addAgent(const QString& siteID, QGraphicsEllipseItem* agent)
-{
-    d->agentItems[siteID] = agent;
-
-    addItem(agent);
 }
 
 void Board::updateAgentState(const QString& siteID, std::vector<double> position)
 {
     Q_ASSERT(position.size() == 2);
 
-    qDebug() << "update state for agent" << siteID;
-
     if (! d->agentItems.contains(siteID))
     {
         addAgent(siteID);
     }
 
-    d->agentItems[siteID]->setPos(position[0], position[1]);
+    d->agentItems[siteID].second = position;
+}
+
+void Board::slotUpdateScene()
+{
+    QList<QGraphicsItem*> addedItems = items();
+
+    for (QHash<QString, QPair<QGraphicsEllipseItem*, std::vector<double>  > >::const_iterator iter  = d->agentItems.cbegin();
+                                                                                              iter != d->agentItems.cend();
+                                                                                            ++iter)
+    {
+        if (! addedItems.contains(iter.value().first))
+        {
+            addItem(iter.value().first);
+        }
+
+        iter.value().first->setPos(iter.value().second[0], iter.value().second[1]);
+    }
+
+    qDebug() << "update" << items().size();
 }
 
 }
