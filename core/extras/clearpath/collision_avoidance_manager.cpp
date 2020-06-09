@@ -2,6 +2,7 @@
 
 // std incldue
 #include <math.h>
+#include <random>
 
 // Qt include
 #include <QTime>
@@ -276,15 +277,14 @@ void CollisionAvoidanceManager::setPreferenceVelocity()
     /*
      * pivot a little to avoid deadlocks due to perfect symmetry.
      */
-    /*
-    std::random_device seeder{};
-    std::mt19937 twister{seeder()};
-    std::uniform_int_distribution<> x(0, VIEW_WIDTH - 1 - PLAYER_SIZE);
-    std::uniform_int_distribution<> y(0, VIEW_HEIGHT - 1 - PLAYER_SIZE);
-    */
 
-    const double angle    = std::rand() / (RAND_MAX) * 2 * M_PI;
-    const double distance = std::rand() / (RAND_MAX) * 1;
+    std::random_device seeder{};
+    std::mt19937 gen{seeder()};
+
+    std::normal_distribution<> random(0, RAND_MAX);
+
+    const double angle    = random(gen) / (RAND_MAX) * 2 * M_PI;
+    const double distance = random(gen) / (RAND_MAX) * 0.1;
 
     d->preferenceVelocity[0] += distance * cos(angle);
     d->preferenceVelocity[1] += distance * sin(angle);

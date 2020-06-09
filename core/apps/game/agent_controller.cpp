@@ -183,7 +183,7 @@ void AgentController::slotDoStep()
         QThread::msleep(FRAME_PERIOD_MS);
     }
 
-    qDebug() << siteID() << "do Step";
+    //qDebug() << siteID() << "do Step";
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)

@@ -59,8 +59,6 @@ void Board::addAgent(const QString& siteID)
         d->color += 5;
 
         d->agentItems[siteID].first = newAgent;
-
-        qDebug() << "add gui for agent" << siteID;
     }
 }
 
@@ -89,10 +87,8 @@ void Board::slotUpdateScene()
             addItem(iter.value().first);
         }
 
-        iter.value().first->setPos(iter.value().second[0], iter.value().second[1]);
+        iter.value().first->setPos( (VIEW_WIDTH/ 2 + iter.value().second[0]*5), ( VIEW_HEIGHT/2 + iter.value().second[1]*5));
     }
-
-    qDebug() << "update" << items().size();
 }
 
 }

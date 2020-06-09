@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         {
             iter.value()->update();
 
-            qDebug() << iter.key() << "move to" << iter.value()->getPosition();
+            //qDebug() << iter.key() << "move to" << iter.value()->getPosition();
         }
     }
     while (!reachedGoal(environment));
