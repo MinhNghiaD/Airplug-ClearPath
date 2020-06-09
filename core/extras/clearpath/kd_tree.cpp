@@ -49,16 +49,16 @@ bool KDTree::add(const QString& name, CollisionAvoidanceManager* agent)
     if (d->Root == nullptr)
     {
         d->Root = new KDNode(agent, 0, d->nbDimension);
-
-        d->agents[name] = agent;
     }
     else
     {
-        if (d->Root->insert(agent) != nullptr)
+        if (d->Root->insert(agent) == nullptr)
         {
-            d->agents[name] = agent;
+            return false;
         }
     }
+
+    d->agents[name] = agent;
 
     return true;
 }

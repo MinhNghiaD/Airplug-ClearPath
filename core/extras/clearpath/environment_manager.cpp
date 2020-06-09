@@ -1,5 +1,7 @@
 #include "environment_manager.h"
 
+#include <QDebug>
+
 namespace ClearPath
 {
 
@@ -173,7 +175,11 @@ void EnvironmentManager::setInfo(const QString &name, const QJsonObject &info) c
                                                                           d->maxNeighbors,
                                                                           &(d->obstaclesTree));
 
-        d->obstaclesTree.add(name, agent);
+        if (! d->obstaclesTree.add(name, agent))
+        {
+            qWarning() << "Fail to add node" << name << "into KD-Tree";
+            return;
+        }
     }
 
     getAgents()[name]->setInfo(info);
