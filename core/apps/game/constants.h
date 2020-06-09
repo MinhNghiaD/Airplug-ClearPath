@@ -17,6 +17,6 @@
 
 #define AGENT_RADIUS 15
 
-#define FRAME_PERIOD_MS 20
+#define FRAME_PERIOD_MS 10
 
 #endif // CONSTANTS_H

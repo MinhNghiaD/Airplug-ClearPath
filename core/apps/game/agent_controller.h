@@ -50,6 +50,7 @@ public:
 private:
 
     void sendLocalSnapshot();
+    void updateGui() const;
 
 private:
 

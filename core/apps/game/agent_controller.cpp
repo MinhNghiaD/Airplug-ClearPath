@@ -153,17 +153,7 @@ void AgentController::slotDoStep()
 {
     ++(*m_clock);
 
-    if (d->board)
-    {
-        QMap<QString, CollisionAvoidanceManager*> agents = d->environmentMngr->getAgents();
-
-        for (QMap<QString, CollisionAvoidanceManager*>::const_iterator iter  = agents.cbegin();
-                                                                       iter != agents.cend();
-                                                                     ++iter)
-        {
-            d->board->updateAgentState(iter.key(), iter.value()->getPosition());
-        }
-    }
+    updateGui();
 
     d->environmentMngr->update();
     d->localAgent->update();
@@ -182,8 +172,6 @@ void AgentController::slotDoStep()
         // time step
         QThread::msleep(FRAME_PERIOD_MS);
     }
-
-    //qDebug() << siteID() << "do Step";
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
@@ -232,6 +220,21 @@ QJsonObject AgentController::captureLocalState() const
 void AgentController::setBoard(Board* board)
 {
     d->board = board;
+}
+
+void AgentController::updateGui() const
+{
+    if (d->board)
+    {
+        QMap<QString, CollisionAvoidanceManager*> agents = d->environmentMngr->getAgents();
+
+        for (QMap<QString, CollisionAvoidanceManager*>::const_iterator iter  = agents.cbegin();
+                                                                       iter != agents.cend();
+                                                                     ++iter)
+        {
+            d->board->updateAgentState(iter.key(), iter.value()->getPosition());
+        }
+    }
 }
 
 }
