@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
         board = new Board();
         controller->setBoard(board);
         view = new QGraphicsView(board);
+        view->setWindowTitle(controller->siteID());
         view->show();
     }
 

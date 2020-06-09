@@ -3,6 +3,7 @@
 // Qt includes
 #include <QDebug>
 #include <QThread>
+#include <QtMath>
 
 // Local include
 #include "synchronizer_base.h"
@@ -23,7 +24,6 @@ public:
         : board(nullptr),
           nbStep(0),
           synchronizer(nullptr),
-          localAgent(nullptr),
           environmentMngr(nullptr)
     {
     }
@@ -41,7 +41,7 @@ public:
     int nbStep;
 
     SynchronizerBase* synchronizer;
-    CollisionAvoidanceManager* localAgent;
+    QHash<QString, CollisionAvoidanceManager*> localAgents;
     EnvironmentManager* environmentMngr;
 };
 
@@ -74,7 +74,30 @@ void AgentController::init(const QCoreApplication& app)
     sendMessage(pong, QString(), QString(), QString());
 
     d->environmentMngr  = EnvironmentManager::init(0.25, 15, 10, 5, 2, 2, {0, 0});
-    d->localAgent       = d->environmentMngr->addAgent(siteID(), m_optionParser.startPoint, m_optionParser.goals.at(0));
+
+    int sqrtNbAgent = int(sqrt(NB_AGENTS));
+
+    for (int i = 0; i < sqrtNbAgent; i++)
+    {
+        for (int j = 0; j < sqrtNbAgent; ++j)
+        {
+            std::vector<double> startPoint = {double(m_optionParser.startPoint[0] + i * 10),  double(m_optionParser.startPoint[1] + j * 10)};
+
+            QString agentName = siteID() + "_" + QString::number(i*sqrtNbAgent + j);
+
+            CollisionAvoidanceManager* agent = d->environmentMngr->addAgent(agentName, startPoint, m_optionParser.goals.at(0));
+
+            if (agent == nullptr)
+            {
+                qWarning() << "agent" << agentName << "is null";
+            }
+            else
+            {
+                d->localAgents[agentName] = agent;
+            }
+
+        }
+    }
 
     d->synchronizer     = new SynchronizerBase(siteID());
 
@@ -137,7 +160,13 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
 
                 if (senderClock && content.contains(QLatin1String("info")))
                 {
-                    d->environmentMngr->setInfo(senderClock->getSiteID(), content[QLatin1String("info")].toObject());
+                    QJsonArray infoArray = content[QLatin1String("info")].toArray();
+
+                    for (int i = 0; i < infoArray.size(); ++i)
+                    {
+                        QString agent = infoArray[i].toObject().keys().at(0);
+                        d->environmentMngr->setInfo(agent, infoArray[i].toObject()[agent].toObject());
+                    }
                 }
             }
             else if (performative == ACLMessage::SYNC_ACK)
@@ -156,7 +185,14 @@ void AgentController::slotDoStep()
     updateGui();
 
     d->environmentMngr->update();
-    d->localAgent->update();
+
+    for (QHash<QString, CollisionAvoidanceManager*>::const_iterator iter  = d->localAgents.cbegin();
+                                                                    iter != d->localAgents.cend();
+                                                                  ++iter)
+    {
+        iter.value()->update();
+    }
+
     ++d->nbStep;
 
     if (! d->synchronizer->isInitiator())
@@ -172,6 +208,8 @@ void AgentController::slotDoStep()
         // time step
         QThread::msleep(FRAME_PERIOD_MS);
     }
+
+    qDebug() << siteID() << "do step";
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
@@ -185,12 +223,27 @@ void AgentController::slotSendState(ACLMessage& message)
 {
     // share local state to construct shared memory
     QJsonObject content = message.getContent();
-    content[QLatin1String("info")] = d->localAgent->getInfo();
+
+    QJsonArray infoArray;
+
+    for (QHash<QString, CollisionAvoidanceManager*>::const_iterator iter  = d->localAgents.cbegin();
+                                                                    iter != d->localAgents.cend();
+                                                                  ++iter)
+    {
+        QJsonObject info;
+        info[iter.key()] = iter.value()->getInfo();
+
+        infoArray.append(info);
+    }
+
+    content[QLatin1String("info")] = infoArray;
 
     message.setContent(content);
     message.setTimeStamp(++(*m_clock));
 
     sendMessage(message, QString(), QString(), QString());
+
+    qDebug() << siteID() << "send info";
 }
 
 void AgentController::sendLocalSnapshot()
@@ -212,7 +265,20 @@ QJsonObject AgentController::captureLocalState() const
 
     QJsonObject localState;
     localState[QLatin1String("options")] = m_optionParser.convertToJson();
-    localState[QLatin1String("state")]   = d->localAgent->captureState();
+
+    QJsonArray infoArray;
+
+    for (QHash<QString, CollisionAvoidanceManager*>::const_iterator iter  = d->localAgents.cbegin();
+                                                                    iter != d->localAgents.cend();
+                                                                  ++iter)
+    {
+        QJsonObject info;
+        info[iter.key()] = iter.value()->captureState();
+
+        infoArray.append(info);
+    }
+
+    localState[QLatin1String("state")]   = infoArray;
 
     return localState;
 }

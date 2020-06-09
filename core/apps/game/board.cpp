@@ -56,7 +56,7 @@ void Board::addAgent(const QString& siteID)
         QGraphicsEllipseItem* newAgent = new QGraphicsEllipseItem(0, 0, AGENT_RADIUS, AGENT_RADIUS);
         //newAgent->setFlag(QGraphicsItem::ItemIsFocusable, true);
         newAgent->setBrush(QBrush( Qt::GlobalColor(d->color) ));
-        d->color += 5;
+        d->color += 1;
 
         d->agentItems[siteID].first = newAgent;
     }

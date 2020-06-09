@@ -284,7 +284,7 @@ void CollisionAvoidanceManager::setPreferenceVelocity()
     std::normal_distribution<> random(0, RAND_MAX);
 
     const double angle    = random(gen) / (RAND_MAX) * 2 * M_PI;
-    const double distance = random(gen) / (RAND_MAX) * 0.1;
+    const double distance = random(gen) / (RAND_MAX) * 1;
 
     d->preferenceVelocity[0] += distance * cos(angle);
     d->preferenceVelocity[1] += distance * sin(angle);
