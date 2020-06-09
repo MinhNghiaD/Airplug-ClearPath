@@ -16,7 +16,7 @@
 // std includes
 #include <vector>
 
-// Qt includes
+// Qt include
 #include <QVector>
 
 namespace ClearPath

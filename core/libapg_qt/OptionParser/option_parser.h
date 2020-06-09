@@ -12,6 +12,9 @@
 #ifndef OPTION_PARSER_H
 #define OPTION_PARSER_H
 
+// std include
+#include <vector>
+
 // Qt includes
 #include <QCoreApplication>
 #include <QJsonObject>
@@ -70,6 +73,9 @@ public:
     int     remotePort;
 
     Header::HeaderMode headerMode;
+
+    std::vector<double> startPoint;
+    std::vector<std::vector<double> > goals;
 };
 
 }

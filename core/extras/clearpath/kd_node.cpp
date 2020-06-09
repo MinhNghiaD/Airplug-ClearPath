@@ -86,12 +86,12 @@ KDNode* KDNode::insert(CollisionAvoidanceManager* agent)
     }
 
     KDNode* parent = findParent(nodePos);
-
+/*
     if (nodePos == parent->getPosition())
     {
         return nullptr;
     }
-
+*/
     KDNode* newNode = new KDNode(agent,
                                  ((parent->d->splitAxis + 1) % d->nbDimension),
                                  d->nbDimension);

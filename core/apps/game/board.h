@@ -13,8 +13,11 @@
 #define BOARD_H
 
 #include <QGraphicsScene>
+#include <QGraphicsRectItem>
 
-#include "agent.h"
+
+// local includes
+#include "constants.h"
 
 namespace ClearPathApplication
 {
@@ -23,13 +26,17 @@ class Board : public QGraphicsScene
 {
 public:
 
-    Board(qreal x, qreal y, qreal width, qreal height);
+    Board(QObject* parent = nullptr);
     ~Board();
 
 public:
 
-    void addAgent(const QString& siteID, Agent* agent);
-    void updateAgentState(const State& state);
+    void addAgent(const QString& siteID);
+    void updateAgentState(const QString& siteID, std::vector<double> position);
+
+private:
+
+    Q_SLOT void slotUpdateScene();
 
 private:
 

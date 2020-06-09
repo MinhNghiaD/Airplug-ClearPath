@@ -12,11 +12,11 @@
 
 //Qt includes
 #include <QApplication>
+#include <QGraphicsView>
 #include <QThread>
 #include <QDebug>
 
 //local includes
-#include "world.h"
 #include "agent_controller.h"
 
 using namespace ClearPathApplication;
@@ -26,41 +26,35 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("GAM");
 
-    Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
-    AgentController* controller = new AgentController(board);
+    AgentController* controller = new AgentController();
     controller->init(app);
+
+    Board* board = nullptr;
+    QGraphicsView* view = nullptr;
+
+
+    if (controller->hasGUI())
+    {
+        board = new Board();
+        controller->setBoard(board);
+        view = new QGraphicsView(board);
+        view->show();
+    }
+
 
     return app.exec();
     delete controller;
+    delete view;
     delete board;
 /*
     QThread* eventThread = new QThread();
 
-    Board* board = new Board(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
-
-    AgentController* controller = new AgentController(board);
     controller->moveToThread(eventThread);
     eventThread->start();
-    controller->init(app);
-
-    World* view = nullptr;
-
-    if (controller->hasGUI())
-    {
-        qDebug() << "------------------------- Start with GUI -------------------------------";
-
-        view = new World(app, board);
-        view->show();
-    }
-
-    return app.exec();
 
     eventThread->quit();
     eventThread->wait();
 
     delete eventThread;
-    delete controller;
-    delete view;
-    delete board;
 */
 }
