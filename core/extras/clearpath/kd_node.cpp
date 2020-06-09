@@ -68,7 +68,7 @@ KDNode::KDNode(CollisionAvoidanceManager* agent, int splitAxis, int dimension)
     : d(new Private(agent, splitAxis, dimension))
 {
     Q_ASSERT(splitAxis < dimension);
-    Q_ASSERT(agent->getPosition().size() == dimension);
+    Q_ASSERT(int(agent->getPosition().size()) == dimension);
 }
 
 KDNode::~KDNode()
@@ -80,7 +80,7 @@ KDNode* KDNode::insert(CollisionAvoidanceManager* agent)
 {
     std::vector<double> nodePos = agent->getPosition();
 
-    if (nodePos.size() != d->nbDimension)
+    if (int(nodePos.size()) != d->nbDimension)
     {
         return nullptr;
     }
@@ -230,7 +230,10 @@ double KDNode::getClosestNeighbors(QMap<double, QVector<KDNode*> >& neighborList
 
 void KDNode::updateRange(std::vector<double> pos)
 {
-    if (pos.size() != d->nbDimension) return;
+    if (int(pos.size()) != d->nbDimension)
+    {
+        return;
+    }
 
     for (int i = 0; i < d->nbDimension; i++)
     {
