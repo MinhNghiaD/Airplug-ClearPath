@@ -1,13 +1,10 @@
 #include "board.h"
 
 // Qt includes
-#include <QRectF>
+//#include <QRectF>
 
 #include <QHash>
 #include <QDebug>
-
-// local includes
-
 
 namespace ClearPathApplication
 {
@@ -16,111 +13,29 @@ class Board::Private
 public:
 
     Private()
+        : color(5)
     {
     }
 
     ~Private()
     {
-        // TODO: delete agent
+        QHash<QString, QGraphicsEllipseItem*>::iterator iter = agentItems.begin();
+
+        while (iter != agentItems.end())
+        {
+            delete iter.value();
+            iter = agentItems.erase(iter);
+        }
     }
 
 public:
 
-    void moveAndUpdatePlayer(Agent* agent);
-    void fixCollisions(Agent* agent);
-public:
+    // TODO create border and static obstacles
     //QRectF          border;
 
-    QHash<QString, Agent*> agents;
+    QHash<QString, QGraphicsEllipseItem*> agentItems;
+    QRgb color;
 };
-
-
-void Board::Private::moveAndUpdatePlayer(Agent* agent)
-{
-    agent->move();
-
-    // TODO: broadcast self state for other
-}
-
-/*
-void Board::Private::fixCollisions(Agent* agent)
-{
-    //TODO lazy fixing, might need to be improved
-    QList<QGraphicsItem*> collidiongAgents = agent->collidingItems();
-
-    bool collided = false;
-
-    while(collidiongAgents.size() != 0)
-    {
-        collided = true;
-
-        Agent* col = static_cast<Agent*>(collidiongAgents[0]);
-
-        State& state = agent->getState();
-
-        if(state.xSpeed > 0)
-        {
-            if(state.ySpeed > 0)
-            {
-                agent->setPos(state.x -1, state.y()-1);
-
-                col->setPos(col->x()+1, col->y()+1);
-            }
-            else if(state.ySpeed < 0)
-            {
-                player.setPos(player.x()-1, player.y()+1);
-                col->setPos(col->x()+1, col->y()-1);
-            }
-            else
-            {
-                player.setPos(player.x()-1, player.y());
-                col->setPos(col->x()+1, col->y());
-            }
-        }
-        else if(state.xSpeed < 0)
-        {
-            if(state.ySpeed > 0)
-            {
-                player.setPos(player.x()+1, player.y()-1);
-                col->setPos(col->x()-1, col->y()+1);
-            }
-            else if(state.ySpeed < 0)
-            {
-                player.setPos(player.x()+1, player.y()+1);
-                col->setPos(col->x()-1, col->y()-1);
-            }
-            else
-            {
-                player.setPos(player.x()+1, player.y());
-                col->setPos(col->x()-1, col->y());
-            }
-        }
-        else
-        {
-            if(state.ySpeed > 0)
-            {
-                player.setPos(player.x(), player.y()-1);
-                col->setPos(col->x(), col->y()+1);
-            }
-            else
-            {
-                player.setPos(player.x(), player.y()+1);
-                col->setPos(col->x(), col->y()-1);
-            }
-        }
-
-        col->setSpeed(0,0);
-        collidiongAgents = player.collidingItems();
-    }
-
-    if(collided)
-    {
-        player.setSpeed(0,0);
-    }
-}
-
-*/
-
 
 Board::Board(qreal x, qreal y, qreal width, qreal height)
     : QGraphicsScene(x, y, width, height),
@@ -133,28 +48,38 @@ Board::~Board()
     delete d;
 }
 
-void Board::addAgent(const QString& siteID, Agent* agent)
+void Board::addAgent(const QString& siteID)
 {
-    d->agents[siteID] = agent;
+    if (! d->agentItems.contains(siteID))
+    {
+        QGraphicsEllipseItem* newAgent = new QGraphicsEllipseItem(0, 0, AGENT_RADIUS, AGENT_RADIUS);
+        //newAgent->setFlag(QGraphicsItem::ItemIsFocusable, true);
+        newAgent->setBrush(QBrush( Qt::GlobalColor(d->color) ));
+        d->color += 5;
+
+        addAgent(siteID, newAgent);
+    }
+}
+
+void Board::addAgent(const QString& siteID, QGraphicsEllipseItem* agent)
+{
+    d->agentItems[siteID] = agent;
 
     addItem(agent);
 }
 
-void Board::updateAgentState(const State& state)
+void Board::updateAgentState(const QString& siteID, std::vector<double> position)
 {
-    qDebug() << "update state for agent" << state.siteID;
+    Q_ASSERT(position.size() == 2);
 
-    if (! d->agents.contains(state.siteID))
-    {
-        Agent* newAgent = new Agent(state.siteID);
-        newAgent->setState(state);
+    qDebug() << "update state for agent" << siteID;
 
-        addAgent(state.siteID, newAgent);
-    }
-    else
+    if (! d->agentItems.contains(siteID))
     {
-        d->agents[state.siteID]->setState(state);
+        addAgent(siteID);
     }
+
+    d->agentItems[siteID]->setPos(position[0], position[1]);
 }
 
 }

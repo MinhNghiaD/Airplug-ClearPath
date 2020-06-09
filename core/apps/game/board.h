@@ -13,8 +13,11 @@
 #define BOARD_H
 
 #include <QGraphicsScene>
+#include <QGraphicsRectItem>
 
-#include "agent.h"
+
+// local includes
+#include "constants.h"
 
 namespace ClearPathApplication
 {
@@ -28,8 +31,9 @@ public:
 
 public:
 
-    void addAgent(const QString& siteID, Agent* agent);
-    void updateAgentState(const State& state);
+    void addAgent(const QString& siteID);
+    void addAgent(const QString& siteID, QGraphicsEllipseItem* agent);
+    void updateAgentState(const QString& siteID, std::vector<double> position);
 
 private:
 

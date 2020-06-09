@@ -276,6 +276,12 @@ void CollisionAvoidanceManager::setPreferenceVelocity()
     /*
      * pivot a little to avoid deadlocks due to perfect symmetry.
      */
+    /*
+    std::random_device seeder{};
+    std::mt19937 twister{seeder()};
+    std::uniform_int_distribution<> x(0, VIEW_WIDTH - 1 - PLAYER_SIZE);
+    std::uniform_int_distribution<> y(0, VIEW_HEIGHT - 1 - PLAYER_SIZE);
+    */
 
     const double angle    = std::rand() / (RAND_MAX) * 2 * M_PI;
     const double distance = std::rand() / (RAND_MAX) * 1;

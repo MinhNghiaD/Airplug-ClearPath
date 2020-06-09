@@ -16,7 +16,6 @@
 #include <QDebug>
 
 //local includes
-#include "world.h"
 #include "agent_controller.h"
 
 using namespace ClearPathApplication;

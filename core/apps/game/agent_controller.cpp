@@ -38,7 +38,6 @@ public:
 public:
 
     Board*      board;
-    Agent*      guiAgent;
 
     int         nbStep;
 
