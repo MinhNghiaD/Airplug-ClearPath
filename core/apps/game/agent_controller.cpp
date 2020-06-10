@@ -73,6 +73,7 @@ void AgentController::init(const QCoreApplication& app)
 
     sendMessage(pong, QString(), QString(), QString());
 
+    // Create agents
     d->environmentMngr  = EnvironmentManager::init(0.25, 15, 10, 5, 2, 2, {0, 0});
 
     int sqrtNbAgent = int(sqrt(NB_AGENTS));
@@ -89,7 +90,7 @@ void AgentController::init(const QCoreApplication& app)
 
             if (agent == nullptr)
             {
-                qWarning() << "agent" << agentName << "is null";
+                qWarning() << "Cannot create" << agentName;
             }
             else
             {
@@ -99,6 +100,7 @@ void AgentController::init(const QCoreApplication& app)
         }
     }
 
+    // Init synchronizer
     d->synchronizer     = new SynchronizerBase(siteID());
 
     connect(d->synchronizer, &SynchronizerBase::signalSendMessage,
@@ -180,10 +182,7 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
 
 void AgentController::slotDoStep()
 {
-    ++(*m_clock);
-
     updateGui();
-
     d->environmentMngr->update();
 
     for (QHash<QString, CollisionAvoidanceManager*>::const_iterator iter  = d->localAgents.cbegin();
@@ -193,8 +192,7 @@ void AgentController::slotDoStep()
         iter.value()->update();
     }
 
-    ++d->nbStep;
-
+    ++(*m_clock);
     if (! d->synchronizer->isInitiator())
     {
         // NOTE initiator don't send ack messages
@@ -206,9 +204,10 @@ void AgentController::slotDoStep()
     else
     {
         // time step
-        QThread::msleep(FRAME_PERIOD_MS);
+        //QThread::msleep(FRAME_PERIOD_MS);
     }
 
+    ++d->nbStep;
     qDebug() << siteID() << "do step";
 }
 
@@ -223,8 +222,7 @@ void AgentController::slotSendState(ACLMessage& message)
 {
     // share local state to construct shared memory
     QJsonObject content = message.getContent();
-
-    QJsonArray infoArray;
+    QJsonArray  infoArray;
 
     for (QHash<QString, CollisionAvoidanceManager*>::const_iterator iter  = d->localAgents.cbegin();
                                                                     iter != d->localAgents.cend();

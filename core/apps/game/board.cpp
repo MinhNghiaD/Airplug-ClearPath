@@ -14,7 +14,7 @@ class Board::Private
 public:
 
     Private()
-        : color(5)
+        : color(2)
     {
         timer.setInterval(FRAME_PERIOD_MS);
     }
@@ -26,8 +26,7 @@ public:
 public:
 
     // TODO create border and static obstacles
-    //QRectF          border;
-    QRgb color;
+    const QRgb color;
     QTimer timer;
 
     QHash<QString, QPair<QGraphicsEllipseItem*, std::vector<double> > > agentItems;
@@ -54,8 +53,9 @@ void Board::addAgent(const QString& siteID)
     if (! d->agentItems.contains(siteID))
     {
         QGraphicsEllipseItem* newAgent = new QGraphicsEllipseItem(0, 0, AGENT_RADIUS, AGENT_RADIUS);
-        newAgent->setBrush(QBrush( Qt::GlobalColor(d->color) ));
-        d->color += 1;
+
+        QRgb groupColor =d->color + (d->agentItems.size() / NB_AGENTS) * 3;
+        newAgent->setBrush(QBrush( Qt::GlobalColor(groupColor)));
 
         d->agentItems[siteID].first = newAgent;
     }
@@ -86,7 +86,8 @@ void Board::slotUpdateScene()
             addItem(iter.value().first);
         }
 
-        iter.value().first->setPos( (VIEW_WIDTH/ 2 + iter.value().second[0]*5), ( VIEW_HEIGHT/2 + iter.value().second[1]*5));
+        iter.value().first->setPos( (VIEW_WIDTH /2 + iter.value().second[0]*5),
+                                    (VIEW_HEIGHT/2 + iter.value().second[1]*5) );
     }
 }
 
