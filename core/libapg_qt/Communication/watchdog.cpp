@@ -142,7 +142,9 @@ void Watchdog::receivePong(bool newApp)
         //qDebug() << d->localInfo.siteID << "new app enter";
     }
 
-    ++d->temporaryNbApp;
+    qDebug() << d->localInfo.siteID << "receive pong from local app";
+
+    ++(d->temporaryNbApp);
 }
 
 void Watchdog::broadcastInfo()
