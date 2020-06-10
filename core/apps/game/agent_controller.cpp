@@ -204,7 +204,7 @@ void AgentController::slotDoStep()
     else
     {
         // time step
-        //QThread::msleep(FRAME_PERIOD_MS);
+        QThread::msleep(FRAME_PERIOD_MS/2);
     }
 
     ++d->nbStep;
