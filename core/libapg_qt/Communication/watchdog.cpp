@@ -127,7 +127,6 @@ void Watchdog::slotCheckInfo()
     broadcastInfo();
 
     // Ping local apps
-
     ACLMessage ping(ACLMessage::PING);
     emit signalPingLocalApps(ping);
 }
