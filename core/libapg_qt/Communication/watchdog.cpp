@@ -7,14 +7,18 @@
 
 namespace AirPlug
 {
+#define INTERVAL 5000
 
 class Q_DECL_HIDDEN Watchdog::Private
 {
 public:
 
     Private()
-        : temporaryNbApp(0)
+        : temporaryNbApp(0),
+          nbTotalApp(0),
+          nbSites(1)
     {
+        timer.setInterval(INTERVAL);
     }
 
     ~Private()
@@ -30,6 +34,10 @@ public:
 
     SiteInfo localInfo;
     int temporaryNbApp;
+    QTimer timer;
+
+    int nbTotalApp;
+    int nbSites;
 
     QHash<QString, SiteInfo> neighborsInfo;
 };
@@ -56,9 +64,7 @@ bool Watchdog::Private::containDeprecatedInfo() const
                                                   iter != neighborsInfo.cend();
                                                 ++iter)
     {
-        // period between 2 update is about 3000 ms, therefore
-        // deadline to beconsidered as deprecated is 4000 ms
-        if ((currentTime - iter.value().lastUpdate) >= 4000)
+        if ((currentTime - iter.value().lastUpdate) >= INTERVAL)
         {
             return true;
         }
@@ -77,7 +83,12 @@ Watchdog::Watchdog(const QString& siteID)
     setObjectName(QLatin1String("Watchdog"));
     d->localInfo = SiteInfo(siteID, 0);
 
-    QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
+    //QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
+
+    connect(&d->timer, &QTimer::timeout,
+            this,      &Watchdog::slotCheckInfo, Qt::DirectConnection);
+
+    d->timer.start();
 }
 
 Watchdog::~Watchdog()
@@ -85,17 +96,50 @@ Watchdog::~Watchdog()
     delete d;
 }
 
+void Watchdog::slotCheckInfo()
+{
+    // scan through info
+    if (d->containDeprecatedInfo())
+    {
+        // Ping all Node in the network to check if they are alive
+        requestInfo();
+
+        eliminateDeprecatedInfo();
+    }
+
+    qDebug() << d->localInfo.siteID << "nb of local app:" << d->temporaryNbApp;
+
+    d->localInfo.nbApp = d->temporaryNbApp;
+    d->temporaryNbApp  = 0;
+
+    int newNbApps  = d->nbApps();
+    int newNbSites = 1 + d->neighborsInfo.size();
+
+    if (d->nbTotalApp != newNbApps || d->nbSites != newNbSites)
+    {
+        d->nbTotalApp = newNbApps;
+        d->nbSites    = newNbSites;
+
+        emit signalNetworkChanged(d->nbSites, d->nbTotalApp);
+    }
+
+    // broadcast Info to all Watchdogs
+    broadcastInfo();
+
+    // Ping local apps
+
+    ACLMessage ping(ACLMessage::PING);
+    emit signalPingLocalApps(ping);
+}
+
 void Watchdog::receivePong(bool newApp)
 {
     // NOTE: all base applications have to send a PONG to NET after its initialization, in order to register,
     // All Site has to be notified in order to synchronize the increasing of number of apps before checking some termination conditions like Snapshot and Mutex
-    // Since the channels are FIFO, therefore this information will be update at all sites before any message exchange   
+    // Since the channels are FIFO, therefore this information will be update at all sites before any message exchange
     if (newApp)
     {
-        //++(d->localInfo.nbApp);
-        qDebug() << d->localInfo.siteID << "new app enter";
-        //emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
-        //broadcastInfo();
+        //qDebug() << d->localInfo.siteID << "new app enter";
     }
 
     ++d->temporaryNbApp;
@@ -110,52 +154,20 @@ void Watchdog::broadcastInfo()
     message.setContent(contents);
 
     emit signalSendInfo(message);
+
+    qDebug() << d->localInfo.siteID << "send info, nbApp =" << d->localInfo.nbApp;
 }
+
 
 void Watchdog::requestInfo()
 {
     ACLMessage message(ACLMessage::PING);
 
     emit signalSendInfo(message);
-
-    // deadline for responses is 2000 ms
-    QTimer::singleShot(2000, this, SLOT(eliminateDeprecatedInfo()));
 }
 
-void Watchdog::slotUpdateNbApp()
-{
-    // TODO: stablize this functionality, a delayed pong can cause the problem, can vector clock help???s
-    if (d->containDeprecatedInfo())
-    {
-        // Ping all Node in the network to check if they are alive
-        requestInfo();
-    }
 
-    if (d->temporaryNbApp != d->localInfo.nbApp)
-    {
-        //qDebug() << d->localInfo.siteID << "nb of local app change, from" << d->localInfo.nbApp << "to" << d->temporaryNbApp;
-        d->localInfo.nbApp = d->temporaryNbApp;
-
-        emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
-    }
-
-    d->temporaryNbApp = 0;
-
-    // broadcast Info to all Watchdogs
-    broadcastInfo();
-
-    // TODO: polling doesn't scale, find another method that does not flood the network
-/*
-    ACLMessage ping(ACLMessage::PING);
-
-    emit signalPingLocalApps(ping);
-
-    // reactivate timeout timer of 3s
-    QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
-*/
-}
-
-void Watchdog::eliminateDeprecatedInfo()
+bool Watchdog::eliminateDeprecatedInfo()
 {
     qint64 currentTime     = QDateTime::currentMSecsSinceEpoch();
     bool containDeprecated = false;
@@ -164,14 +176,14 @@ void Watchdog::eliminateDeprecatedInfo()
 
     while (iter != d->neighborsInfo.end())
     {
-        // deadline to beconsidered as deprecated is 4000 ms
-        // NOTE : the period since a site went down until it is eliminated is minimum (2000 + 4000) ms
-        // However it will not hurt the performance of other control algorithms that are waiting for response, thank to the help of the notification signalNetworkChanged
-        if ((currentTime - iter.value().lastUpdate) >= 4000)
+        // deadline to beconsidered as deprecated is 2*INTERVAL
+        // However it will not hurt the performance of other control algorithms that are waiting for response,
+        // thank to the help of the notification signalNetworkChanged
+        if ((currentTime - iter.value().lastUpdate) > INTERVAL*2)
         {
             containDeprecated = true;
 
-            //qDebug() << d->localInfo.siteID << "eliminate deprecated info : " << iter.key();
+            qDebug() << d->localInfo.siteID << "eliminate deprecated info : " << iter.key();
 
             iter = d->neighborsInfo.erase(iter);
         }
@@ -181,48 +193,19 @@ void Watchdog::eliminateDeprecatedInfo()
         }
     }
 
-    if (containDeprecated)
-    {
-        //qDebug() << d->localInfo.siteID << "remove deprecated, total nb app rests" << d->nbApps();
-        emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
-    }
+    return containDeprecated;
 }
 
 void Watchdog::receiveNetworkInfo(const ACLMessage& info)
 {
     QString neighborID = info.getSender();
+    int     nbApp      = info.getContent()[QLatin1String("nbApp")].toInt();
 
-    //qDebug() << d->localInfo.siteID << "receive network infor from" << neighborID << "with nb App" << info.getContent();
+    qDebug() << d->localInfo.siteID << "receive network infor from" << neighborID << "with nb App" << info.getContent();
 
-    if (!(d->neighborsInfo.contains(neighborID)))
-    {
-         d->neighborsInfo[neighborID] = SiteInfo(neighborID, info.getContent()[QLatin1String("nbApp")].toInt());
-
-         if (d->neighborsInfo[neighborID].nbApp == 0)
-         {
-             return;
-         }
-    }
-    else
-    {
-        int nbApp = info.getContent()[QLatin1String("nbApp")].toInt();
-
-        if (d->neighborsInfo[neighborID].nbApp == nbApp)
-        {
-            d->neighborsInfo[neighborID].lastUpdate = QDateTime::currentMSecsSinceEpoch();
-
-            return;
-        }
-        else
-        {
-            d->neighborsInfo[neighborID].setNbApp(nbApp);
-        }
-    }
-
-    //qDebug() << d->localInfo.siteID << "nb of total app change, new value" << d->nbApps();
-
-    emit signalNetworkChanged((1 + d->neighborsInfo.size()), d->nbApps());
+    d->neighborsInfo[neighborID].siteID     = neighborID;
+    d->neighborsInfo[neighborID].nbApp      = nbApp;
+    d->neighborsInfo[neighborID].lastUpdate = QDateTime::currentMSecsSinceEpoch();
 }
-
 
 }

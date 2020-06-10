@@ -76,7 +76,7 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
 
             d->nbWaitMsg = d->nbApps;
 
-            qDebug() << d->siteID << "collect all SYNC, give permission to local apps to do step";
+            //qDebug() << d->siteID << "collect all SYNC, give permission to local apps to do step";
         }
     }
     else if (performative == ACLMessage::SYNC_ACK)
@@ -100,7 +100,7 @@ bool SynchronizerControl::processLocalMessage(ACLMessage& message)
 
                 d->nbWaitAck = d->nbApps - 1;
 
-                qDebug() << d->siteID << "initiator receives all ACK --> unlock";
+                //qDebug() << d->siteID << "initiator receives all ACK --> unlock";
             }
         }
         else
@@ -146,7 +146,7 @@ bool SynchronizerControl::processExternalMessage(ACLMessage& message)
 
             d->nbWaitMsg = d->nbApps;
 
-            qDebug() << d->siteID << "collect all SYNC, give permission to local apps to do step";
+            //qDebug() << d->siteID << "collect all SYNC, give permission to local apps to do step";
         }
     }
     else if (performative == ACLMessage::SYNC_ACK)
@@ -169,7 +169,7 @@ bool SynchronizerControl::processExternalMessage(ACLMessage& message)
 
                 d->nbWaitAck = d->nbApps - 1;
 
-                qDebug() << d->siteID << "initiator receives all ACK --> unlock";
+                //qDebug() << d->siteID << "initiator receives all ACK --> unlock";
             }
         }
 

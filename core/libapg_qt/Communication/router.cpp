@@ -192,10 +192,11 @@ void Router::slotBroadcastNetwork(ACLMessage& message)
 }
 
 void Router::slotUpdateNbApps(int nbSites, int nbApp)
-{
+{    
+    qDebug() << d->siteID << "acknowledge network changes, nb of Site:" << nbSites << "nb of apps:" << nbSites;
+
     if (nbApp != d->nbApp)
     {
-        qDebug() << d->siteID << ": network changed => restart all mutex";
         // In case the network structure changed, it should restart the process of mutex in order to avoid deadlock
         d->refuseAllPendingRequest();
     }
