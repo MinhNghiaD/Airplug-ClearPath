@@ -116,7 +116,7 @@ void AgentController::init(const QCoreApplication& app)
     QThread::msleep(5000);
 
     // desactivate temporary for watchdog testing
-    //d->synchronizer->init();
+    d->synchronizer->init();
 }
 
 
