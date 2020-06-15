@@ -64,21 +64,20 @@ cat out6 | tee in2 in5 in8 &
 cat out7 > in8 &
 cat out8 | tee in7 in6 &
 
-sleep 30
+sleep 20
 
-# Deleting link agent5 <-> net2
-num=`ps aux | grep "cat out4" | grep -v grep | tr -s ' ' | cut -d' ' -f2`
+# Deleting link net3 <-> net4
+num=`ps aux | grep "cat out8" | grep -v grep | tr -s ' ' | cut -d' ' -f2`
 kill -KILL $num
 
-#num=`ps aux | grep "cat out3" | grep -v grep | tr -s ' ' | cut -d' ' -f2`
-#kill -KILL $num
-
-#num=`ps aux | grep "cat out9" | grep -v grep | tr -s ' ' | cut -d' ' -f2`
-#kill -KILL $num
+sleep 20
+# Deleting link agent2 <-> net2
+num=`ps aux | grep "cat out3" | grep -v grep | tr -s ' ' | cut -d' ' -f2`
+kill -KILL $num
 
 # Creating new connections and recreating those that would not have been deleted.
 #cat out3 > in4 &
-cat out4 | tee in2 in3 in9 &
+#cat out4 | tee in2 in3 in9 &
 #cat out9 > in4 &
 #cat out3 > in4 &
 

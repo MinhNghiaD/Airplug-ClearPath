@@ -134,7 +134,6 @@ void AgentController::slotReceiveMessage(Header& header, Message& message)
             break;
 
         case ACLMessage::PING:
-            qDebug() << siteID() << "receive ping from net";
             aclMessage->setPerformative(ACLMessage::PONG);
             sendMessage(*aclMessage, QString(), QString(), QString());
             ++(*m_clock);

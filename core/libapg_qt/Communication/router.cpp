@@ -193,7 +193,7 @@ void Router::slotBroadcastNetwork(ACLMessage& message)
 
 void Router::slotUpdateNbApps(int nbSites, int nbApp)
 {    
-    qDebug() << d->siteID << "acknowledge network changes, nb of Site:" << nbSites << "nb of apps:" << nbSites;
+    qDebug() << d->siteID << "acknowledge network changes, nb of Site:" << nbSites << "nb of apps:" << nbApp;
 
     if (nbApp != d->nbApp)
     {

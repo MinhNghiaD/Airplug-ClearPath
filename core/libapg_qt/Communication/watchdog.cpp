@@ -7,7 +7,7 @@
 
 namespace AirPlug
 {
-#define INTERVAL 5000
+#define INTERVAL 1000
 
 class Q_DECL_HIDDEN Watchdog::Private
 {
@@ -83,8 +83,6 @@ Watchdog::Watchdog(const QString& siteID)
     setObjectName(QLatin1String("Watchdog"));
     d->localInfo = SiteInfo(siteID, 0);
 
-    //QTimer::singleShot(3000, this, SLOT(slotUpdateNbApp()));
-
     connect(&d->timer, &QTimer::timeout,
             this,      &Watchdog::slotCheckInfo, Qt::DirectConnection);
 
@@ -107,7 +105,7 @@ void Watchdog::slotCheckInfo()
         eliminateDeprecatedInfo();
     }
 
-    qDebug() << d->localInfo.siteID << "nb of local app:" << d->temporaryNbApp;
+    //qDebug() << d->localInfo.siteID << "nb of local app:" << d->temporaryNbApp;
 
     d->localInfo.nbApp = d->temporaryNbApp;
     d->temporaryNbApp  = 0;
@@ -141,7 +139,7 @@ void Watchdog::receivePong(bool newApp)
         //qDebug() << d->localInfo.siteID << "new app enter";
     }
 
-    qDebug() << d->localInfo.siteID << "receive pong from local app";
+    //qDebug() << d->localInfo.siteID << "receive pong from local app";
 
     ++(d->temporaryNbApp);
 }
@@ -156,7 +154,7 @@ void Watchdog::broadcastInfo()
 
     emit signalSendInfo(message);
 
-    qDebug() << d->localInfo.siteID << "send info, nbApp =" << d->localInfo.nbApp;
+    //qDebug() << d->localInfo.siteID << "send info, nbApp =" << d->localInfo.nbApp;
 }
 
 
@@ -202,7 +200,7 @@ void Watchdog::receiveNetworkInfo(const ACLMessage& info)
     QString neighborID = info.getSender();
     int     nbApp      = info.getContent()[QLatin1String("nbApp")].toInt();
 
-    qDebug() << d->localInfo.siteID << "receive network infor from" << neighborID << "with nb App" << info.getContent();
+    //qDebug() << d->localInfo.siteID << "receive network infor from" << neighborID << "with nb App" << info.getContent();
 
     d->neighborsInfo[neighborID].siteID     = neighborID;
     d->neighborsInfo[neighborID].nbApp      = nbApp;
