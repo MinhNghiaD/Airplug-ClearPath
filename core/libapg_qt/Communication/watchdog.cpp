@@ -7,7 +7,7 @@
 
 namespace AirPlug
 {
-#define INTERVAL 1000
+#define INTERVAL 500
 
 class Q_DECL_HIDDEN Watchdog::Private
 {

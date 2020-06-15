@@ -178,6 +178,20 @@ void ElectionManager::finishElection(ElectionReason reason)
 void ElectionManager::setNbOfNeighbor(int nbNeighbor)
 {
     d->nbNeighbor = nbNeighbor;
+
+    // Reverify condition of termination
+    for (QHash<ElectionReason, Election>::iterator iter  = d->ongoingElections.begin();
+                                                   iter != d->ongoingElections.end();
+                                                 ++iter)
+    {
+        if (iter.value().nbFor == d->nbNeighbor)
+        {
+            qDebug() << "ELECTION WIN :" << d->siteID << "win election for election reason :" << iter.key();
+            emit signalWinElection(iter.key());
+        }
+    }
+
+
 }
 
 }

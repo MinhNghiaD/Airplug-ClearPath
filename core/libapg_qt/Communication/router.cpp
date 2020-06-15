@@ -203,6 +203,7 @@ void Router::slotUpdateNbApps(int nbSites, int nbApp)
 
     d->nbApp = nbApp;
 
+    // Update network info for components that wait for finish conditions
     d->snapshot->setNbOfApp(nbApp);
     d->snapshot->setNbOfNeighbor(nbSites - 1);
     d->synchronizer->setNbOfApp(nbApp);
