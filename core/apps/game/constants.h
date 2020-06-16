@@ -12,10 +12,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define VIEW_WIDTH 1280
-#define VIEW_HEIGHT 720
+#define VIEW_WIDTH 850
+#define VIEW_HEIGHT 850
 
-#define AGENT_RADIUS 15
+#define AGENT_RADIUS 12
 
 #define FRAME_PERIOD_MS 10
 #define NB_AGENTS 9
