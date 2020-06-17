@@ -79,7 +79,7 @@ void SynchronizerBase::processSYNCMessage(ACLMessage& message)
     if (content[QLatin1String("fromInitiator")].toBool())
     {
         ACLMessage newMessage(ACLMessage::SYNC);
-        qDebug() << d->siteID << "receive SYNC from initiator, send state message";
+        //qDebug() << d->siteID << "receive SYNC from initiator, send state message";
 
         emit signalSendState(newMessage);
     }
@@ -110,7 +110,7 @@ void SynchronizerBase::processACKMessage(ACLMessage& message)
             newContent[QLatin1String("fromInitiator")] = true;
             newMessage.setContent(newContent);
 
-            qDebug() << d->siteID <<"(initiator) send first message";
+            //qDebug() << d->siteID <<"(initiator) send first message";
 
             emit signalSendState(newMessage);
         }

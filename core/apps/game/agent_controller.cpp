@@ -115,6 +115,7 @@ void AgentController::init(const QCoreApplication& app)
     // wait for network is stable to init synchronizer
     QThread::msleep(5000);
 
+    // desactivate temporary for watchdog testing
     d->synchronizer->init();
 }
 
@@ -208,7 +209,7 @@ void AgentController::slotDoStep()
     }
 
     ++d->nbStep;
-    qDebug() << siteID() << "do step";
+    //qDebug() << siteID() << "do step";
 }
 
 void AgentController::slotSendMessage(ACLMessage& message)
@@ -241,7 +242,7 @@ void AgentController::slotSendState(ACLMessage& message)
 
     sendMessage(message, QString(), QString(), QString());
 
-    qDebug() << siteID() << "send info";
+    //qDebug() << siteID() << "send info";
 }
 
 void AgentController::sendLocalSnapshot()

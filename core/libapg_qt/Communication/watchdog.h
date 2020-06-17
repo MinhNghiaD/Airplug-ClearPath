@@ -37,11 +37,11 @@ public:
 private:
 
     void requestInfo();
+    bool eliminateDeprecatedInfo();
 
 private:
 
-    Q_SLOT void slotUpdateNbApp();
-    Q_SLOT void eliminateDeprecatedInfo();
+    Q_SLOT void slotCheckInfo();
 
 public:
 
@@ -71,12 +71,6 @@ public:
           nbApp(nbApp),
           lastUpdate(QDateTime::currentMSecsSinceEpoch())
     {
-    }
-
-    void setNbApp(int nb)
-    {
-        nbApp      = nb;
-        lastUpdate = QDateTime::currentMSecsSinceEpoch();
     }
 
 public:

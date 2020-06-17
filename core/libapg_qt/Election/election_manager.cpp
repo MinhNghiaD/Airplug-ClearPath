@@ -81,9 +81,8 @@ void ElectionManager::processElectionRequest(ACLMessage& request)
 {
     QJsonObject content = request.getContent();
     QString candidate = content[QLatin1String("candidate")].toString();
-    // process request message and update ongoing elections
-    // if not participating in this election, nbWaitedResponses is set to 0
 
+    // process request message and update ongoing elections
     ElectionReason reason = static_cast<ElectionReason>(content[QLatin1String("reason")].toInt());
 
     if (d->ongoingElections.contains(reason))
@@ -103,7 +102,7 @@ void ElectionManager::processElectionRequest(ACLMessage& request)
         election.reason            = reason;
         election.nbFor             = 0;
         election.nbAgains          = 0;
-        election.nbWaitedResponses = 0;
+        election.nbWaitedResponses = d->nbNeighbor;
 
         d->ongoingElections.insert(reason, election);
     }
@@ -132,11 +131,12 @@ void ElectionManager::processElectionAck(ACLMessage& ackMessage)
     // If candidate currently voted by ack message is not local site => increment nbAgains
     // Decrement nbWaitedResponses, if nbWaitedResponses = 0 => election finish
     // if nbFor == nbNeighbor => win election, send signal signalWinElection back to Router to give permission to do demanded task
+/*
     if (d->ongoingElections[reason].nbWaitedResponses == 0)
     {
         return;
     }
-
+*/
     if (candidate == d->siteID)
     {
         d->ongoingElections[reason].nbFor += 1;
@@ -146,10 +146,9 @@ void ElectionManager::processElectionAck(ACLMessage& ackMessage)
         d->ongoingElections[reason].nbAgains += 1;
     }
 
-    d->ongoingElections[reason].nbWaitedResponses -= 1;
-
     // Le site élu a reçu tous les votes "Pour" de ses voisins
-    if (d->ongoingElections[reason].nbFor == d->nbNeighbor)
+    if (d->ongoingElections[reason].nbFor    == d->ongoingElections[reason].nbWaitedResponses &&
+        d->ongoingElections[reason].nbAgains == 0)
     {
         qDebug() << "ELECTION WIN :" << d->siteID << "win election for election reason :" << reason;
         emit signalWinElection(reason);
@@ -177,6 +176,24 @@ void ElectionManager::finishElection(ElectionReason reason)
 
 void ElectionManager::setNbOfNeighbor(int nbNeighbor)
 {
+    if (d->nbNeighbor > nbNeighbor)
+    {
+        // Reverify condition of termination
+        for (QHash<ElectionReason, Election>::iterator iter  = d->ongoingElections.begin();
+                                                       iter != d->ongoingElections.end();
+                                                     ++iter)
+        {
+            iter.value().nbWaitedResponses = nbNeighbor;
+
+            if (iter.value().nbFor    == iter.value().nbWaitedResponses &&
+                iter.value().nbAgains == 0)
+            {
+                qDebug() << "ELECTION WIN :" << d->siteID << "win election for election reason :" << iter.key();
+                emit signalWinElection(iter.key());
+            }
+        }
+    }
+
     d->nbNeighbor = nbNeighbor;
 }
 

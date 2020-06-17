@@ -168,7 +168,7 @@ void Router::Private::forwardPong(const ACLMessage& message, bool fromLocal)
             isNewApp = content[QLatin1String("isNew")].toBool();
         }
 
-        watchdog->receivePong(false);
+        watchdog->receivePong(isNewApp);
 
         return;
     }
