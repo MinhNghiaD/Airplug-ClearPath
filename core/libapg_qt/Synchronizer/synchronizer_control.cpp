@@ -183,7 +183,41 @@ bool SynchronizerControl::processExternalMessage(ACLMessage& message)
 
 void SynchronizerControl::setNbOfApp(int nbApps)
 {
-    d->nbApps = nbApps;
+    // Reverify condition of termination
+    int nbChanged = nbApps - d->nbApps;
+
+    d->nbWaitAck += nbChanged;
+    d->nbWaitMsg += nbChanged;
+    d->nbApps     = nbApps;
+
+    if (d->nbWaitAck == 0)
+    {
+        ACLMessage permission(ACLMessage::SYNC_ACK);
+
+        QJsonObject content;
+        content[QLatin1String("forInitiator")] = true;
+
+        permission.setContent(content);
+
+        // give permission to initiator
+        emit signalSendToApp(permission);
+
+        d->nbWaitAck = d->nbApps - 1;
+
+        //qDebug() << d->siteID << "initiator receives all ACK --> unlock";
+    }
+
+    if (d->nbWaitMsg == 0)
+    {
+        // give the app permission to perform next step
+        ACLMessage permission(ACLMessage::SYNC_ACK);
+
+        emit signalSendToApp(permission);
+
+        d->nbWaitMsg = d->nbApps;
+
+        //qDebug() << d->siteID << "collect all SYNC, give permission to local apps to do step";
+    }
 }
 
 
